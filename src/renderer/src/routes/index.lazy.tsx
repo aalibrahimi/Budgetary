@@ -4,13 +4,13 @@ import '../assets/index.css'
 const Index = () => {
   return (
     <>
-    <div>
+      <div>
         <h3>Budgetary Home Page</h3>
-    </div>
+      </div>
     </>
   )
 }
 
 export const Route = createLazyFileRoute('/')({
-    component: Index,
+  component: Index,
 })
