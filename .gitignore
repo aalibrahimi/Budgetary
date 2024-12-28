@@ -3,3 +3,9 @@ dist
 out
 .DS_Store
 *.log*
+.venv
+.env
+*.db
+*.sqbpro
+*.db-journal
+*.sql

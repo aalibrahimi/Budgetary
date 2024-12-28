@@ -1,0 +1,62 @@
+:root {
+    --titlebar-H: 30px;
+}
+
+#Titlebar {
+    /* position: absolute; */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: black;
+    width: 100vw;
+    height: var(--titlebar-H);
+    /* transform: translate(-25vw, -17vh); */
+    z-index: 9999;
+    user-select: none;
+    app-region: drag;
+    -webkit-app-region: drag;
+}
+
+#Titlebar-app-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+#Titlebar-title {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    font-size: 14px;
+    font-weight: 400;
+    color: white;
+}
+
+#Titlebar-icon-div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    app-region: no-drag;
+    -webkit-app-region: no-drag;
+}
+
+.Titlebar-icons {
+    width: 50px;
+    height: 20px;
+}
+
+.Tilebar-icons-box {
+    display: flex;
+    align-items: center;
+}
+
+.Tilebar-icons-box:hover {
+    background: rgba(128, 128, 128, 0.5);
+    height: var(--titlebar-H);
+}
+#Titlebar-close-icon:hover {
+    background: rgba(220, 0, 0, 0.85);
+    height: var(--titlebar-H);
+}   
+

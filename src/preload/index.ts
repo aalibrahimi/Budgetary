@@ -1,8 +1,13 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
-const api = {}
+const api = {
+  minimize: () => ipcRenderer.invoke('minimize-window'),
+  maximize: () => ipcRenderer.invoke('maximize-window'),
+  restore: () => ipcRenderer.invoke('restore-window'),
+  close: () => ipcRenderer.invoke('close-window'),
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise

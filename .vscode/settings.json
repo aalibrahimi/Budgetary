@@ -7,5 +7,9 @@
   },
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "files.watcherExclude": {
+    "**/routeTree.gen.ts": true
+  },
+  "css.lint.unknownProperties": "ignore"
 }
