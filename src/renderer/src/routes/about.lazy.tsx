@@ -6,6 +6,7 @@ const About = () => {
     <>
     <div>
       <h3>Budgetary About Page</h3>
+      
     </div>
     </>
   )
