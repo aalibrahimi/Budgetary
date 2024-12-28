@@ -1,5 +1,5 @@
 import { useForm } from '@tanstack/react-form'
-import { createFileRoute } from '@tanstack/react-router'
+import { createLazyFileRoute } from '@tanstack/react-router'
 import '../assets/expenses.css'
 
 const Expenses = () => {
@@ -41,6 +41,6 @@ const Expenses = () => {
   )
 }
 
-export const Route = createFileRoute('/expenses')({
+export const Route = createLazyFileRoute('/expenses')({
   component: Expenses,
 })
