@@ -10,10 +10,13 @@ function createWindow(): void {
     height: 670,
     show: false,
     autoHideMenuBar: true,
+    frame: false,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      contextIsolation: true,
+      nodeIntegration: false
     }
   })
 
@@ -33,6 +36,22 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+  ipcMain.handle('minimize-window', (_) => {
+    mainWindow.minimize();
+  })
+  ipcMain.handle('maximize-window', (_) => {
+    mainWindow.maximize();
+    return {fullStatus: true}
+  })
+  ipcMain.handle('restore-window', (_) => {
+    mainWindow.restore();
+    return {fullStatus: false}
+  })
+  ipcMain.handle('close-window', (_) => {
+    mainWindow.close();
+  })
+
 }
 
 // This method will be called when Electron has finished
@@ -48,9 +67,6 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
-
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
 
   createWindow()
 
