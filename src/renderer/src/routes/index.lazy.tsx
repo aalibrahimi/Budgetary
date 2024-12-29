@@ -1,6 +1,8 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import '../assets/index.css';
+import '@fortawesome/fontawesome-free/css/all.css';
+
 
 // Types
 interface User {
@@ -12,8 +14,10 @@ const Index = () => {
   const [user, setUser] = useState<User>({ isAuthenticated: false });
 
   return (
+    
     <div className={`app-container ${isDarkMode ? 'dark-mode' : ''}`}>
       <main>
+        
         <section className="hero">
           <div className="hero-content">
             <h1 className="animated-text">
@@ -26,18 +30,15 @@ const Index = () => {
               Get Started For Free
             </a>
           </div>
-          <div className="hero-visual">
-            <div className="floating-element coin">
-              <i className="fas fa-coins"></i>
-            </div>
-            <div className="floating-element chart">
-              <i className="fas fa-chart-bar"></i>
-            </div>
-            <div className="floating-element piggy">
-              <i className="fas fa-piggy-bank"></i>
-            </div>
-          </div>
+            <div className="hero-visual">
+              <div className="floating-icon"><i className="fas fa-coins"></i></div>
+              <div className="floating-icon"><i className="fas fa-chart-pie"></i></div>
+              <div className="floating-icon"><i className="fas fa-piggy-bank"></i></div>
+
+             </div>
+
         </section>
+        
 
         <section id="features" className="features">
           <h2>Explore Expensy Tracker Features</h2>
