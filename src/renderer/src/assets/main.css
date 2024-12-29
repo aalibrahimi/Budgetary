@@ -240,3 +240,46 @@ ul {
       font-size: 0.9rem;
   }
 }
+
+/* trying to add the flying icons here */
+.hero-visual{
+  position: absolute;
+  width: 100%;
+  height: 200px;
+  overflow: visible;
+}
+
+
+.floating-icon {
+  position: absolute;
+  font-size: 3rem; /* Adjust size as needed */
+  color: rgba(255, 255, 255, 0.8); /* Slight transparency */
+  animation: float 6s ease-in-out infinite;
+}
+
+/* right now its all stacked one on top of another, so were going to position each icon seperately  */
+.floating-icon:nth-child(1)
+{
+  top: 10%; /* top left corner for the first icon */
+  left: 30%;
+}
+
+.floating-icon:nth-child(2){
+  top: 50%; /* middle left corner for the second icon */
+  left: 60%;
+  animation-delay: 2s;
+}
+.floating-icon:nth-child(3){
+  top: 30%; /* middle left corner for the second icon */
+  left: 45%;
+  animation-delay: 4s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px); /* Adds the floating effect */
+  }
+}
