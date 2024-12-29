@@ -1,25 +1,7 @@
-:root {
-    --primary-color: #40E0D0;
-    --secondary-color: #2F4F4F;
-    --accent-color: #FF6B6B;
-    --background-color: #F0F8FF;
-    --text-color: #333333;
-    --card-background: #FFFFFF;
-}
 
 /* Reset and Base Styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    line-height: 1.6;
-}
+
 
 /* Header Styles */
 header {
@@ -720,3 +702,4 @@ a:focus {
         margin: 1rem auto;
     }
 }
+
