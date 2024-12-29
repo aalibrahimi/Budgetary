@@ -1,15 +1,47 @@
-import { useForm } from '@tanstack/react-form'
+// import { useForm } from '@tanstack/react-form'
 import { createLazyFileRoute, Link } from '@tanstack/react-router'
 import '../assets/expenses.css'
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 
 const Expenses: React.FC = () => {
-  const [is_authenticated,  setIsAuthenticated] = useState(true);
-  const [monthlyTotal, setmonthlyTotal] = useState("$0.00")
-  const [topCategory,  setTopCategory] = useState("-")
-  const [expenseCount, setExpenseCount] = useState(0)
-  const [expenses, setExpenses] = useState<any[]>([]); /* This is where our expenses {rent,insurance,food, etc..} will be stored*/
+  const [is_authenticated,  setIsAuthenticated] = useState(true);   // Track to see if the user is logged in (authenticated)
+  const [monthlyTotal, setmonthlyTotal] = useState("$0.00")         // How much is spent in the month, starts at $0 
+  const [topCategory,  setTopCategory] = useState("-")              // tracks what category is spent the most
+  const [expenseCount, setExpenseCount] = useState(0)               // This adds all the expenses together, Total, starts at 0
+  const [expenses, setExpenses] = useState<any[]>(() => {           // State to store the list of expenses. The initial value is loaded from `localStorage` if available.
+    const savedExpenses = localStorage.getItem("expenses");         // This looks for the saved expenses in the local storage
+    return savedExpenses ? JSON.parse(savedExpenses) : []; 
+    // If expenes exist in local we parse them (convert from string to Object)  
+  }); 
+
+
+  useEffect(() => {
+    localStorage.setItem("expenses", JSON.stringify(expenses));   //save the current expenses to local whenever it changes
+  }, [expenses])
+
+
+  useEffect(() => {
+    if(expenses.length > 0) { //Checks if theres more than one expenses
+      const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);  //`reduce` calculates the sum of all amounts in the `expenses` array.
+      setmonthlyTotal(`$${total.toFixed(2)}`)
+      setExpenseCount(expenses.length);
+
+      const categoryTotals: { [key: string]: number } = {};                  // Create an object to store total amounts per category. The keys are category names.
+      expenses.forEach((expense) => {
+        categoryTotals[expense.category] =
+          (categoryTotals[expense.category] || 0) + expense.amount;
+           // so for each expense, add its amount to the rightful category in `categoryTotals`.
+      })
+
+      const mostSpentCategory = Object.entries(categoryTotals).reduce(
+        (max, entry) => (entry[1] > max[1] ? entry : max),
+        ["",0]
+      )[0];
+      // Turns `categoryTotals` into an array of [key, value] pairs, finds the one with the highest value (spending), and grabs the key (category name).
+      setTopCategory(mostSpentCategory);
+    }
+  }, [expenses])
 
   // this is where i'll add the logic for adding an expense
   const handleAddExpense = (e: React.FormEvent) => {
@@ -30,12 +62,7 @@ const Expenses: React.FC = () => {
         { date, category, amount  },
       ])
 
-      //update total and expense count
-      setExpenseCount((prevCount) => prevCount + 1);
-      const newTotal = expenses.reduce((sum, exp) => sum + exp.amount, 0) + amount;
-      setmonthlyTotal(`$${newTotal.toFixed(2)}`);
-      setTopCategory(category); //this is a simplied version just so we can calculate baased on the most spent
-      form.reset();
+  
 
   };
 
