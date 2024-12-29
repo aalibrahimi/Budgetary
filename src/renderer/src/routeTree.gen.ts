@@ -16,32 +16,11 @@ import { Route as rootRoute } from './routes/__root'
 
 // Create Virtual Routes
 
-const SettingsLazyImport = createFileRoute('/settings')()
-const ProfileLazyImport = createFileRoute('/profile')()
-const LoginLazyImport = createFileRoute('/login')()
 const ExpensesLazyImport = createFileRoute('/expenses')()
 const AboutLazyImport = createFileRoute('/about')()
 const IndexLazyImport = createFileRoute('/')()
 
 // Create/Update Routes
-
-const SettingsLazyRoute = SettingsLazyImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/settings.lazy').then((d) => d.Route))
-
-const ProfileLazyRoute = ProfileLazyImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/profile.lazy').then((d) => d.Route))
-
-const LoginLazyRoute = LoginLazyImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/login.lazy').then((d) => d.Route))
 
 const ExpensesLazyRoute = ExpensesLazyImport.update({
   id: '/expenses',
@@ -86,27 +65,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExpensesLazyImport
       parentRoute: typeof rootRoute
     }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsLazyImport
-      parentRoute: typeof rootRoute
-    }
   }
 }
 
@@ -116,18 +74,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/about': typeof AboutLazyRoute
   '/expenses': typeof ExpensesLazyRoute
-  '/login': typeof LoginLazyRoute
-  '/profile': typeof ProfileLazyRoute
-  '/settings': typeof SettingsLazyRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/about': typeof AboutLazyRoute
   '/expenses': typeof ExpensesLazyRoute
-  '/login': typeof LoginLazyRoute
-  '/profile': typeof ProfileLazyRoute
-  '/settings': typeof SettingsLazyRoute
 }
 
 export interface FileRoutesById {
@@ -135,24 +87,14 @@ export interface FileRoutesById {
   '/': typeof IndexLazyRoute
   '/about': typeof AboutLazyRoute
   '/expenses': typeof ExpensesLazyRoute
-  '/login': typeof LoginLazyRoute
-  '/profile': typeof ProfileLazyRoute
-  '/settings': typeof SettingsLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/expenses' | '/login' | '/profile' | '/settings'
+  fullPaths: '/' | '/about' | '/expenses'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/expenses' | '/login' | '/profile' | '/settings'
-  id:
-    | '__root__'
-    | '/'
-    | '/about'
-    | '/expenses'
-    | '/login'
-    | '/profile'
-    | '/settings'
+  to: '/' | '/about' | '/expenses'
+  id: '__root__' | '/' | '/about' | '/expenses'
   fileRoutesById: FileRoutesById
 }
 
@@ -160,18 +102,12 @@ export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   AboutLazyRoute: typeof AboutLazyRoute
   ExpensesLazyRoute: typeof ExpensesLazyRoute
-  LoginLazyRoute: typeof LoginLazyRoute
-  ProfileLazyRoute: typeof ProfileLazyRoute
-  SettingsLazyRoute: typeof SettingsLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   AboutLazyRoute: AboutLazyRoute,
   ExpensesLazyRoute: ExpensesLazyRoute,
-  LoginLazyRoute: LoginLazyRoute,
-  ProfileLazyRoute: ProfileLazyRoute,
-  SettingsLazyRoute: SettingsLazyRoute,
 }
 
 export const routeTree = rootRoute
@@ -186,10 +122,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/about",
-        "/expenses",
-        "/login",
-        "/profile",
-        "/settings"
+        "/expenses"
       ]
     },
     "/": {
@@ -200,15 +133,6 @@ export const routeTree = rootRoute
     },
     "/expenses": {
       "filePath": "expenses.lazy.tsx"
-    },
-    "/login": {
-      "filePath": "login.lazy.tsx"
-    },
-    "/profile": {
-      "filePath": "profile.lazy.tsx"
-    },
-    "/settings": {
-      "filePath": "settings.lazy.tsx"
     }
   }
 }
