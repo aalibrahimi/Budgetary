@@ -1,9 +1,16 @@
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react"
 import { createLazyFileRoute } from "@tanstack/react-router"
 
 const Login = () => {
   return (
     <>
-      <h3>Login Page</h3>
+      <SignedOut>
+        <SignInButton />
+      </SignedOut>
+
+      <SignedIn>
+        <UserButton />
+      </SignedIn>
     </>
   )
 }
