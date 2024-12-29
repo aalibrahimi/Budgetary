@@ -24,7 +24,8 @@ const Expenses: React.FC = () => {
   // })
 
   return (
-    <html lang="en">
+   <>
+   
       <head>
       <meta charSet="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -32,9 +33,10 @@ const Expenses: React.FC = () => {
       <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
       
       </head>
-      <body>
+      
          <div>
         <div className="container">
+
           <header className="header">
             <div className="header-top">
               <h1>Expense Tracker</h1>
@@ -139,9 +141,9 @@ const Expenses: React.FC = () => {
           </footer>
         </div>
       </div>
-      </body>
      
-   </html>
+     
+    </>
   )
 }
 
