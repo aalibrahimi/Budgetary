@@ -198,11 +198,26 @@ ul {
 }
 
 
-/* dark mode styles */
-
+/* Dark Mode */
+.dark-mode {
+  --background-color: #1e1e1e;
+  --text-color: #fcb6b6;
+  --primary-color: #333333;
+  --secondary-color: #c73b3b;
+  --card-background: #333333;
+  --h3: rgb(255, 0, 102);
+}
 
 /* Responsive styles */
-@media (max-width: 768px) {
+@media (max-width: 768px) {/* Dark Mode */
+.dark-mode {
+    --background-color: #1e1e1e;
+    --text-color: #f4f4f4;
+    --primary-color: #333333;
+    --secondary-color: #1e1e1e;
+    --card-background: #333333;
+}
+
   .navbar {
       padding: 1rem;
   }
