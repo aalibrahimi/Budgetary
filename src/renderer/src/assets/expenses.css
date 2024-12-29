@@ -1,18 +1,6 @@
 /* Expenses CSS */
 /* Base styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: system-ui, -apple-system, sans-serif;
-  }
-  
-  /* Do not use body in any CSS file outside of main.css file */
-  body {
-    min-height: 100vh;
-    background: linear-gradient(to bottom, #38B2AC, #2C7A7B);
-    /* padding: 24px; */
-  }
+
   
   .container {
     max-width: 1000px;
