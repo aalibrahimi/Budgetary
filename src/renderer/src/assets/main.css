@@ -17,7 +17,7 @@ body {
   width: 100vw;
   height: 100vh;
   overflow-x: hidden;
-  overflow-y: hidden;
+  /* overflow-y: hidden; */
   margin: 0;
   background-color: rgb(10, 10, 10);
   color: rgb(250, 125, 125);
