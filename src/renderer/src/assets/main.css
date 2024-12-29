@@ -29,6 +29,55 @@ body {
   
 }
 
+.navbar-brand
+{
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+  color: var(--secondary-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.navbar-brand i {
+  font-size: 1.8rem;
+}
+.navbar {
+  background-color: var(--primary-color);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  /* z-index: 1000; */
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.nav-link{
+  color: var(--secondary-color);
+  text-align: none;
+  font-weight: 600;
+  padding: 0.5rem;
+  transition: all 0.3s ease;
+  position: relative;  
+}
+
+/* This is where I created the cool underline affect */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0px;
+  width: 0;
+  height: 2px;
+  background-color: var(--secondary-color);
+  transition: width 0.3s ease;
+}
+.nav-link:hover::after {
+  width: 100%;
+}
+
 .content-body {
   width: 100vw;
   height: calc(100% - (var(--titlebar-H) + 45px));
@@ -49,7 +98,7 @@ input {
   outline: none;
 }
 
-#nav {
+#navybar {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -73,3 +122,5 @@ ul {
   list-style: none;
   padding: 0;
 }
+
+
