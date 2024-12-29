@@ -1,15 +1,52 @@
-import { useForm } from '@tanstack/react-form'
+// import { useForm } from '@tanstack/react-form'
 import { createLazyFileRoute, Link } from '@tanstack/react-router'
 import '../assets/expenses.css'
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 
 const Expenses: React.FC = () => {
-  const [is_authenticated,  setIsAuthenticated] = useState(true);
-  const [monthlyTotal, setmonthlyTotal] = useState("$0.00")
-  const [topCategory,  setTopCategory] = useState("-")
-  const [expenseCount, setExpenseCount] = useState(0)
-  const [expenses, setExpenses] = useState<any[]>([]); /* This is where our expenses {rent,insurance,food, etc..} will be stored*/
+  const [is_authenticated,  setIsAuthenticated] = useState(true);   // Track to see if the user is logged in (authenticated)
+  const [monthlyTotal, setmonthlyTotal] = useState("$0.00")         // How much is spent in the month, starts at $0 
+  const [topCategory,  setTopCategory] = useState("-")              // tracks what category is spent the most
+  const [expenseCount, setExpenseCount] = useState(0)               // This adds all the expenses together, Total, starts at 0
+  const [activeTab, setActiveTab] = useState("expenses")            // defaults the page to expenses
+  const [expenses, setExpenses] = useState<any[]>(() => {           // State to store the list of expenses. The initial value is loaded from `localStorage` if available.
+    const savedExpenses = localStorage.getItem("expenses");         // This looks for the saved expenses in the local storage
+    return savedExpenses ? JSON.parse(savedExpenses) : []; 
+    // If expenes exist in local we parse them (convert from string to Object)  
+  }); 
+
+  // check to see if tab switching is active
+  const handleTabClick = (tab: string) => {
+    setActiveTab(tab);
+  }
+
+  useEffect(() => {
+    localStorage.setItem("expenses", JSON.stringify(expenses));   //save the current expenses to local whenever it changes
+  }, [expenses])
+
+
+  useEffect(() => {
+    if(expenses.length > 0) { //Checks if theres more than one expenses
+      const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);  //`reduce` calculates the sum of all amounts in the `expenses` array.
+      setmonthlyTotal(`$${total.toFixed(2)}`)
+      setExpenseCount(expenses.length);
+
+      const categoryTotals: { [key: string]: number } = {};                  // Create an object to store total amounts per category. The keys are category names.
+      expenses.forEach((expense) => {
+        categoryTotals[expense.category] =
+          (categoryTotals[expense.category] || 0) + expense.amount;
+           // so for each expense, add its amount to the rightful category in `categoryTotals`.
+      })
+
+      const mostSpentCategory = Object.entries(categoryTotals).reduce(
+        (max, entry) => (entry[1] > max[1] ? entry : max),
+        ["",0]
+      )[0];
+      // Turns `categoryTotals` into an array of [key, value] pairs, finds the one with the highest value (spending), and grabs the key (category name).
+      setTopCategory(mostSpentCategory);
+    }
+  }, [expenses])
 
   // this is where i'll add the logic for adding an expense
   const handleAddExpense = (e: React.FormEvent) => {
@@ -30,25 +67,10 @@ const Expenses: React.FC = () => {
         { date, category, amount  },
       ])
 
-      //update total and expense count
-      setExpenseCount((prevCount) => prevCount + 1);
-      const newTotal = expenses.reduce((sum, exp) => sum + exp.amount, 0) + amount;
-      setmonthlyTotal(`$${newTotal.toFixed(2)}`);
-      setTopCategory(category); //this is a simplied version just so we can calculate baased on the most spent
-      form.reset();
+  
 
   };
 
-
-  
-  // const form = useForm({
-  //   defaultValues: {
-  //     fullName: '',
-  //   },
-  //   onSubmit: async ({ value }) => {
-  //     console.log(value)
-  //   },
-  // })
 
   return (
    <>
@@ -100,14 +122,27 @@ const Expenses: React.FC = () => {
 
           {/* creating tabs here */}
           <nav className="tabs">
-            <button className="tab-button active" data-tab="expenses">Expenses</button>
-            <button className="tab-button" data-tab="graphs">Graphs</button>
-            <button className="tab-button" data-tab="Categories">Categories</button>
+            {/* <button className="tab-button active" data-tab="expenses">Expenses</button> */}
+            {/* Active Tab Switching */}
+            <button  className={`tab-button ${activeTab === "expenses" ? "active" :""}`} 
+            onClick={() => handleTabClick("expenses")}
+            >Expenses</button>
+
+            <button  className={`tab-button ${activeTab === "graphs" ? "active" :""}`}
+             onClick={() => handleTabClick("graphs")}
+            >Graphs</button>
+
+            <button  className={`tab-button ${activeTab === "Categories" ? "active" :""}`}
+            onClick={()  => handleTabClick("Categories")}
+            >Categories</button>
           </nav>
 
           <main>
+            {activeTab === "expenses" && (
+
+           
             <div id="expenses" className="tab-content active">
-              <form id= "expenseForm" className="expenseDate" action="POST">
+              <form id= "expenseForm" className="expenseDate" onSubmit={handleAddExpense}>
                 <div className="form-inputs">
                   <input type="date" id="expenseDate" name="date" required/>
                   <select name="expenseCategory" id="category" required>
@@ -151,8 +186,11 @@ const Expenses: React.FC = () => {
 
               </div>
             </div>
+           )}
 
             {/* graph section Here */}
+            {/* for each tab, you would need to wrap it in an activeTab code and the contents under it */}
+            {activeTab === "graphs" &&(       
             <div id="graphs" className="tab-content">
               <select id="graphType" className="graph-select">
                 <option value="bar">Bar Chart</option>
@@ -161,12 +199,18 @@ const Expenses: React.FC = () => {
               </select>
               <div id="graphContainer" className="graph-container"></div>
             </div>
-
-            <div id="categories" className="tab-content">
-              <div className="categories-list">
-                {/* this will be populated by jss hehe */}
+             )}  {/* end of activeTab wrap */}
+            
+            {/* Categories Tab Content */}
+            {activeTab === "Categories" && (
+              <div id="categories" className="tab-content">
+                <div className="categories-list">
+                  {/* Categories content will go here */}
+                  <p>Categories will be populated here!</p>
+                </div>
               </div>
-            </div>
+            )}
+           
           </main>
           <footer className="footer">
             {/* <a href="/landing" className="btn btn-secondary">
