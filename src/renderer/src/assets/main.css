@@ -123,4 +123,44 @@ ul {
   padding: 0;
 }
 
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--secondary-color);
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
 
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.settings-dropdown {
+  position: relative;
+  margin-left: 1rem;
+}
+
+.settings-button {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: var(--secondary-color);
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  background-color: var(--card-background);
+  min-width: 160px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
