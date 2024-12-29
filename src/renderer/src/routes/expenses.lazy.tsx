@@ -1,5 +1,5 @@
 import { useForm } from '@tanstack/react-form'
-import { createLazyFileRoute } from '@tanstack/react-router'
+import { createLazyFileRoute, Link } from '@tanstack/react-router'
 import '../assets/expenses.css'
 import React from "react";
 import { useState } from "react";
@@ -131,9 +131,11 @@ const Expenses: React.FC = () => {
             </div>
           </main>
           <footer className="footer">
-            <a href="/landing" className="btn btn-secondary">
+            {/* <a href="/landing" className="btn btn-secondary">
             Home
-            </a>
+            </a> */}
+            <Link to='/' className="btn btn-secondary" viewTransition={true} >Home</Link>
+            
           </footer>
         </div>
       </div>
