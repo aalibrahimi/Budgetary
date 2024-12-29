@@ -9,7 +9,7 @@ const Expenses: React.FC = () => {
   const [monthlyTotal, setmonthlyTotal] = useState("$0.00")         // How much is spent in the month, starts at $0 
   const [topCategory,  setTopCategory] = useState("-")              // tracks what category is spent the most
   const [expenseCount, setExpenseCount] = useState(0)               // This adds all the expenses together, Total, starts at 0
-  const [activeTab, setActiveTab] = useState("expenses")
+  const [activeTab, setActiveTab] = useState("expenses")            // defaults the page to expenses
   const [expenses, setExpenses] = useState<any[]>(() => {           // State to store the list of expenses. The initial value is loaded from `localStorage` if available.
     const savedExpenses = localStorage.getItem("expenses");         // This looks for the saved expenses in the local storage
     return savedExpenses ? JSON.parse(savedExpenses) : []; 
