@@ -6,6 +6,7 @@ import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/rea
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
 import TitleBar from './components/Titlebar'
+import { ClerkProvider } from '@clerk/clerk-react'
 
 // Need this in order for app to see routes during production mode
 // Read more: https://tanstack.com/router/latest/docs/framework/react/guide/history-types
@@ -23,9 +24,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+
+if (!PUBLISHABLE_KEY) {
+  throw new Error('Missing Publishable Key')
+}
+
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-      <TitleBar />
-      <RouterProvider router={router} />
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>    
+        <TitleBar />
+        <RouterProvider router={router} />
+      </ClerkProvider>
   </React.StrictMode>
 )
