@@ -9,11 +9,38 @@ const Expenses: React.FC = () => {
   const [monthlyTotal, setmonthlyTotal] = useState("$0.00")
   const [topCategory,  setTopCategory] = useState("-")
   const [expenseCount, setExpenseCount] = useState(0)
+  const [expenses, setExpenses] = useState<any[]>([]); /* This is where our expenses {rent,insurance,food, etc..} will be stored*/
 
-  // this is where ill add the logic for adding an expense
+  // this is where i'll add the logic for adding an expense
   const handleAddExpense = (e: React.FormEvent) => {
     e.preventDefault();
-  }
+    // html element for the expenses
+    const form = e.target as HTMLFormElement;
+    const date = form.expenseDate.value;
+    const category = form.expenseCategory.value;
+    const amount = parseFloat(form.expenseAmount.value);
+
+    if(!date || !category || isNaN(amount)) {
+      alert('Erm Sir please fill in all feilds correctly');
+      return;
+    }
+      // /function for adding new expense
+      setExpenses((prevExpenses) => [
+        ...prevExpenses,
+        { date, category, amount  },
+      ])
+
+      //update total and expense count
+      setExpenseCount((prevCount) => prevCount + 1);
+      const newTotal = expenses.reduce((sum, exp) => sum + exp.amount, 0) + amount;
+      setmonthlyTotal(`$${newTotal.toFixed(2)}`);
+      setTopCategory(category); //this is a simplied version just so we can calculate baased on the most spent
+      form.reset();
+
+  };
+
+
+  
   // const form = useForm({
   //   defaultValues: {
   //     fullName: '',
@@ -111,8 +138,17 @@ const Expenses: React.FC = () => {
               {/* Your Expense Listed out */}
               <div className="expense-list-container">
                 <ul id="expenseList">
-                  <p id="total" className="total-amount"></p>
+                  {expenses.map((expense, index) => (
+                    <li key= {index}>
+                      <span>{expense.date}</span> - <span>{expense.category}</span> -{""}
+                      <span>${expense.amount.toFixed(2)}</span>
+                    </li>
+                  ))}
                 </ul>
+                <p id="total" className="total-amount">
+                  Total: {monthlyTotal}
+                </p>
+
               </div>
             </div>
 
