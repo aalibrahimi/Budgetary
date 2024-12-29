@@ -138,6 +138,9 @@ const Expenses: React.FC = () => {
           </nav>
 
           <main>
+            {activeTab === "expenses" && (
+
+           
             <div id="expenses" className="tab-content active">
               <form id= "expenseForm" className="expenseDate" onSubmit={handleAddExpense}>
                 <div className="form-inputs">
@@ -183,8 +186,11 @@ const Expenses: React.FC = () => {
 
               </div>
             </div>
+           )}
 
             {/* graph section Here */}
+            {/* for each tab, you would need to wrap it in an activeTab code and the contents under it */}
+            {activeTab === "graphs" &&(       
             <div id="graphs" className="tab-content">
               <select id="graphType" className="graph-select">
                 <option value="bar">Bar Chart</option>
@@ -193,12 +199,18 @@ const Expenses: React.FC = () => {
               </select>
               <div id="graphContainer" className="graph-container"></div>
             </div>
-
-            <div id="categories" className="tab-content">
-              <div className="categories-list">
-                {/* this will be populated by jss hehe */}
+             )}  {/* end of activeTab wrap */}
+            
+            {/* Categories Tab Content */}
+            {activeTab === "Categories" && (
+              <div id="categories" className="tab-content">
+                <div className="categories-list">
+                  {/* Categories content will go here */}
+                  <p>Categories will be populated here!</p>
+                </div>
               </div>
-            </div>
+            )}
+           
           </main>
           <footer className="footer">
             {/* <a href="/landing" className="btn btn-secondary">
