@@ -9,12 +9,17 @@ const Expenses: React.FC = () => {
   const [monthlyTotal, setmonthlyTotal] = useState("$0.00")         // How much is spent in the month, starts at $0 
   const [topCategory,  setTopCategory] = useState("-")              // tracks what category is spent the most
   const [expenseCount, setExpenseCount] = useState(0)               // This adds all the expenses together, Total, starts at 0
+  const [activeTab, setActiveTab] = useState("expenses")
   const [expenses, setExpenses] = useState<any[]>(() => {           // State to store the list of expenses. The initial value is loaded from `localStorage` if available.
     const savedExpenses = localStorage.getItem("expenses");         // This looks for the saved expenses in the local storage
     return savedExpenses ? JSON.parse(savedExpenses) : []; 
     // If expenes exist in local we parse them (convert from string to Object)  
   }); 
 
+  // check to see if tab switching is active
+  const handleTabClick = (tab: string) => {
+    setActiveTab(tab);
+  }
 
   useEffect(() => {
     localStorage.setItem("expenses", JSON.stringify(expenses));   //save the current expenses to local whenever it changes
@@ -117,9 +122,19 @@ const Expenses: React.FC = () => {
 
           {/* creating tabs here */}
           <nav className="tabs">
-            <button className="tab-button active" data-tab="expenses">Expenses</button>
-            <button className="tab-button" data-tab="graphs">Graphs</button>
-            <button className="tab-button" data-tab="Categories">Categories</button>
+            {/* <button className="tab-button active" data-tab="expenses">Expenses</button> */}
+            {/* Active Tab Switching */}
+            <button  className={`tab-button ${activeTab === "expenses" ? "active" :""}`} 
+            onClick={() => handleTabClick("expenses")}
+            >Expenses</button>
+
+            <button  className={`tab-button ${activeTab === "graphs" ? "active" :""}`}
+             onClick={() => handleTabClick("graphs")}
+            >Graphs</button>
+
+            <button  className={`tab-button ${activeTab === "Categories" ? "active" :""}`}
+            onClick={()  => handleTabClick("Categories")}
+            >Categories</button>
           </nav>
 
           <main>
