@@ -18,7 +18,8 @@ const Index = () => {
 
   return (
     <div className={`app-container ${isDarkMode ? 'dark-mode' : ''}`}>
-      <header>
+      {/* I set this hidden - blaze */}
+      <header style={{ display: 'none' }}>
         <div className="logo">
           <i className="fas fa-chart-line"></i>
           <span>Expensy Tracker</span>
