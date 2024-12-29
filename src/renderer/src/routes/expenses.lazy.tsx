@@ -40,16 +40,6 @@ const Expenses: React.FC = () => {
   };
 
 
-  
-  // const form = useForm({
-  //   defaultValues: {
-  //     fullName: '',
-  //   },
-  //   onSubmit: async ({ value }) => {
-  //     console.log(value)
-  //   },
-  // })
-
   return (
    <>
    
@@ -107,7 +97,7 @@ const Expenses: React.FC = () => {
 
           <main>
             <div id="expenses" className="tab-content active">
-              <form id= "expenseForm" className="expenseDate" action="POST">
+              <form id= "expenseForm" className="expenseDate" onSubmit={handleAddExpense}>
                 <div className="form-inputs">
                   <input type="date" id="expenseDate" name="date" required/>
                   <select name="expenseCategory" id="category" required>
