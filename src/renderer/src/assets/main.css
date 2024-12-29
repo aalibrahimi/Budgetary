@@ -1,8 +1,23 @@
+:root {
+  --primary-color: #40E0D0;
+  --secondary-color: #2F4F4F;
+  --accent-color: #FF6B6B;
+  --background-color: #F0F8FF;
+  --text-color: #333333;
+  --card-background: #FFFFFF;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
   width: 100vw;
   height: 100vh;
   overflow-x: hidden;
-  overflow-y: hidden;
+  /* overflow-y: hidden; */
   margin: 0;
   background-color: rgb(10, 10, 10);
   color: white;
@@ -11,6 +26,7 @@ body {
     height: 100%;
     place-items: center;
   }
+  
 }
 
 .content-body {
