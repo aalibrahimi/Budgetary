@@ -201,9 +201,9 @@ ul {
 /* Dark Mode */
 .dark-mode {
   --background-color: #1e1e1e;
-  --text-color: #fcb6b6;
+  --text-color: #0d0d0d;
   --primary-color: #333333;
-  --secondary-color: #c73b3b;
+  --secondary-color: #f84747;
   --card-background: #333333;
   --h3: rgb(255, 0, 102);
 }
