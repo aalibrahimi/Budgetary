@@ -7,7 +7,6 @@ const profile = () => {
         </>
     )
 }
-
 export const Route = createLazyFileRoute('/profile')({
     component: profile
 })

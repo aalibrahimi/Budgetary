@@ -111,10 +111,7 @@
     color: white;
   }
   
-  /* Main Content */
-  main {
-    padding: 24px;
-  }
+
   
   .tab-content {
     display: none;
