@@ -270,7 +270,7 @@ ul {
   animation-delay: 2s;
 }
 .floating-icon:nth-child(3){
-  top: 30%; /* middle left corner for the second icon */
+  top: 30%; /* bottom right corner for the second icon */
   left: 45%;
   animation-delay: 4s;
 }

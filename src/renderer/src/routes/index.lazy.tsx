@@ -31,11 +31,11 @@ const Index = () => {
             </a>
           </div>
             <div className="hero-visual">
-            <div className="floating-icon"><i className="fas fa-coins"></i></div>
-            <div className="floating-icon"><i className="fas fa-chart-pie"></i></div>
-            <div className="floating-icon"><i className="fas fa-piggy-bank"></i></div>
+              <div className="floating-icon"><i className="fas fa-coins"></i></div>
+              <div className="floating-icon"><i className="fas fa-chart-pie"></i></div>
+              <div className="floating-icon"><i className="fas fa-piggy-bank"></i></div>
 
-        </div>
+             </div>
 
         </section>
         
