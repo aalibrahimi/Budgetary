@@ -11,54 +11,8 @@ const Index = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [user, setUser] = useState<User>({ isAuthenticated: false });
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.body.classList.toggle('dark-mode');
-  };
-
   return (
     <div className={`app-container ${isDarkMode ? 'dark-mode' : ''}`}>
-      {/* I set this hidden - blaze */}
-      <header style={{ display: 'none' }}>
-        <div className="logo">
-          <i className="fas fa-chart-line"></i>
-          <span>Expensy Tracker</span>
-        </div>
-
-        <nav>
-          <a href="#features" className="nav-link">Features</a>
-          <a href="#testimonials" className="nav-link">Testimonials</a>
-          <a href="#about" className="nav-link">About</a>
-          {user.isAuthenticated && (
-            <a href="/dashboard" className="nav-link">Dashboard</a>
-          )}
-        </nav>
-
-        <div className="auth-buttons">
-          {user.isAuthenticated ? (
-            <a href="/dashboard" className="btn btn-dashboard">
-              Dashboard
-            </a>
-          ) : (
-            <a href="/login" className="btn btn-login">
-              Login/Register
-            </a>
-          )}
-
-          <div className="settings-dropdown">
-            <button className="settings-button">⚙️</button>
-            <div className="dropdown-content">
-              <button onClick={toggleDarkMode}>Dark Mode</button>
-              <a href="/profile">Profile</a>
-              <a href="/account-settings">Account Settings</a>
-              {user.isAuthenticated && (
-                <a href="/logout">Logout</a>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
       <main>
         <section className="hero">
           <div className="hero-content">

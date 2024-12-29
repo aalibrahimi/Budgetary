@@ -1,47 +1,46 @@
 import { createRootRoute, Link, Outlet } from '@tanstack/react-router'
-import { useState } from 'react';
-// Types
-interface User {
-  isAuthenticated: boolean;
-}
-// Need to work on making this into Zustand for state management
-// If Zustand doesnt work, need to make it into component in order to use it here
-// const [user, setUser] = useState<User>({ isAuthenticated: false });
-
-
-const DarkMode = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  setIsDarkMode(!isDarkMode);
-  document.body.classList.toggle('dark-mode');
-}
+import { useState } from 'react'
 
 export const Route = createRootRoute({
-  component: () => (
-    <>
-      <div id='nav'>
-        <span className='logo'>Expensy Tracker</span>
-        <Link to="/" className='link'>Home</Link>
-        <Link to="/about" className='link'>About</Link>
-        <Link to="/expenses" className='link'>Expense</Link>
-        <div className='auth-buttons'>
-          <Link to="/login" className='link'>Login/Register</Link>
+  component: () => {
+    const [isDarkMode, setIsDarkMode] = useState(false);
 
-          <div className="settings-dropdown">
-            <button className="settings-button">⚙️</button>
-            <div className="dropdown-content">
-              <button onClick={() => DarkMode()}>Dark Mode</button>
-              <a href="">Profile</a>
-              <a href="">Account Settings</a>
-              {/* {user.isAuthenticated && (
-                <a href="">Logout</a>
-              )} */}
+    const toggleDarkMode = () => {
+      setIsDarkMode(!isDarkMode);
+      document.body.classList.toggle('dark-mode');
+    };
+
+    return (
+      <div className={isDarkMode ? 'dark-mode' : ''}>
+        <nav className="navbar">
+          <Link to="/" className="navbar-brand">
+            <i className="fas fa-chart-line"></i>
+            <span>Expensy Tracker</span>
+          </Link>
+          
+          <div className="navbar-links">
+            <Link to="/" className="nav-link">Home</Link>
+            <Link to="/about" className="nav-link">About</Link>
+            <Link to="/expenses" className="nav-link">Expense</Link>
+            <Link to="/login" className="auth-button">Login/Register</Link>
+            
+            <div className="settings-dropdown">
+              <button className="settings-button">⚙️</button>
+              <div className="dropdown-content">
+                <button onClick={toggleDarkMode}>
+                  {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+                </button>
+                <Link to="/profile">Profile</Link>
+                <Link to="/settings">Settings</Link>
+              </div>
             </div>
           </div>
+        </nav>
+
+        <div className="content-body">
+          <Outlet />
         </div>
       </div>
-      <div  className='content-body'>
-      <Outlet />
-      </div>
-    </>
-  ),
+    )
+  },
 })
