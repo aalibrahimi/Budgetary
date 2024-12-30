@@ -280,3 +280,14 @@ body{
     color: white;
   }
 
+  .tab-content {
+    display: none; /* Default: hidden */
+  }
+  
+  #graphs.tab-content {
+    display: block; /* Specific rule to display the "Graphs" tab */
+  }
+  
+  #categories.tab-content{
+    display: block;
+  }

@@ -205,6 +205,7 @@ const Expenses: React.FC = () => {
             {activeTab === "Categories" && (
               <div id="categories" className="tab-content">
                 <div className="categories-list">
+                  <h2>Henlo!</h2>
                   {/* Categories content will go here */}
                   <p>Categories will be populated here!</p>
                 </div>
