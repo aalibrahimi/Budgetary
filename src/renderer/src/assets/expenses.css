@@ -1,4 +1,5 @@
 /* Expenses CSS */
+@import './about.css';
 /* Base styles */
 
 
@@ -20,24 +21,7 @@
     font-weight: bold;
     color: #38B2AC;
   }
-  
-  .auth-links {
-    display: flex;
-    gap: 12px;
-  }
-  
-  .auth-links a {
-    color: #718096;
-    text-decoration: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    transition: all 0.2s;
-  }
-  
-  .auth-links a:hover {
-    background: #f7fafc;
-  }
-  
+    
   /* Stats Grid */
   .stats-grid {
     display: grid;
