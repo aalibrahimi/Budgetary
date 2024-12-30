@@ -38,7 +38,7 @@ export const Route = createRootRoute({
         document.getElementById('darky')?.classList.remove('dark-mode');
       }
     
-      // Update localStorage to reflect the new state
+      // Update localStorage to noww showw the new state
       localStorage.setItem('isDarkMode', JSON.stringify(newMode));
     };
     
