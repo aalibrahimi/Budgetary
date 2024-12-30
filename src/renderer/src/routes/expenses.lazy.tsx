@@ -2,6 +2,7 @@
 import { createLazyFileRoute, Link } from '@tanstack/react-router'
 import '../assets/expenses.css'
 import React, { useEffect } from 'react'
+import DatePicker from '@renderer/components/DatePicker';
 import { useState } from 'react'
 import Graphs from '@renderer/components/graphs'
 import { create } from 'zustand'
@@ -35,6 +36,7 @@ export const useExpenseStore = create<ExpenseState>()((set) => ({
 
 const Expenses = () => {
   const { monthlyTotal, topCategory, setMonthlyTotal, setTopCategory, expenseCount, setExpenseCount, activeTab, setActiveTab } = useExpenseStore()
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [expenses, setExpenses] = useState<any[]>(() => {
     try {
       const savedExpenses = localStorage.getItem('expenses');
@@ -44,6 +46,10 @@ const Expenses = () => {
       return []; // Return an empty array if parsing fails
     }
   });
+
+
+  // date form
+  
 
   // tab switching is active
   const handleTabClick = (tab: string) => {
@@ -80,19 +86,26 @@ const Expenses = () => {
   // this is where i'll add the logic for adding an expense
   const handleAddExpense = (e: React.FormEvent) => {
     e.preventDefault()
-    // html element for the expenses
-    const form = e.target as HTMLFormElement
-    const date = form.expenseDate.value
+    const form = e.target as HTMLFormElement;
+    
     const category = form.expenseCategory.value
     const amount = parseFloat(form.expenseAmount.value)
 
-    if (!date || !category || isNaN(amount)) {
-      alert('Erm Sir please fill in all feilds correctly')
+    if (!category || isNaN(amount) || !selectedDate) {
+      alert('Please fill in all fields correctly')
       return
     }
-    // /function for adding new expense
-    setExpenses((prevExpenses) => [...prevExpenses, { date, category, amount }])
-  }
+    
+    setExpenses((prevExpenses) => [...prevExpenses, { 
+      date: selectedDate.toISOString().split('T')[0],
+      category, 
+      amount 
+    }])
+    
+    // Reset form
+    form.reset();
+    setSelectedDate(null);
+}
 
   return (
     <>
@@ -167,39 +180,38 @@ const Expenses = () => {
 
           <main>
             {activeTab === 'expenses' && (
-              <div id="expenses" className="tab-content active">
-                <form id="expenseForm" className="expenseDate" onSubmit={handleAddExpense}>
-                  <div className="form-inputs">
-                    <input type="date" id="expenseDate" name="date" required />
-                    <select name="expenseCategory" id="category" required>
-                      <option value="" disabled>
-                        Select Category
-                      </option>
-                      <option value="" disabled selected>
-                        Select Category
-                      </option>
-                      <option value="Groceries">Groceries</option>
-                      <option value="Rent">Rent</option>
-                      <option value="Insurance">Insurance</option>
-                      <option value="Dining Out">Dining Out</option>
-                      <option value="Entertainment">Entertainment</option>
-                      <option value="Clothes">Clothes</option>
-                      <option value="Transportation">Transportation</option>
-                      <option value="Other">Other</option>
-                    </select>
-                    <input
-                      type="text"
-                      id="expenseAmount"
-                      name="amount"
-                      placeholder="Amount"
-                      step="0.1"
-                      required
-                    />
-                    <button type="submit" id="addExpenseButton" className="add-expense-btn">
-                      Add Expense
-                    </button>
-                  </div>
-                </form>
+            <div id="expenses" className="tab-content active">
+            <form id="expenseForm" className="expenseDate" onSubmit={handleAddExpense}>
+              <div className="form-inputs">
+                <DatePicker
+                  selectedDate={selectedDate}
+                  onDateChange={setSelectedDate}
+                  className="expense-input"
+                />
+                <select name="expenseCategory" id="category" required>
+                  <option value="" disabled selected>Select Category</option>
+                  <option value="Groceries">Groceries</option>
+                  <option value="Rent">Rent</option>
+                  <option value="Insurance">Insurance</option>
+                  <option value="Dining Out">Dining Out</option>
+                  <option value="Entertainment">Entertainment</option>
+                  <option value="Clothes">Clothes</option>
+                  <option value="Transportation">Transportation</option>
+                  <option value="Other">Other</option>
+                </select>
+                <input
+                  type="text"
+                  id="expenseAmount"
+                  name="amount"
+                  placeholder="Amount"
+                  step="0.1"
+                  required
+                />
+                <button type="submit" id="addExpenseButton" className="add-expense-btn">
+                  Add Expense
+                </button>
+              </div>
+            </form>
 
                 {/* month selection */}
                 <div id="monthSelector" className="month-selector">
