@@ -1,21 +1,8 @@
 /* Expenses CSS */
+@import './about.css';
 /* Base styles */
 
 
-body{
-  margin: 0;
-  padding: 0;
-  background-color: teal;
-}
-
-  .container {
-    max-width: 80%;
-    margin: 100px auto;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  }
-  
   /* Header styles */
   .header {
     padding: 24px;
@@ -34,24 +21,7 @@ body{
     font-weight: bold;
     color: #38B2AC;
   }
-  
-  .auth-links {
-    display: flex;
-    gap: 12px;
-  }
-  
-  .auth-links a {
-    color: #718096;
-    text-decoration: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    transition: all 0.2s;
-  }
-  
-  .auth-links a:hover {
-    background: #f7fafc;
-  }
-  
+    
   /* Stats Grid */
   .stats-grid {
     display: grid;
@@ -280,3 +250,14 @@ body{
     color: white;
   }
 
+  .tab-content {
+    display: none; /* Default: hidden */
+  }
+  
+  #graphs.tab-content {
+    display: block; /* Specific rule to display the "Graphs" tab */
+  }
+  
+  #categories.tab-content{
+    display: block;
+  }

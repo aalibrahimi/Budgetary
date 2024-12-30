@@ -1,8 +1,8 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import '../assets/index.css';
 import '@fortawesome/fontawesome-free/css/all.css';
-
+import { useDarkModeStore } from './__root';
 
 // Types
 interface User {
@@ -10,12 +10,28 @@ interface User {
 }
 
 const Index = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDarkMode, setIsDarkMode } = useDarkModeStore(); // Zustand store
   const [user, setUser] = useState<User>({ isAuthenticated: false });
 
+  // Sync state with localStorage and DOM on initial load
+  useEffect(() => {
+    const darkMode = localStorage.getItem('isDarkMode');
+    const darkModeBoolean = darkMode === 'true'; // Parse string to boolean
+    setIsDarkMode(darkModeBoolean); // Update Zustand store state
+
+    // Apply or remove dark mode class
+    const darkyElement = document.getElementById('darky');
+    if (darkModeBoolean) {
+      darkyElement?.classList.add('dark-mode');
+    } else {
+      darkyElement?.classList.remove('dark-mode');
+    }
+  }, [setIsDarkMode]);
+
+  console.log('Dark mode state:', isDarkMode);
   return (
     
-    <div className={`app-container ${isDarkMode ? 'dark-mode' : ''}`}>
+    <div className="app-container" id= "darky">
       <main>
         
         <section className="hero">
@@ -81,6 +97,10 @@ const Index = () => {
             />
           </div>
         </section>
+        {/* When writing a button like option 1, it only executes the function when button is clicked.
+        When writing a button like option 2, it constantly 'runs' the function. */}
+        {/* <button type="button" onClick={() => handleFunc()}>Test button</button> Option 1 */}
+        {/* <button type="button" onClick={handleFunc}>Test button</button> Option 2 */}
       </main>
 
       <footer>
