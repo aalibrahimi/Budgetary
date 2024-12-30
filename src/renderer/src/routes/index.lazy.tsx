@@ -81,6 +81,10 @@ const Index = () => {
             />
           </div>
         </section>
+        {/* When writing a button like option 1, it only executes the function when button is clicked.
+        When writing a button like option 2, it constantly 'runs' the function. */}
+        {/* <button type="button" onClick={() => handleFunc()}>Test button</button> Option 1 */}
+        {/* <button type="button" onClick={handleFunc}>Test button</button> Option 2 */}
       </main>
 
       <footer>
