@@ -6,7 +6,7 @@ const About = () => {
     <div className="container">
       <div className="hero">
           <h1 className="animated-text">
-                  Master Your Finances with Expensy
+                  Master Your Finances with Budgetary
           </h1>
       </div>
       

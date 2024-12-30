@@ -59,7 +59,7 @@ export const Route = createRootRoute({
         <nav className="navbar">
           <Link to="/" className="navbar-brand">
             <i className="fas fa-chart-line"></i>
-            <span>Expensy Tracker</span>
+            <span>Budgetery</span>
           </Link>
 
           <div className="navbar-links">
