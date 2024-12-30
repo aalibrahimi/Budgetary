@@ -170,8 +170,8 @@ const Expenses = () => {
               <div id="expenses" className="tab-content active">
                 <form id="expenseForm" className="expenseDate" onSubmit={handleAddExpense}>
                   <div className="form-inputs">
-                    <input type="date" id="expenseDate" name="date" required />
-                    <select name="expenseCategory" id="category" required>
+                    <input title='expenseDate' type="date" id="expenseDate" name="date" required />
+                    <select title='expenseCategory' name="expenseCategory" id="category" required>
                       <option value="" disabled>
                         Select Category
                       </option>
