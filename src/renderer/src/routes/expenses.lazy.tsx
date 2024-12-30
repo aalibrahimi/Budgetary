@@ -6,40 +6,49 @@ import { useState } from 'react'
 import Graphs from '@renderer/components/graphs'
 import { create } from 'zustand'
 
+// Zustand is a way for local storage code to be shared across different files, while reducing the need to re-render components meaning that it only renders when expected
+
 interface ExpenseState {
   monthlyTotal: string
   setMonthlyTotal: (monthlyTotal: string) => void
   resetMonthlyTotal: () => void
   topCategory: string
   setTopCategory: (topCategory: string) => void
+  expenseCount: number
+  setExpenseCount: (expenseCount: number) => void
+  activeTab: string
+  setActiveTab: (activeTab: string) => void
 }
 
 export const useExpenseStore = create<ExpenseState>()((set) => ({
-  monthlyTotal: '$0.00',
-  setMonthlyTotal: (monthlyTotal: string) => set({ monthlyTotal }),
+  monthlyTotal: '$0.00',                                                
+  setMonthlyTotal: (monthlyTotal: string) => set({ monthlyTotal }),   //  How much is spent in the month, starts at $0
   resetMonthlyTotal: () => set({ monthlyTotal: '$0.00' }),
   topCategory: '-',
-  setTopCategory: (topCategory: string) => set({ topCategory })
+  setTopCategory: (topCategory: string) => set({ topCategory }),       //  tracks what category is spent the most
+  expenseCount: 0,
+  setExpenseCount: (expenseCount: number) => set({ expenseCount }),    // This adds all the expenses together, Total, starts at 0
+  activeTab: 'expense',
+  setActiveTab: (activeTab: string) => set ({ activeTab })             // Enables Tab switching betweeen expenses, graphs, categories
+
 }))
 
 const Expenses = () => {
-  const { monthlyTotal, topCategory, setMonthlyTotal, setTopCategory } = useExpenseStore()
-
-  const [is_authenticated, setIsAuthenticated] = useState(true) // Track to see if the user is logged in (authenticated)
-  // const [monthlyTotal, setmonthlyTotal] = useState("$0.00")         // How much is spent in the month, starts at $0
-  // const [topCategory,  setTopCategory] = useState("-")              // tracks what category is spent the most
-  const [expenseCount, setExpenseCount] = useState(0) // This adds all the expenses together, Total, starts at 0
-  const [activeTab, setActiveTab] = useState('expenses') // defaults the page to expenses
+  const { monthlyTotal, topCategory, setMonthlyTotal, setTopCategory, expenseCount, setExpenseCount, activeTab, setActiveTab } = useExpenseStore()
   const [expenses, setExpenses] = useState<any[]>(() => {
-    // State to store the list of expenses. The initial value is loaded from `localStorage` if available.
-    const savedExpenses = localStorage.getItem('expenses') // This looks for the saved expenses in the local storage
-    return savedExpenses ? JSON.parse(savedExpenses) : []
-    // If expenes exist in local we parse them (convert from string to Object)
-  })
+    try {
+      const savedExpenses = localStorage.getItem('expenses');
+      return savedExpenses ? JSON.parse(savedExpenses) : [];
+    } catch (error) {
+      console.error('Failed to parse expenses from localStorage:', error);
+      return []; // Return an empty array if parsing fails
+    }
+  });
 
   // tab switching is active
   const handleTabClick = (tab: string) => {
     setActiveTab(tab)
+    console.log(expenses.length)
   }
 
   useEffect(() => {
