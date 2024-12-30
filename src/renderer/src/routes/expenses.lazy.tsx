@@ -3,6 +3,7 @@ import { createLazyFileRoute, Link } from '@tanstack/react-router'
 import '../assets/expenses.css'
 import React, { useEffect } from "react";
 import { useState } from "react";
+import Plotly from 'plotly.js-dist';
 
 const Expenses: React.FC = () => {
   const [is_authenticated,  setIsAuthenticated] = useState(true);   // Track to see if the user is logged in (authenticated)
@@ -16,10 +17,53 @@ const Expenses: React.FC = () => {
     // If expenes exist in local we parse them (convert from string to Object)  
   }); 
 
-  // check to see if tab switching is active
+  // activating tab switching is active
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
   }
+
+  const updateGraph = (graphType: string) => {
+    if (expenses.length === 0) {
+      Plotly.newPlot('graphContainer', [], {
+        title: 'No Expenses to Display',
+      });
+      return;
+    }
+    const categories = expenses.map((expense) => expense.category);
+    const amounts = expenses.map((expense) => expense.amount);
+
+    const data = 
+    graphType === 'pie'
+    ? [
+      {
+        values: amounts,
+        labels: categories,
+        type : 'pie',
+      },
+    ]
+    : [
+        {
+          x: categories,
+          y: amounts,
+          type: graphType, //"bar" or "line"
+        },
+    ];
+
+    Plotly.newPlot('graphContainer', data, {   // this Segment is where it displays the graph on the app
+      title: `<b>Spending Overview</b><br> <span style= "font-size: 16px;">Month: ${monthlyTotal}</span>`,
+      xaxis: { title: 'Categories'},
+      yaxis: {title: 'Amount ($)'},
+    });
+  };
+
+  // use effect for the graph, we will start with showing the default bar graph
+  useEffect(() => {
+    if (activeTab === 'graphs') {
+      updateGraph('bar'); //Default graph type
+    }
+  }, [activeTab]);
+
+
 
   useEffect(() => {
     localStorage.setItem("expenses", JSON.stringify(expenses));   //save the current expenses to local whenever it changes
@@ -190,16 +234,20 @@ const Expenses: React.FC = () => {
 
             {/* graph section Here */}
             {/* for each tab, you would need to wrap it in an activeTab code and the contents under it */}
-            {activeTab === "graphs" &&(       
-            <div id="graphs" className="tab-content">
-              <select id="graphType" className="graph-select">
-                <option value="bar">Bar Chart</option>
-                <option value="pie">Pie Chart</option>
-                <option value="line">Line Chart</option>
-              </select>
-              <div id="graphContainer" className="graph-container"></div>
-            </div>
-             )}  {/* end of activeTab wrap */}
+            {activeTab === 'graphs' && (
+              <div id="graphs" className="tab-content">
+                <h2>Spending Graphs</h2>
+                <select
+                  onChange={(e) => updateGraph(e.target.value)}
+                  className="graph-select"
+                >
+                  <option value="bar">Bar Chart</option>
+                  <option value="pie">Pie Chart</option>
+                  <option value="line">Line Chart</option>
+                </select>
+                <div id="graphContainer"></div>
+              </div>
+            )}
             
             {/* Categories Tab Content */}
             {activeTab === "Categories" && (
