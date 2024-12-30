@@ -1,15 +1,7 @@
 /* Expenses CSS */
 /* Base styles */
 
-  
-  .container {
-    max-width: 1000px;
-    margin: 0 auto;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  }
-  
+
   /* Header styles */
   .header {
     padding: 24px;
@@ -49,7 +41,7 @@
   /* Stats Grid */
   .stats-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(1, 1fr);
     gap: 16px;
     margin-bottom: 24px;
   }
@@ -272,4 +264,16 @@
   ::selection {
     background-color: #319795;
     color: white;
+  }
+
+  .tab-content {
+    display: none; /* Default: hidden */
+  }
+  
+  #graphs.tab-content {
+    display: block; /* Specific rule to display the "Graphs" tab */
+  }
+  
+  #categories.tab-content{
+    display: block;
   }
