@@ -188,7 +188,7 @@ const Expenses = () => {
                   onDateChange={setSelectedDate}
                   className="expense-input"
                 />
-                <select name="expenseCategory" id="category" required>
+                <select title='expenseCategory' name="expenseCategory" id="category" required>
                   <option value="" disabled selected>Select Category</option>
                   <option value="Groceries">Groceries</option>
                   <option value="Rent">Rent</option>

@@ -14,7 +14,7 @@
     top: 0px;
     /* transform: translate(-25vw, -17vh); */
     z-index: 9999;
-    user-select: none;
+    /* user-select: none;*/
     app-region: drag;
     -webkit-app-region: drag;
 }

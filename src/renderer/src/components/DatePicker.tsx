@@ -13,7 +13,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, onDateChange, cla
   };
 
   return (
-    <input
+    <input title='DatePickerInput'
       type="date"
       value={selectedDate ? selectedDate.toISOString().split('T')[0] : ''}
       onChange={handleDateChange}

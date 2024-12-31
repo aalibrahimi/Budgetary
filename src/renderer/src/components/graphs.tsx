@@ -55,7 +55,7 @@ const Graphs = () => {
       {/* for each tab, you would need to wrap it in an activeTab code and the contents under it */}
       <div id="graphs" className="tab-content">
         <h2>Spending Graphs</h2>
-        <select onChange={(e) => updateGraph(e.target.value)} className="graph-select">
+        <select title='graph-select' onChange={(e) => updateGraph(e.target.value)} className="graph-select">
           <option value="bar">Bar Chart</option>
           <option value="pie">Pie Chart</option>
           <option value="line">Line Chart</option>
