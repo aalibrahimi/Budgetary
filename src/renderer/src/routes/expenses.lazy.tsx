@@ -118,12 +118,10 @@ const Expenses = () => {
       </head> */}
 
       <div>
-        <div className="container">
-          
-         
-          <header className="header">
+
+      <header className="header">
             <div className="header-top">
-              <h1>Expense Tracker</h1>
+              <h1>Budgetary</h1>
               {/* logout feature right here */}
               <Link to="/" className="btn btn-secondary" viewTransition={true}>
                 Home
@@ -153,6 +151,11 @@ const Expenses = () => {
               </div>
             </div>
           </header>
+
+        <div className="container">
+          
+         
+   
         
 
           {/* creating tabs here */}
@@ -223,7 +226,7 @@ const Expenses = () => {
                 {/* month selection */}
                 <section className="surrounding-month">
                     <div id="monthSelector" className="month-selector">
-                      <label htmlFor="monthPicker">SelectMonth:</label>
+                      <label id=""htmlFor="monthPicker">SelectMonth:</label>
                       <input type="month" id="monthPicker" />
                     </div>
                 </section>
@@ -261,14 +264,11 @@ const Expenses = () => {
               </div>
             )}
           </main>
-          <footer className="footer">
-            {/* <a href="/landing" className="btn btn-secondary">
-            Home
-            </a> */}
-          </footer>
           </div>
         </div>
-      
+        <div className="copyright">
+          &copy; 2024 Expensy Tracker. All rights reserved.
+        </div>
     </>
   )
 }
