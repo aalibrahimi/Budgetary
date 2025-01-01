@@ -153,30 +153,34 @@ const Expenses = () => {
           </header>
 
           {/* creating tabs here */}
-          <nav className="tabs">
-            {/* <button className="tab-button active" data-tab="expenses">Expenses</button> */}
-            {/* Active Tab Switching */}
-            <button
-              className={`tab-button ${activeTab === 'expenses' ? 'active' : ''}`}
-              onClick={() => handleTabClick('expenses')}
-            >
-              Expenses
-            </button>
 
-            <button
-              className={`tab-button ${activeTab === 'graphs' ? 'active' : ''}`}
-              onClick={() => handleTabClick('graphs')}
-            >
-              Graphs
-            </button>
+          <section className="surrounding-tabs">
+              <nav className="tabs">
+                {/* <button className="tab-button active" data-tab="expenses">Expenses</button> */}
+                {/* Active Tab Switching */}
+                <button
+                  className={`tab-button ${activeTab === 'expenses' ? 'active' : ''}`}
+                  onClick={() => handleTabClick('expenses')}
+                >
+                  Expenses
+                </button>
 
-            <button
-              className={`tab-button ${activeTab === 'Categories' ? 'active' : ''}`}
-              onClick={() => handleTabClick('Categories')}
-            >
-              Categories
-            </button>
-          </nav>
+                <button
+                  className={`tab-button ${activeTab === 'graphs' ? 'active' : ''}`}
+                  onClick={() => handleTabClick('graphs')}
+                >
+                  Graphs
+                </button>
+
+                <button
+                  className={`tab-button ${activeTab === 'Categories' ? 'active' : ''}`}
+                  onClick={() => handleTabClick('Categories')}
+                >
+                  Categories
+                </button>
+              </nav>
+          </section>
+         
 
           <main>
             {activeTab === 'expenses' && (
@@ -214,10 +218,12 @@ const Expenses = () => {
             </form>
 
                 {/* month selection */}
-                <div id="monthSelector" className="month-selector">
-                  <label htmlFor="monthPicker">SelectMonth:</label>
-                  <input type="month" id="monthPicker" />
-                </div>
+                <section className="surrounding-month">
+                    <div id="monthSelector" className="month-selector">
+                      <label htmlFor="monthPicker">SelectMonth:</label>
+                      <input type="month" id="monthPicker" />
+                    </div>
+                </section>
 
                 {/* Your Expense Listed out */}
                 <div className="expense-list-container">

@@ -21,10 +21,18 @@
     font-weight: bold;
     color: #38B2AC;
   }
-    
+ 
+.form-inputs{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px
+  }
   /* Stats Grid */
   .stats-grid {
     display: grid;
+    justify-items: center;
+    align-items: center;
     grid-template-columns: repeat(1, 1fr);
     gap: 16px;
     margin-bottom: 24px;
@@ -32,8 +40,10 @@
   
   .stat-card {
     padding: 16px;
+    width: 1000px;
     border-radius: 8px;
     color: white;
+    border-radius: 50px;
   }
   
   .stat-card:nth-child(1) {
@@ -49,7 +59,7 @@
   }
   
   .stat-label {
-    font-size: 14px;
+    font-size: 16px;
     opacity: 0.8;
   }
   
@@ -59,11 +69,19 @@
     margin-top: 4px;
   }
   
+  .surrounding-tabs {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
   /* Navigation Tabs */
   .tabs {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+
+    gap: 20px;
+    width: 1000px;
+    border-radius: 50px;
     padding: 16px;
     background: #f7fafc;
     margin-bottom: 20px;
@@ -73,10 +91,12 @@
   .tab-button {
     padding: 12px;
     text-align: center;
-    background: white;
+    background: rgb(250, 205, 205);
     border: none;
-    border-radius: 6px;
+    border-radius: 50px;
     cursor: pointer;
+ 
+
     transition: all 0.2s;
   }
   
@@ -85,7 +105,7 @@
   }
   
   .tab-button.active {
-    background: #38B2AC;
+    background: #c63a72;
     color: white;
   }
   
@@ -99,23 +119,15 @@
     display: block;
   }
   
-  /* Expense Form */
-  .expense-form {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  
-  .expense-form input,
-  .expense-form select,
-  .graph-select {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    font-size: 14px;
-  }
+#category, #expenseAmount, #addExpenseButton {
+  border-radius: 50px;
+  padding: 10px;
+
+}
+
+#addExpenseButton {
+  margin-top: 0;
+}
   
   .add-expense-btn {
     background: #38B2AC;
@@ -131,17 +143,41 @@
   .add-expense-btn:hover {
     background: #319795;
   }
+
+
+  .expense-tab{
+    width: 2px;
+  }
+
+  .surrounding-month {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(88, 84, 84);
+    margin-top: 20px;
+  }
   
   /* Month Selector */
   .month-selector {
-    margin: 24px 0;
-    padding: 16px;
-    background: #f7fafc;
-    border-radius: 6px;
+    margin: 14px 0;
+    padding: 1px;
+    background: var(--primary-color);
+    width: 50%;
+    flex-direction: column;
     display: flex;
+    justify-content: center;
     align-items: center;
+    border-radius: 50px;
     gap: 12px;
     
+  }
+
+
+  #monthPicker {
+    margin-bottom: 10px;
+    background-color: #eae4e4;
+    border-radius: 50px;
+    padding: 4px 10px;
   }
   
   /* Expense List */
@@ -265,4 +301,5 @@
   
   #categories.tab-content{
     display: block;
+  
   }
