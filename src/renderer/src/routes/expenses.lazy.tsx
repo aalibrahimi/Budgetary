@@ -1,6 +1,7 @@
 // import { useForm } from '@tanstack/react-form'
 import { createLazyFileRoute, Link } from '@tanstack/react-router'
 import '../assets/expenses.css'
+import '../assets/statsCard.css'
 import React, { useEffect } from 'react'
 import DatePicker from '@renderer/components/DatePicker';
 import { useState } from 'react'
@@ -118,10 +119,10 @@ const Expenses = () => {
       </head> */}
 
       <div>
-        <div className="container">
-          <header className="header">
+
+      <header className="header">
             <div className="header-top">
-              <h1>Expense Tracker</h1>
+              <h1>Budgetary</h1>
               {/* logout feature right here */}
               <Link to="/" className="btn btn-secondary" viewTransition={true}>
                 Home
@@ -151,6 +152,12 @@ const Expenses = () => {
               </div>
             </div>
           </header>
+
+        <div className="container">
+          
+         
+   
+        
 
           {/* creating tabs here */}
 
@@ -220,28 +227,31 @@ const Expenses = () => {
                 {/* month selection */}
                 <section className="surrounding-month">
                     <div id="monthSelector" className="month-selector">
-                      <label htmlFor="monthPicker">SelectMonth:</label>
+                      <label id=""htmlFor="monthPicker">SelectMonth:</label>
                       <input type="month" id="monthPicker" />
                     </div>
                 </section>
 
                 {/* Your Expense Listed out */}
-                <div className="expense-list-container">
-                  <ul id="expenseList">
-                    {expenses.map((expense, index) => (
-                      <li key={index}>
-                        <span>{expense.date}</span> - <span>{expense.category}</span> -{''}
-                        <span>${expense.amount.toFixed(2)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p id="total" className="total-amount">
-                    Total: {monthlyTotal}
-                  </p>
-                </div>
-              </div>
-            )}
 
+                    <div className="surrouding-expense">
+                        <div className="expense-list-container">
+                          <ul id="expenseList">
+                            {expenses.map((expense, index) => (
+                              <li key={index}>
+                                <span>{expense.date}</span> - <span>{expense.category}</span> -{''}
+                                <span>${expense.amount.toFixed(2)}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          <p id="total" className="total-amount">
+                            Total: {monthlyTotal}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+            )}
+              
             {activeTab === 'graphs' && <Graphs />}
 
             {/* Categories Tab Content */}
@@ -255,13 +265,11 @@ const Expenses = () => {
               </div>
             )}
           </main>
-          <footer className="footer">
-            {/* <a href="/landing" className="btn btn-secondary">
-            Home
-            </a> */}
-          </footer>
+          </div>
         </div>
-      </div>
+        <div className="copyright">
+          &copy; 2024 Budgetary Tracker. All rights reserved.
+        </div>
     </>
   )
 }
