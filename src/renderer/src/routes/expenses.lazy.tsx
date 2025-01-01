@@ -226,22 +226,25 @@ const Expenses = () => {
                 </section>
 
                 {/* Your Expense Listed out */}
-                <div className="expense-list-container">
-                  <ul id="expenseList">
-                    {expenses.map((expense, index) => (
-                      <li key={index}>
-                        <span>{expense.date}</span> - <span>{expense.category}</span> -{''}
-                        <span>${expense.amount.toFixed(2)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p id="total" className="total-amount">
-                    Total: {monthlyTotal}
-                  </p>
-                </div>
-              </div>
-            )}
 
+                    <div className="surrouding-expense">
+                        <div className="expense-list-container">
+                          <ul id="expenseList">
+                            {expenses.map((expense, index) => (
+                              <li key={index}>
+                                <span>{expense.date}</span> - <span>{expense.category}</span> -{''}
+                                <span>${expense.amount.toFixed(2)}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          <p id="total" className="total-amount">
+                            Total: {monthlyTotal}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+            )}
+              
             {activeTab === 'graphs' && <Graphs />}
 
             {/* Categories Tab Content */}
