@@ -1,6 +1,7 @@
 // import { useForm } from '@tanstack/react-form'
 import { createLazyFileRoute, Link } from '@tanstack/react-router'
 import '../assets/expenses.css'
+import '../assets/statsCard.css'
 import React, { useEffect } from 'react'
 import DatePicker from '@renderer/components/DatePicker';
 import { useState } from 'react'
@@ -267,7 +268,7 @@ const Expenses = () => {
           </div>
         </div>
         <div className="copyright">
-          &copy; 2024 Expensy Tracker. All rights reserved.
+          &copy; 2024 Budgetary Tracker. All rights reserved.
         </div>
     </>
   )

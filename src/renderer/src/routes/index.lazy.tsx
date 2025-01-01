@@ -37,7 +37,7 @@ const Index = () => {
         <section className="hero">
           <div className="hero-content">
             <h1 className="animated-text">
-              Master Your Finances with Expensy
+              Master Your Finances with Budgetary
             </h1>
             <p className="subtitle">
               Join millions in taking control of their financial future
@@ -57,7 +57,7 @@ const Index = () => {
         
 
         <section id="features" className="features">
-          <h2>Explore Expensy Tracker Features</h2>
+          <h2>Explore Budgetary Tracker Features</h2>
           <div className="feature-grid">
             <FeatureCard
               icon="fa-wallet"
@@ -81,7 +81,7 @@ const Index = () => {
           <h2>What Our Users Say</h2>
           <div className="testimonial-carousel">
             <TestimonialCard
-              quote="Expensy Tracker changed my financial life. I've never been more in control of my spending!"
+              quote="Budgetary Tracker changed my financial life. I've never been more in control of my spending!"
               author="Sarah J."
               rating={5}
             />
@@ -128,7 +128,7 @@ const Index = () => {
           </div>
         </div>
         <div className="copyright">
-          &copy; 2024 Expensy Tracker. All rights reserved.
+          &copy; 2024 Budgetary Tracker. All rights reserved.
         </div>
       </footer>
     </div>
