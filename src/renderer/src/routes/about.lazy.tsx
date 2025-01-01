@@ -5,11 +5,11 @@ const About = () => {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'rgb(10, 10, 10)', color: 'rgb(250, 125, 125)' }}>
       {/* Floating Icons Background */}
-      <div className="hero-visual">
+      {/* <div className="hero-visual">
         <DollarSign className="floating-icon" />
         <Wallet className="floating-icon" />
         <CreditCard className="floating-icon" />
-      </div>
+      </div> */}
 
       {/* Hero Section */}
       <div className="relative overflow-hidden py-20 sm:py-32 lg:pb-32 xl:pb-36">
