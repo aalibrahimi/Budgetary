@@ -119,6 +119,8 @@ const Expenses = () => {
 
       <div>
         <div className="container">
+          
+         
           <header className="header">
             <div className="header-top">
               <h1>Expense Tracker</h1>
@@ -151,6 +153,7 @@ const Expenses = () => {
               </div>
             </div>
           </header>
+        
 
           {/* creating tabs here */}
 
@@ -263,8 +266,9 @@ const Expenses = () => {
             Home
             </a> */}
           </footer>
+          </div>
         </div>
-      </div>
+      
     </>
   )
 }
