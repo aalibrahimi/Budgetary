@@ -55,6 +55,7 @@ main {
   font-weight: 700;
   margin: 0;
   margin-left: 15px;
+  
 }
 
 .header .btn {
@@ -66,12 +67,22 @@ main {
   border-radius: var(--border-radius);
   text-decoration: none;
   transition: var(--transition);
+  background: linear-gradient(
+    135deg,
+    var(--card1-gradient-start),
+    var(--card3-gradient-end)
+  );
+  box-shadow: 
+    var(--card-shadow),
+    inset 0 0 20px rgba(255, 99, 99, 0.2);
+  border: 1px solid rgba(255, 99, 99, 0.3);
 }
 
 .header .btn:hover {
   background: rgba(255, 255, 255, 0.25);
   transform: translateY(-2px);
 }
+
 
 /* Navigation Tabs */
 .surrounding-tabs {
