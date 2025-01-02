@@ -7,6 +7,7 @@ import DatePicker from '@renderer/components/DatePicker';
 import { useState } from 'react'
 import Graphs from '@renderer/components/graphs'
 import { create } from 'zustand'
+import { useDarkModeStore } from './__root';
 
 // Zustand is a way for local storage code to be shared across different files, while reducing the need to re-render components meaning that it only renders when expected
 
@@ -36,6 +37,7 @@ export const useExpenseStore = create<ExpenseState>()((set) => ({
 }))
 
 const Expenses = () => {
+  const { isDarkMode } = useDarkModeStore();
   const { monthlyTotal, topCategory, setMonthlyTotal, setTopCategory, expenseCount, setExpenseCount, activeTab, setActiveTab } = useExpenseStore()
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [expenses, setExpenses] = useState<any[]>(() => {
@@ -63,7 +65,17 @@ const Expenses = () => {
   }, [expenses])
 
   useEffect(() => {
-    if (expenses.length > 0) {
+    // we are going to apply the darkm mode in this instance
+    const expensesContainer = document.getElementById('darky');
+
+    if (expenses.length > 0 || expensesContainer) {
+      if(isDarkMode) 
+      {
+        expensesContainer?.classList.add('dark-mode')
+      }
+      else {
+        expensesContainer?.classList.remove('dark-mode');
+      }
       //Checks if theres more than one expenses
       const total = expenses.reduce((sum, expense) => sum + expense.amount, 0) //`reduce` calculates the sum of all amounts in the `expenses` array.
       setMonthlyTotal(`$${total.toFixed(2)}`)
@@ -82,7 +94,7 @@ const Expenses = () => {
       // Turns `categoryTotals` into an array of [key, value] pairs, finds the one with the highest value (spending), and grabs the key (category name).
       setTopCategory(mostSpentCategory)
     }
-  }, [expenses])
+  }, [expenses, isDarkMode])
 
   // this is where i'll add the logic for adding an expense
   const handleAddExpense = (e: React.FormEvent) => {
@@ -118,7 +130,7 @@ const Expenses = () => {
       
       </head> */}
 
-      <div>
+      <div className = {`app-container ${isDarkMode ? 'dark-mode ' : ''}`} id='darky'>
 
       <header className="header">
             <div className="header-top">

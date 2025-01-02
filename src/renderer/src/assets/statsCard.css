@@ -1,5 +1,5 @@
 /* Stats Component Variables */
-:root {
+.dark-mode {
     --card1-gradient-start: rgba(0, 0, 0, 0.9);
     --card1-gradient-end: rgba(255, 69, 69, 0.7);
     --card2-gradient-end: rgba(190, 60, 60, 0.7);
@@ -7,6 +7,17 @@
     --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     --card-transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
   }
+
+  :root {
+    --background: #98c9c2;
+    --card-background: #ffffff;
+    --border-radius: 12px;
+    --transition: all 0.3s ease;
+    --tab-background: #e6e8ec;
+    --hover-background: #f8f9fa;
+    --border-color: #e0e0e0;
+  }
+  
   
   /* Stats Grid Container */
   .stats-grid {
@@ -103,8 +114,7 @@
     );
     box-shadow: 
       var(--card-shadow),
-      inset 0 0 20px rgba(134, 9, 9, 0.2);
-    border: 1px solid rgba(255, 69, 69, 0.3);
+
   }
   
   .stat-card:nth-child(2) {
@@ -118,6 +128,7 @@
       inset 0 0 20px rgba(255, 89, 89, 0.2);
     border: 1px solid rgba(255, 89, 89, 0.3);
   }
+  
   
   .stat-card:nth-child(3) {
     background: linear-gradient(
@@ -192,3 +203,7 @@
       width: 90%;
     }
   }
+
+
+
+  
