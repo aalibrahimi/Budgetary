@@ -298,6 +298,7 @@ main {
   border-radius: var(--border-radius); 
   padding: 24px; text-align: center;   
   background-color: #40afa4;
+  
 }
 
 #monthPicker {
@@ -306,11 +307,15 @@ main {
   padding: 12px 24px;
   border-radius: var(--border-radius);
   font-size: 16px;
+  
 }
 
-#select-month {
-  color: var(--gradient-end);
-  margin-right: 5px;
+/* #select-month {
+ 
+} */
+label {
+  margin-right: 10px;
+  color: var(--gradient-start);
 }
 
 /* Expense List */
@@ -364,6 +369,10 @@ main {
 /* Graphs Container */
 .graphs-container {
   width: 100%;
+ 
+}
+.graph-select {
+  background-color: var(--gradient-start);
 }
 
 /* Dark mode support */
