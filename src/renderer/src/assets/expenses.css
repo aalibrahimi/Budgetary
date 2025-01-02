@@ -1,16 +1,119 @@
 /* Base styles */
 :root {
-  --gradient-start: #2d2424;
-  --gradient-end: #ff6b6b;
-  --primary: #ff6b6b;
-  --text-primary: #2d2424;
+  --gradient-start: #203737;
+  --gradient-end: #40E0D0;
+  --primary: #40E0D0;
+  --text-primary: #2c242d;
   --text-secondary: #666;
   --background: #ffffff;
   --card-background: #ffffff;
   --border-radius: 12px;
   --transition: all 0.3s ease;
+  --tab-background: #e6e8ec;
+  --hover-background: #f8f9fa;
+  --border-color: #e0e0e0;
 }
 
+
+
+/* Dark mode variables */
+.dark-mode {
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --background: #1a1a1a;
+  --card-background: #2d2d2d;
+  --gradient-start: #1a1a1a;
+  --gradient-end: #ff4757;
+  --tab-background: #2d2d2d;
+  --hover-background: #333333;
+  --border-color: #404040;
+  --primary: #ff6b6b;
+}
+
+/* Container styles */
+.app-container {
+  background-color: var(--background);
+  color: var(--text-primary);
+  transition: var(--transition);
+  min-height: 100vh;
+}
+
+/* Form input dark mode styles */
+.dark-mode #category,
+.dark-mode #expenseAmount,
+.dark-mode .expense-input,
+.dark-mode #monthPicker {
+  background-color: var(--card-background);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+/* Container styles for dark mode */
+.dark-mode .expense-list-container {
+  background-color: var(--card-background);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode #expenseList li {
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.dark-mode #expenseList li:hover {
+  background-color: var(--hover-background);
+}
+
+.dark-mode .total-amount {
+  background-color: var(--card-background);
+  color: var(--primary);
+  border-top: 1px solid var(--border-color);
+}
+
+/* Dark mode for tabs */
+.dark-mode .tabs {
+  background: var(--tab-background);
+}
+
+.dark-mode .tab-button {
+  color: var(--text-secondary);
+}
+
+.dark-mode .tab-button:hover {
+  color: var(--primary);
+}
+
+.dark-mode .tab-button.active {
+  background: var(--primary);
+  color: white;
+}
+
+/* Dark mode for month selector */
+.dark-mode .surrounding-month {
+  background-color: var(--tab-background);
+}
+
+.dark-mode .month-selector {
+  background: var(--tab-background);
+}
+
+/* Rest of your existing styles remain the same */
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+  color: var(--text-primary);
+  background: var(--background);
+  line-height: 1.5;
+}
+
+/* Your other existing styles... */
+
+/* Ensure smooth transitions */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* applying dark and light mode testing above ^  */
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   margin: 0;
@@ -208,6 +311,7 @@ main {
 }
 
 #expenseList {
+ 
   list-style: none;
   margin: 0;
   padding: 0;
@@ -220,6 +324,7 @@ main {
   justify-content: space-between;
   align-items: center;
   transition: var(--transition);
+  border-bottom: 1px solid var(--text-secondary);
 }
 
 #expenseList li:hover {
