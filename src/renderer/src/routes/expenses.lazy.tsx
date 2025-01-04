@@ -1,11 +1,15 @@
 // import { useForm } from '@tanstack/react-form'
 import { createLazyFileRoute, Link } from '@tanstack/react-router'
 import '../assets/expenses.css'
+import '../assets/statsCard.css'
 import React, { useEffect } from 'react'
 import DatePicker from '@renderer/components/DatePicker';
 import { useState } from 'react'
 import Graphs from '@renderer/components/graphs'
 import { create } from 'zustand'
+import { useDarkModeStore } from './__root';
+import NotifyButton from '@renderer/components/notificationButton';
+
 
 // Zustand is a way for local storage code to be shared across different files, while reducing the need to re-render components meaning that it only renders when expected
 
@@ -19,6 +23,9 @@ interface ExpenseState {
   setExpenseCount: (expenseCount: number) => void
   activeTab: string
   setActiveTab: (activeTab: string) => void
+  notif: boolean
+  setNotif: (notif: boolean) => void
+  resetNotfif: () => void
 }
 
 export const useExpenseStore = create<ExpenseState>()((set) => ({
@@ -30,12 +37,15 @@ export const useExpenseStore = create<ExpenseState>()((set) => ({
   expenseCount: 0,
   setExpenseCount: (expenseCount: number) => set({ expenseCount }),    // This adds all the expenses together, Total, starts at 0
   activeTab: 'expense',
-  setActiveTab: (activeTab: string) => set ({ activeTab })             // Enables Tab switching betweeen expenses, graphs, categories
-
+  setActiveTab: (activeTab: string) => set ({ activeTab }),             // Enables Tab switching betweeen expenses, graphs, categories
+  notif: false,
+  setNotif: (notif: boolean) => set({ notif }),
+  resetNotfif: () => set({ notif: false })
 }))
 
 const Expenses = () => {
-  const { monthlyTotal, topCategory, setMonthlyTotal, setTopCategory, expenseCount, setExpenseCount, activeTab, setActiveTab } = useExpenseStore()
+  const { isDarkMode } = useDarkModeStore();
+  const { notif, setNotif, resetNotfif, monthlyTotal, topCategory, setMonthlyTotal, setTopCategory, expenseCount, setExpenseCount, activeTab, setActiveTab } = useExpenseStore()
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [expenses, setExpenses] = useState<any[]>(() => {
     try {
@@ -62,7 +72,17 @@ const Expenses = () => {
   }, [expenses])
 
   useEffect(() => {
-    if (expenses.length > 0) {
+    // we are going to apply the darkm mode in this instance
+    const expensesContainer = document.getElementById('darky');
+
+    if (expenses.length > 0 || expensesContainer) {
+      if(isDarkMode) 
+      {
+        expensesContainer?.classList.add('dark-mode')
+      }
+      else {
+        expensesContainer?.classList.remove('dark-mode');
+      }
       //Checks if theres more than one expenses
       const total = expenses.reduce((sum, expense) => sum + expense.amount, 0) //`reduce` calculates the sum of all amounts in the `expenses` array.
       setMonthlyTotal(`$${total.toFixed(2)}`)
@@ -81,7 +101,7 @@ const Expenses = () => {
       // Turns `categoryTotals` into an array of [key, value] pairs, finds the one with the highest value (spending), and grabs the key (category name).
       setTopCategory(mostSpentCategory)
     }
-  }, [expenses])
+  }, [expenses, isDarkMode])
 
   // this is where i'll add the logic for adding an expense
   const handleAddExpense = (e: React.FormEvent) => {
@@ -107,6 +127,10 @@ const Expenses = () => {
     setSelectedDate(null);
 }
 
+  const testNotif = () => {
+    setNotif(!notif);
+  }
+
   return (
     <>
       {/* <head>
@@ -117,15 +141,17 @@ const Expenses = () => {
       
       </head> */}
 
-      <div>
-        <div className="container">
-          <header className="header">
+      <div className = {`app-container ${isDarkMode ? 'dark-mode ' : ''}`} id='darky'>
+
+      <header className="header">
             <div className="header-top">
-              <h1>Expense Tracker</h1>
+              <h1>Budgetary</h1>
               {/* logout feature right here */}
               <Link to="/" className="btn btn-secondary" viewTransition={true}>
                 Home
               </Link>
+              <button type="button" onClick={() => testNotif()}>Test Pop</button>
+              {notif ? <NotifyButton /> : null}
             </div>
             {/* new section {Monthly spending} */}
             <div className="stats-grid">
@@ -152,31 +178,41 @@ const Expenses = () => {
             </div>
           </header>
 
+        <div className="container">
+          
+         
+   
+        
+
           {/* creating tabs here */}
-          <nav className="tabs">
-            {/* <button className="tab-button active" data-tab="expenses">Expenses</button> */}
-            {/* Active Tab Switching */}
-            <button
-              className={`tab-button ${activeTab === 'expenses' ? 'active' : ''}`}
-              onClick={() => handleTabClick('expenses')}
-            >
-              Expenses
-            </button>
 
-            <button
-              className={`tab-button ${activeTab === 'graphs' ? 'active' : ''}`}
-              onClick={() => handleTabClick('graphs')}
-            >
-              Graphs
-            </button>
+          <section className="surrounding-tabs">
+              <nav className="tabs">
+                {/* <button className="tab-button active" data-tab="expenses">Expenses</button> */}
+                {/* Active Tab Switching */}
+                <button
+                  className={`tab-button ${activeTab === 'expenses' ? 'active' : ''}`}
+                  onClick={() => handleTabClick('expenses')}
+                >
+                  Expenses
+                </button>
 
-            <button
-              className={`tab-button ${activeTab === 'Categories' ? 'active' : ''}`}
-              onClick={() => handleTabClick('Categories')}
-            >
-              Categories
-            </button>
-          </nav>
+                <button
+                  className={`tab-button ${activeTab === 'graphs' ? 'active' : ''}`}
+                  onClick={() => handleTabClick('graphs')}
+                >
+                  Graphs
+                </button>
+
+                <button
+                  className={`tab-button ${activeTab === 'Categories' ? 'active' : ''}`}
+                  onClick={() => handleTabClick('Categories')}
+                >
+                  Categories
+                </button>
+              </nav>
+          </section>
+         
 
           <main>
             {activeTab === 'expenses' && (
@@ -214,28 +250,33 @@ const Expenses = () => {
             </form>
 
                 {/* month selection */}
-                <div id="monthSelector" className="month-selector">
-                  <label htmlFor="monthPicker">SelectMonth:</label>
-                  <input type="month" id="monthPicker" />
-                </div>
+                <section className="surrounding-month">
+                    <div id="monthSelector" className="month-selector">
+                      <label id=""htmlFor="monthPicker">SelectMonth:</label>
+                      <input type="month" id="monthPicker" />
+                    </div>
+                </section>
 
                 {/* Your Expense Listed out */}
-                <div className="expense-list-container">
-                  <ul id="expenseList">
-                    {expenses.map((expense, index) => (
-                      <li key={index}>
-                        <span>{expense.date}</span> - <span>{expense.category}</span> -{''}
-                        <span>${expense.amount.toFixed(2)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p id="total" className="total-amount">
-                    Total: {monthlyTotal}
-                  </p>
-                </div>
-              </div>
-            )}
 
+                    <div className="surrouding-expense">
+                        <div className="expense-list-container">
+                          <ul id="expenseList">
+                            {expenses.map((expense, index) => (
+                              <li key={index}>
+                                <span>{expense.date}</span> - <span>{expense.category}</span> -{''}
+                                <span>${expense.amount.toFixed(2)}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          <p id="total" className="total-amount">
+                            Total: {monthlyTotal}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+            )}
+              
             {activeTab === 'graphs' && <Graphs />}
 
             {/* Categories Tab Content */}
@@ -249,13 +290,11 @@ const Expenses = () => {
               </div>
             )}
           </main>
-          <footer className="footer">
-            {/* <a href="/landing" className="btn btn-secondary">
-            Home
-            </a> */}
-          </footer>
+          </div>
         </div>
-      </div>
+        <div className="copyright">
+          &copy; 2024 Budgetary Tracker. All rights reserved.
+        </div>
     </>
   )
 }
