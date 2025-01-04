@@ -1,0 +1,11 @@
+#notif-trans {
+  transform: translateX(100vw);
+}
+
+#test-pop {
+  transition: transform 1s ease-in-out;
+}
+
+#test-pop ~ #notif-trans {
+  transform: translateX(0);
+}
