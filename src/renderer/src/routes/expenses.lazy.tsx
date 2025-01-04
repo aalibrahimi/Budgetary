@@ -150,7 +150,9 @@ const Expenses = () => {
               <Link to="/" className="btn btn-secondary" viewTransition={true}>
                 Home
               </Link>
-              <button type="button" onClick={() => testNotif()}>Test Pop</button>
+
+              <input type="checkbox" name="testpop" id="test-pop" onClick={() => testNotif()} />
+
               {notif ? <NotifyButton /> : null}
             </div>
             {/* new section {Monthly spending} */}
