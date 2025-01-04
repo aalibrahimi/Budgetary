@@ -8,6 +8,8 @@ import { useState } from 'react'
 import Graphs from '@renderer/components/graphs'
 import { create } from 'zustand'
 import { useDarkModeStore } from './__root';
+import NotifyButton from '@renderer/components/notificationButton';
+
 
 // Zustand is a way for local storage code to be shared across different files, while reducing the need to re-render components meaning that it only renders when expected
 
@@ -21,6 +23,9 @@ interface ExpenseState {
   setExpenseCount: (expenseCount: number) => void
   activeTab: string
   setActiveTab: (activeTab: string) => void
+  notif: boolean
+  setNotif: (notif: boolean) => void
+  resetNotfif: () => void
 }
 
 export const useExpenseStore = create<ExpenseState>()((set) => ({
@@ -32,13 +37,15 @@ export const useExpenseStore = create<ExpenseState>()((set) => ({
   expenseCount: 0,
   setExpenseCount: (expenseCount: number) => set({ expenseCount }),    // This adds all the expenses together, Total, starts at 0
   activeTab: 'expense',
-  setActiveTab: (activeTab: string) => set ({ activeTab })             // Enables Tab switching betweeen expenses, graphs, categories
-
+  setActiveTab: (activeTab: string) => set ({ activeTab }),             // Enables Tab switching betweeen expenses, graphs, categories
+  notif: false,
+  setNotif: (notif: boolean) => set({ notif }),
+  resetNotfif: () => set({ notif: false })
 }))
 
 const Expenses = () => {
   const { isDarkMode } = useDarkModeStore();
-  const { monthlyTotal, topCategory, setMonthlyTotal, setTopCategory, expenseCount, setExpenseCount, activeTab, setActiveTab } = useExpenseStore()
+  const { notif, setNotif, resetNotfif, monthlyTotal, topCategory, setMonthlyTotal, setTopCategory, expenseCount, setExpenseCount, activeTab, setActiveTab } = useExpenseStore()
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [expenses, setExpenses] = useState<any[]>(() => {
     try {
@@ -120,6 +127,10 @@ const Expenses = () => {
     setSelectedDate(null);
 }
 
+  const testNotif = () => {
+    setNotif(!notif);
+  }
+
   return (
     <>
       {/* <head>
@@ -139,6 +150,8 @@ const Expenses = () => {
               <Link to="/" className="btn btn-secondary" viewTransition={true}>
                 Home
               </Link>
+              <button type="button" onClick={() => testNotif()}>Test Pop</button>
+              {notif ? <NotifyButton /> : null}
             </div>
             {/* new section {Monthly spending} */}
             <div className="stats-grid">
