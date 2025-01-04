@@ -10,6 +10,7 @@ import { create } from 'zustand'
 import { useDarkModeStore } from './__root';
 import NotifyButton from '@renderer/components/notificationButton';
 
+
 // Zustand is a way for local storage code to be shared across different files, while reducing the need to re-render components meaning that it only renders when expected
 
 interface ExpenseState {
@@ -149,7 +150,9 @@ const Expenses = () => {
               <Link to="/" className="btn btn-secondary" viewTransition={true}>
                 Home
               </Link>
+
               <input type="checkbox" name="testpop" id="test-pop" onClick={() => testNotif()} />
+
               {notif ? <NotifyButton /> : null}
             </div>
             {/* new section {Monthly spending} */}
