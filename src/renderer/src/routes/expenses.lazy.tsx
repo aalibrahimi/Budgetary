@@ -128,6 +128,12 @@ const Expenses = () => {
 }
 
   const testNotif = () => {
+    document.getElementById('test-pop')!.click()
+    setNotif(!notif);
+  }
+
+  const testNotifDesk = async () => {
+    await window.api.notify();
     setNotif(!notif);
   }
 
@@ -150,10 +156,10 @@ const Expenses = () => {
               <Link to="/" className="btn btn-secondary" viewTransition={true}>
                 Home
               </Link>
-
-              <input type="checkbox" name="testpop" id="test-pop" onClick={() => testNotif()} />
-
-              {notif ? <NotifyButton /> : null}
+              <button type="button" onClick={() => testNotif()}>Test Notif</button>
+              <button type="button" onClick={() => testNotifDesk()}>Test Notif Desktop</button>
+              <input type="checkbox" name="testpop" id="test-pop" style={{ display: 'none' }} />
+              <NotifyButton />
             </div>
             {/* new section {Monthly spending} */}
             <div className="stats-grid">
