@@ -7,6 +7,7 @@ const api = {
   maximize: () => ipcRenderer.invoke('maximize-window'),
   restore: () => ipcRenderer.invoke('restore-window'),
   close: () => ipcRenderer.invoke('close-window'),
+  notify: () => ipcRenderer.invoke('notif'),
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

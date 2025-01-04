@@ -2,6 +2,8 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { Notification } from 'electron/main'
+import ali_icon from '../../resources/aliWolf.png?asset'
 
 function createWindow(): void {
   // Create the browser window.
@@ -50,9 +52,16 @@ function createWindow(): void {
   })
   ipcMain.handle('close-window', (_) => {
     mainWindow.close();
-  })
-
+  })  
 }
+
+const NOTIFY_TITLE = 'Hello from Electron'
+const NOTIFY_BODY = 'This is your notify'
+ipcMain.handle('notif', (_) => {
+  new Notification({ title: NOTIFY_TITLE, body: NOTIFY_BODY, icon: ali_icon }).show()
+})
+
+
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
