@@ -110,7 +110,7 @@ const About = () => {
           </div>
         </div>
         <div className="copyright">
-          &copy; 2024 Budgetary Tracker. All rights reserved.
+          &copy; 2025 Budgetary Tracker. All rights reserved.
         </div>
       </footer>
     </div>

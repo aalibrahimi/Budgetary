@@ -303,9 +303,11 @@ const Expenses = () => {
              
             )}
           </main>
+          </div>
         </div>
-      </div>
-      <div className="copyright">&copy; 2024 Budgetary Tracker. All rights reserved.</div>
+        <div className="copyright">
+          &copy; 2025 Budgetary Tracker. All rights reserved.
+        </div>
     </>
   )
 }

@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import appIcon from '../../resources/Budgetary_light.jpg?asset'
 // import { Notification } from 'electron/main'
 // import ali_icon from '../../resources/aliWolf.png?asset'
 
@@ -13,6 +14,7 @@ function createWindow(): void {
     show: false,
     autoHideMenuBar: true,
     frame: false,
+    icon: appIcon,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -21,6 +23,8 @@ function createWindow(): void {
       nodeIntegration: false
     }
   })
+
+  mainWindow.setIcon(appIcon)
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()

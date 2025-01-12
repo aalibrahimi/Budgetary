@@ -1,4 +1,4 @@
-import app_icon from '../../../../resources/icon.png'
+import app_icon from '../../../../resources/Budgetary_light.jpg'
 import minimize_icon from '../../../../resources/minimize_window_white.svg'
 import maximize_icon from '../../../../resources/maximize_window_white.svg'
 import restore_icon from '../../../../resources/restore_window_white.svg'
