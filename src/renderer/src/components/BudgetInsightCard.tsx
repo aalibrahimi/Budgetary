@@ -1,14 +1,11 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
+import { BudgetAllocations, Expense } from '../stores/expenseStore';
 
-interface Expense {
-  date: string;
-  category: string;
-  amount: number;
-}
+
 
 interface BudgetInsightCardProps {
-  budgetAllocation: { [key: string]: number };
+  budgetAllocation: BudgetAllocations;
   monthlyIncome: number;
   expenses: Expense[];
 }
