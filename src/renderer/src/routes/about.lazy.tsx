@@ -1,5 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
-import { Wallet, PieChart, Bell, TrendingUp, CreditCard, Sparkles, Target, DollarSign } from 'lucide-react';
+import { Wallet, PieChart, Bell, TrendingUp, Sparkles, Target } from 'lucide-react';
 
 const About = () => {
   return (

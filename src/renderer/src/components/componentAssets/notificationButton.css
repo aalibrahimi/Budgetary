@@ -1,0 +1,10 @@
+#notif-trans {
+  position: absolute;
+  transform: translateX(100vw);
+  z-index: 9999;
+  transition: transform 0.5s ease-in-out;
+}
+
+#test-pop:checked ~ #notif-trans {
+  transform: translateX(0);
+}
