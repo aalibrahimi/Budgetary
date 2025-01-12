@@ -9,58 +9,9 @@ import Graphs from '@renderer/components/graphs'
 import { create } from 'zustand'
 import { useDarkModeStore } from './__root'
 import NotifyButton from '@renderer/components/notificationButton'
+import BudgetPlanner from '../components/BudgetPlanner'
+import { useExpenseStore } from '../stores/expenseStore'
 
-// Zustand is a way for local storage code to be shared across different files, while reducing the need to re-render components meaning that it only renders when expected
-
-interface ExpenseState {
-  monthlyTotal: string
-  setMonthlyTotal: (monthlyTotal: string) => void
-  resetMonthlyTotal: () => void
-  topCategory: string
-  setTopCategory: (topCategory: string) => void
-  expenseCount: number
-  setExpenseCount: (expenseCount: number) => void
-  activeTab: string
-  setActiveTab: (activeTab: string) => void
-  notif: boolean
-  setNotif: (notif: boolean) => void
-  resetNotfif: () => void
-  // now im making a zustand of the budget planf
-  income: number
-  setIncome: (income: number) => void
-  savingsGoal: number
-  setSavingsGoal: (savingsGoal: number) => void
-  budgetAllocation: { [key: string]: number }
-  setBudgetAllocation: (budgetAllocation: { [key: string]: number }) => void
-  isPlanGenerated: boolean //  state to track plan submission
-  setIsPlanGenerated: (isPlanGenerated: boolean) => void
-}
-
-export const useExpenseStore = create<ExpenseState>()((set) => ({
-  monthlyTotal: '$0.00',
-  setMonthlyTotal: (monthlyTotal: string) => set({ monthlyTotal }), //  How much is spent in the month, starts at $0
-  resetMonthlyTotal: () => set({ monthlyTotal: '$0.00' }),
-  topCategory: '-',
-  setTopCategory: (topCategory: string) => set({ topCategory }), //  tracks what category is spent the most
-  expenseCount: 0,
-  setExpenseCount: (expenseCount: number) => set({ expenseCount }), // This adds all the expenses together, Total, starts at 0
-  activeTab: 'expense',
-  setActiveTab: (activeTab: string) => set({ activeTab }), // Enables Tab switching betweeen expenses, graphs, categories
-  notif: false,
-  setNotif: (notif: boolean) => set({ notif }),
-  resetNotfif: () => set({ notif: false }),
-  // budget
-  income: 0,
-  setIncome: (income: number) => set({ income }),
-  savingsGoal: 0,
-  setSavingsGoal: (savingsGoal: number) => set({ savingsGoal }),
-  budgetAllocation: {},
-  setBudgetAllocation: (budgetAllocation) => set({ budgetAllocation }),
-
-  // budgetAllocation
-  isPlanGenerated: false, //initalize to false
-  setIsPlanGenerated: (isPlanGenerated: boolean) => set({ isPlanGenerated })
-}))
 
 const Expenses = () => {
   const { isDarkMode } = useDarkModeStore()
@@ -345,126 +296,10 @@ const Expenses = () => {
             {/*  */}
             {activeTab === 'budgetPlan' && (
               <div id="budgetPlan" className="tab-content budget-plan">
-                <h2>Budget Plan</h2>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    const form = e.target as HTMLFormElement
-                    const income = parseFloat(form.income.value)
-                    const rent = parseFloat(form.rent.value)
-                    const savingsGoal = parseFloat(form.savingsGoal.value)
-
-                    if (
-                      isNaN(income) ||
-                      isNaN(rent) ||
-                      isNaN(savingsGoal) ||
-                      income <= 0 ||
-                      savingsGoal < 0 ||
-                      rent < 0
-                    ) {
-                      alert('Please enter valid numbers for income, rent, and savings goal.')
-                      return
-                    }
-
-                    if (savingsGoal + rent > income) {
-                      alert('Rent and savings goal cannot exceed your monthly income.')
-                      return
-                    }
-
-                    setIncome(income)
-
-                    const remaining = income - rent - savingsGoal
-
-                    // Calculate category totals from expenses
-                    const categoryTotals = expenses.reduce<{ [key: string]: number }>(
-                      (totals, expense) => {
-                        totals[expense.category] = (totals[expense.category] || 0) + expense.amount
-                        return totals
-                      },
-                      {}
-                    )
-
-                    const totalSpent = Object.values(categoryTotals).reduce<number>(
-                      (sum, value) => sum + value,
-                      0
-                    )
-
-                    const dynamicAllocations = Object.entries(categoryTotals).reduce(
-                      (allocations, [category, amount]) => {
-                        allocations[category] = (amount / totalSpent) * remaining
-                        return allocations
-                      },
-                      {}
-                    )
-
-                    const finalAllocations = {
-                      Rent: rent,
-                      Savings: savingsGoal,
-                      ...dynamicAllocations
-                    }
-
-                    setBudgetAllocation(finalAllocations)
-                    setIsPlanGenerated(true) // Set to true after generating the plan
-                  }}
-                >
-                  <div className="form-group">
-          <label htmlFor="income">Monthly Income:</label>
-          <input
-            type="number"
-            id="income"
-            name="income"
-            placeholder="Enter your monthly income"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="rent">Monthly Rent:</label>
-          <input
-            type="number"
-            id="rent"
-            name="rent"
-            placeholder="Enter your rent amount"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="savingsGoal">Savings Goal:</label>
-          <input
-            type="number"
-            id="savingsGoal"
-            name="savingsGoal"
-            placeholder="Enter your savings goal"
-            required
-          />
-        </div>
-        <button type="submit" className="generate-plan-btn">
-          Generate Plan
-        </button>
-      </form>
-      {isPlanGenerated && (
-        <div className="budget-summary">
-          <h3>Budget Allocation</h3>
-          <div className="allocation-grid">
-            <div className="allocation-card fixed">
-              <h4>Rent</h4>
-              <p>${budgetAllocation.Rent?.toFixed(2)}</p>
-            </div>
-            <div className="allocation-card fixed">
-              <h4>Savings</h4>
-              <p>${budgetAllocation.Savings?.toFixed(2)}</p>
-            </div>
-            {Object.entries(budgetAllocation)
-              .filter(([key]) => key !== 'Rent' && key !== 'Savings')
-              .map(([category, amount]) => (
-                <div key={category} className="allocation-card">
-                  <h4>{category}</h4>
-                  <p>${amount.toFixed(2)}</p>
-                </div>
-              ))}
-          </div>
-        </div>
-      )}
-    </div>
+                
+                <BudgetPlanner expenses ={expenses} />
+     
+             </div>
              
             )}
           </main>
