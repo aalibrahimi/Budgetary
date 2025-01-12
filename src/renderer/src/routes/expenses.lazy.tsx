@@ -3,63 +3,51 @@ import { createLazyFileRoute, Link } from '@tanstack/react-router'
 import '../assets/expenses.css'
 import '../assets/statsCard.css'
 import React, { useEffect } from 'react'
-import DatePicker from '@renderer/components/DatePicker';
+import DatePicker from '@renderer/components/DatePicker'
 import { useState } from 'react'
 import Graphs from '@renderer/components/graphs'
 import { create } from 'zustand'
-import { useDarkModeStore } from './__root';
-import NotifyButton from '@renderer/components/notificationButton';
+import { useDarkModeStore } from './__root'
+import NotifyButton from '@renderer/components/notificationButton'
+import BudgetPlanner from '../components/BudgetPlanner'
+import { useExpenseStore } from '../stores/expenseStore'
 
-
-// Zustand is a way for local storage code to be shared across different files, while reducing the need to re-render components meaning that it only renders when expected
-
-interface ExpenseState {
-  monthlyTotal: string
-  setMonthlyTotal: (monthlyTotal: string) => void
-  resetMonthlyTotal: () => void
-  topCategory: string
-  setTopCategory: (topCategory: string) => void
-  expenseCount: number
-  setExpenseCount: (expenseCount: number) => void
-  activeTab: string
-  setActiveTab: (activeTab: string) => void
-  notif: boolean
-  setNotif: (notif: boolean) => void
-  resetNotfif: () => void
-}
-
-export const useExpenseStore = create<ExpenseState>()((set) => ({
-  monthlyTotal: '$0.00',                                                
-  setMonthlyTotal: (monthlyTotal: string) => set({ monthlyTotal }),   //  How much is spent in the month, starts at $0
-  resetMonthlyTotal: () => set({ monthlyTotal: '$0.00' }),
-  topCategory: '-',
-  setTopCategory: (topCategory: string) => set({ topCategory }),       //  tracks what category is spent the most
-  expenseCount: 0,
-  setExpenseCount: (expenseCount: number) => set({ expenseCount }),    // This adds all the expenses together, Total, starts at 0
-  activeTab: 'expense',
-  setActiveTab: (activeTab: string) => set ({ activeTab }),             // Enables Tab switching betweeen expenses, graphs, categories
-  notif: false,
-  setNotif: (notif: boolean) => set({ notif }),
-  resetNotfif: () => set({ notif: false })
-}))
 
 const Expenses = () => {
-  const { isDarkMode } = useDarkModeStore();
-  const { notif, setNotif, resetNotfif, monthlyTotal, topCategory, setMonthlyTotal, setTopCategory, expenseCount, setExpenseCount, activeTab, setActiveTab } = useExpenseStore()
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const { isDarkMode } = useDarkModeStore()
+  const {
+    notif,
+    setNotif,
+    resetNotfif,
+    monthlyTotal,
+    topCategory,
+    setMonthlyTotal,
+    setTopCategory,
+    expenseCount,
+    setExpenseCount,
+    activeTab,
+    setActiveTab,
+    income,
+    setIncome,
+    savingsGoal,
+    setSavingsGoal,
+    isPlanGenerated,
+    setIsPlanGenerated,
+    budgetAllocation,
+    setBudgetAllocation
+  } = useExpenseStore()
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [expenses, setExpenses] = useState<any[]>(() => {
     try {
-      const savedExpenses = localStorage.getItem('expenses');
-      return savedExpenses ? JSON.parse(savedExpenses) : [];
+      const savedExpenses = localStorage.getItem('expenses')
+      return savedExpenses ? JSON.parse(savedExpenses) : []
     } catch (error) {
-      console.error('Failed to parse expenses from localStorage:', error);
-      return []; // Return an empty array if parsing fails
+      console.error('Failed to parse expenses from localStorage:', error)
+      return [] // Return an empty array if parsing fails
     }
-  });
-
+  })
 
   // date form
-  
 
   // tab switching is active
   const handleTabClick = (tab: string) => {
@@ -73,15 +61,13 @@ const Expenses = () => {
 
   useEffect(() => {
     // we are going to apply the darkm mode in this instance
-    const expensesContainer = document.getElementById('darky');
+    const expensesContainer = document.getElementById('darky')
 
     if (expenses.length > 0 || expensesContainer) {
-      if(isDarkMode) 
-      {
+      if (isDarkMode) {
         expensesContainer?.classList.add('dark-mode')
-      }
-      else {
-        expensesContainer?.classList.remove('dark-mode');
+      } else {
+        expensesContainer?.classList.remove('dark-mode')
       }
       //Checks if theres more than one expenses
       const total = expenses.reduce((sum, expense) => sum + expense.amount, 0) //`reduce` calculates the sum of all amounts in the `expenses` array.
@@ -106,8 +92,8 @@ const Expenses = () => {
   // this is where i'll add the logic for adding an expense
   const handleAddExpense = (e: React.FormEvent) => {
     e.preventDefault()
-    const form = e.target as HTMLFormElement;
-    
+    const form = e.target as HTMLFormElement
+
     const category = form.expenseCategory.value
     const amount = parseFloat(form.expenseAmount.value)
 
@@ -115,26 +101,29 @@ const Expenses = () => {
       alert('Please fill in all fields correctly')
       return
     }
-    
-    setExpenses((prevExpenses) => [...prevExpenses, { 
-      date: selectedDate.toISOString().split('T')[0],
-      category, 
-      amount 
-    }])
-    
+
+    setExpenses((prevExpenses) => [
+      ...prevExpenses,
+      {
+        date: selectedDate.toISOString().split('T')[0],
+        category,
+        amount
+      }
+    ])
+
     // Reset form
-    form.reset();
-    setSelectedDate(null);
-}
+    form.reset()
+    setSelectedDate(null)
+  }
 
   const testNotif = () => {
     document.getElementById('test-pop')!.click()
-    setNotif(!notif);
+    setNotif(!notif)
   }
 
   const testNotifDesk = async () => {
-    await window.api.notify();
-    setNotif(!notif);
+    await window.api.notify()
+    setNotif(!notif)
   }
 
   return (
@@ -147,144 +136,151 @@ const Expenses = () => {
       
       </head> */}
 
-      <div className = {`app-container ${isDarkMode ? 'dark-mode ' : ''}`} id='darky'>
-
-      <header className="header">
-            <div className="header-top">
-              <h1>Budgetary</h1>
-              {/* logout feature right here */}
-              <Link to="/" className="btn btn-secondary" viewTransition={true}>
-                Home
-              </Link>
-              <button type="button" onClick={() => testNotif()}>Test Notif</button>
-              <button type="button" onClick={() => testNotifDesk()}>Test Notif Desktop</button>
-              <input type="checkbox" name="testpop" id="test-pop" style={{ display: 'none' }} />
-              <NotifyButton />
-            </div>
-            {/* new section {Monthly spending} */}
-            <div className="stats-grid">
-              <div className="stats-card">
-                <div className="stat-label">Monthly Spend</div>
-                <div className="stat-value" id="monthlyTotal">
-                  {monthlyTotal}
-                </div>
-              </div>
-              {/* new section {Most Spent on} */}
-              <div className="stat-card">
-                <div className="stat-label">Most Spent On</div>
-                <div className="stat-value" id="topCategory">
-                  {topCategory}
-                </div>
-              </div>
-              {/* new section {Total Expenses} */}
-              <div className="stat-card">
-                <div className="stat-label">Total Expenses</div>
-                <div className="stat-value" id="expenseCount">
-                  {expenseCount}
-                </div>
+      <div className={`app-container ${isDarkMode ? 'dark-mode ' : ''}`} id="darky">
+        <header className="header">
+          <div className="header-top">
+            <h1>Budgetary</h1>
+            {/* logout feature right here */}
+            <Link to="/" className="btn btn-secondary" viewTransition={true}>
+              Home
+            </Link>
+            <button type="button" onClick={() => testNotif()}>
+              Test Notif
+            </button>
+            <button type="button" onClick={() => testNotifDesk()}>
+              Test Notif Desktop
+            </button>
+            <input type="checkbox" name="testpop" id="test-pop" style={{ display: 'none' }} />
+            <NotifyButton />
+          </div>
+          {/* new section {Monthly spending} */}
+          <div className="stats-grid">
+            <div className="stats-card">
+              <div className="stat-label">Monthly Spend</div>
+              <div className="stat-value" id="monthlyTotal">
+                {monthlyTotal}
               </div>
             </div>
-          </header>
+            {/* new section {Most Spent on} */}
+            <div className="stat-card">
+              <div className="stat-label">Most Spent On</div>
+              <div className="stat-value" id="topCategory">
+                {topCategory}
+              </div>
+            </div>
+            {/* new section {Total Expenses} */}
+            <div className="stat-card">
+              <div className="stat-label">Total Expenses</div>
+              <div className="stat-value" id="expenseCount">
+                {expenseCount}
+              </div>
+            </div>
+          </div>
+        </header>
 
         <div className="container">
-          
-         
-   
-        
-
           {/* creating tabs here */}
 
           <section className="surrounding-tabs">
-              <nav className="tabs">
-                {/* <button className="tab-button active" data-tab="expenses">Expenses</button> */}
-                {/* Active Tab Switching */}
-                <button
-                  className={`tab-button ${activeTab === 'expenses' ? 'active' : ''}`}
-                  onClick={() => handleTabClick('expenses')}
-                >
-                  Expenses
-                </button>
+            <nav className="tabs">
+              {/* <button className="tab-button active" data-tab="expenses">Expenses</button> */}
+              {/* Active Tab Switching */}
+              <button
+                className={`tab-button ${activeTab === 'expenses' ? 'active' : ''}`}
+                onClick={() => handleTabClick('expenses')}
+              >
+                Expenses
+              </button>
 
-                <button
-                  className={`tab-button ${activeTab === 'graphs' ? 'active' : ''}`}
-                  onClick={() => handleTabClick('graphs')}
-                >
-                  Graphs
-                </button>
+              <button
+                className={`tab-button ${activeTab === 'graphs' ? 'active' : ''}`}
+                onClick={() => handleTabClick('graphs')}
+              >
+                Graphs
+              </button>
 
-                <button
-                  className={`tab-button ${activeTab === 'Categories' ? 'active' : ''}`}
-                  onClick={() => handleTabClick('Categories')}
-                >
-                  Categories
-                </button>
-              </nav>
+              <button
+                className={`tab-button ${activeTab === 'Categories' ? 'active' : ''}`}
+                onClick={() => handleTabClick('Categories')}
+              >
+                Categories
+              </button>
+              <button
+                className={`tab-button ${activeTab === 'budgetPlan' ? 'active' : ''}`}
+                onClick={() => handleTabClick('budgetPlan')}
+              >
+                Budget Plan
+              </button>
+            </nav>
           </section>
-         
 
           <main>
             {activeTab === 'expenses' && (
-            <div id="expenses" className="tab-content active">
-            <form id="expenseForm" className="expenseDate" onSubmit={handleAddExpense}>
-              <div className="form-inputs">
-                <DatePicker
-                  selectedDate={selectedDate}
-                  onDateChange={setSelectedDate}
-                  className="expense-input"
-                />
-                <select name="expenseCategory" id="category" required>
-                  <option value="" disabled selected>Select Category</option>
-                  <option value="Groceries">Groceries</option>
-                  <option value="Rent">Rent</option>
-                  <option value="Insurance">Insurance</option>
-                  <option value="Dining Out">Dining Out</option>
-                  <option value="Entertainment">Entertainment</option>
-                  <option value="Clothes">Clothes</option>
-                  <option value="Transportation">Transportation</option>
-                  <option value="Other">Other</option>
-                </select>
-                <input
-                  type="text"
-                  id="expenseAmount"
-                  name="amount"
-                  placeholder="Amount"
-                  step="0.1"
-                  required
-                />
-                <button type="submit" id="addExpenseButton" className="add-expense-btn">
-                  Add Expense
-                </button>
-              </div>
-            </form>
+              <div id="expenses" className="tab-content active">
+                <form id="expenseForm" className="expenseDate" onSubmit={handleAddExpense}>
+                  <div className="form-inputs">
+                    <DatePicker
+                      selectedDate={selectedDate}
+                      onDateChange={setSelectedDate}
+                      className="expense-input"
+                    />
+                    <select name="expenseCategory" id="category" required>
+                      <option value="" disabled selected>
+                        Select Category
+                      </option>
+                      <option value="Groceries">Groceries</option>
+                      <option value="Rent">Rent</option>
+                      <option value="Insurance">Insurance</option>
+                      <option value="Dining Out">Dining Out</option>
+                      <option value="Entertainment">Entertainment</option>
+                      <option value="Clothes">Clothes</option>
+                      <option value="Transportation">Transportation</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    <input
+                      type="text"
+                      id="expenseAmount"
+                      name="amount"
+                      placeholder="Amount"
+                      step="0.1"
+                      required
+                    />
+                    <button type="submit" id="addExpenseButton" className="add-expense-btn">
+                      Add Expense
+                    </button>
+                  </div>
+                </form>
 
                 {/* month selection */}
                 <section className="surrounding-month">
-                    <div id="monthSelector" className="month-selector">
-                      <label id=""htmlFor="monthPicker">SelectMonth:</label>
-                      <input type="month" id="monthPicker" />
-                    </div>
+                  <div id="monthSelector" className="month-selector">
+                    <label id="" htmlFor="monthPicker">
+                      SelectMonth:
+                    </label>
+                    <input type="month" id="monthPicker" />
+                  </div>
                 </section>
 
                 {/* Your Expense Listed out */}
 
-                    <div className="surrouding-expense">
-                        <div className="expense-list-container">
-                          <ul id="expenseList">
-                            {expenses.map((expense, index) => (
-                              <li key={index}>
-                                <span>{expense.date}</span> - <span>{expense.category}</span> -{''}
-                                <span>${expense.amount.toFixed(2)}</span>
-                              </li>
-                            ))}
-                          </ul>
-                          <p id="total" className="total-amount">
-                            Total: {monthlyTotal}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                <div className="surrouding-expense">
+                  <div className="expense-list-container">
+                    <ul id="expenseList">
+                      {expenses.map((expense, index) => (
+                        <li key={index}>
+                          <span>{expense.date}</span> - <span>{expense.category}</span> -{''}
+                          <span>${expense.amount.toFixed(2)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p id="total" className="total-amount">
+                      Total: {monthlyTotal}
+                    </p>
+                  </div>
+                </div>
+              </div>
             )}
-              
+
             {activeTab === 'graphs' && <Graphs />}
 
             {/* Categories Tab Content */}
@@ -297,12 +293,19 @@ const Expenses = () => {
                 </div>
               </div>
             )}
+            {/*  */}
+            {activeTab === 'budgetPlan' && (
+              <div id="budgetPlan" className="tab-content budget-plan">
+                
+                <BudgetPlanner expenses ={expenses} />
+     
+             </div>
+             
+            )}
           </main>
-          </div>
         </div>
-        <div className="copyright">
-          &copy; 2024 Budgetary Tracker. All rights reserved.
-        </div>
+      </div>
+      <div className="copyright">&copy; 2024 Budgetary Tracker. All rights reserved.</div>
     </>
   )
 }

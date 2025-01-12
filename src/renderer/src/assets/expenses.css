@@ -422,3 +422,168 @@ label {
     gap: 20px;
   }
 }
+
+                                                               /***** budget ******/
+.tab-content.budget-plan {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  color: #333;
+}
+
+.budget-plan .form-group {
+  margin-bottom: 20px;
+}
+
+.budget-plan label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.budget-plan input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  color: #333;
+}
+
+.budget-plan input::placeholder {
+  color: #888;
+}
+
+.budget-plan input:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.generate-plan-btn {
+  width: 100%;
+  background-color: #007bff;
+  color: #fff;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.generate-plan-btn:hover {
+  background-color: #0056b3;
+}
+
+
+.budget-summary ul {
+  list-style: none;
+  padding: 0;
+}
+
+.budget-summary li {
+  margin: 5px 0;
+  font-size: 16px;
+}
+
+
+/*  */
+.budget-summary {
+  margin-top: 20px;
+}
+
+.budget-summary h3 {
+  font-size: 20px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.allocation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.allocation-card {
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.allocation-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.allocation-icon {
+  font-size: 30px;
+  color: #007bff;
+  margin-bottom: 10px;
+}
+
+.allocation-card h4 {
+  font-size: 16px;
+  margin-bottom: 5px;
+  color: #444;
+}
+
+.allocation-card p {
+  font-size: 14px;
+  color: #666;
+}
+
+.fixed h4 {
+  color: #007bff;
+}
+.budget-summary .fixed {
+  background-color: #eaf4ff;
+  border: 1px solid #007bff;
+}
+
+.allocation-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+
+
+/* ------- */
+.allocation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.allocation-card {
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.allocation-card.fixed {
+  background-color: #eaf4ff;
+  border-color: #007bff;
+}
+
+.allocation-card h4 {
+  font-size: 16px;
+  margin-bottom: 5px;
+  color: #444;
+}
+
+.allocation-card p {
+  font-size: 14px;
+  color: #666;
+}
