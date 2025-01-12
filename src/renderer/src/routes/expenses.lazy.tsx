@@ -6,7 +6,6 @@ import React, { useEffect } from 'react'
 import DatePicker from '@renderer/components/DatePicker'
 import { useState } from 'react'
 import Graphs from '@renderer/components/graphs'
-import { create } from 'zustand'
 import { useDarkModeStore } from './__root'
 import NotifyButton from '@renderer/components/notificationButton'
 import BudgetPlanner from '../components/BudgetPlanner'
@@ -18,7 +17,6 @@ const Expenses = () => {
   const {
     notif,
     setNotif,
-    resetNotfif,
     monthlyTotal,
     topCategory,
     setMonthlyTotal,
@@ -27,14 +25,6 @@ const Expenses = () => {
     setExpenseCount,
     activeTab,
     setActiveTab,
-    income,
-    setIncome,
-    savingsGoal,
-    setSavingsGoal,
-    isPlanGenerated,
-    setIsPlanGenerated,
-    budgetAllocation,
-    setBudgetAllocation
   } = useExpenseStore()
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [expenses, setExpenses] = useState<any[]>(() => {
