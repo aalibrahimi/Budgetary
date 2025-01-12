@@ -4,7 +4,7 @@
 // *Note: `env.d.ts` was auto generated here, but if having issues with THIS specific file, move it to project src folder
 
 interface ImportMetaEnv {
-    readonly VITE_CLERK_PUBLISHABLE_KEY
+    readonly VITE_CLERK_PUBLISHABLE_KEY: string
     // more env variables...
   }
   

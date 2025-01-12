@@ -1,14 +1,12 @@
 import React, { FormEvent, useEffect, useState } from 'react'
 import _ from 'lodash'
-import { Settings, X, AlertCircle, Calendar, TrendingUp, PiggyBank, FileText } from 'lucide-react'
+import { Settings, X, Calendar, PiggyBank } from 'lucide-react'
 import BudgetInsightCard from './BudgetInsightCard'
 import {
   useExpenseStore,
   type Expense,
   type PlannedExpense,
   type BudgetAllocations,
-  type SpendingGoal,
-  type CustomCategory,
   type SavingsGoal,
   type BillSchedule
 } from '../stores/expenseStore'
@@ -28,12 +26,12 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
     return saved ? JSON.parse(saved) : []
   })
 
-  const [newGoal, setNewGoal] = useState({
-    category: '',
-    targetAmount: 0,
-    alertThreshold: 80,
-    currentAmount: 0
-  })
+  // const [newGoal, setNewGoal] = useState({
+  //   category: '',
+  //   targetAmount: 0,
+  //   alertThreshold: 80,
+  //   currentAmount: 0
+  // })
 
   const [newSavingGoal, setNewSavingGoal] = useState({
     name: '',
@@ -62,8 +60,6 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
     setIncome,
     planningMode,
     setPlanningMode,
-    spendingGoals,
-    addSpendingGoal,
     savingsGoals,
     addSavingsGoal,
     billSchedules,
