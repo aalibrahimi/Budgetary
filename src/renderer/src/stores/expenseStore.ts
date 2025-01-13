@@ -123,7 +123,8 @@ interface ExpenseState {
   updateBillSchedule: (id: string, updates: Partial<BillSchedule>) => void;
 }
 
-export const useExpenseStore = create<ExpenseState>()((set, get) => ({
+// Old Code: export const useExpenseStore = create<ExpenseState>()((set, get) => ...)
+export const useExpenseStore = create<ExpenseState>()((set) => ({
   monthlyTotal: '$0.00',
   setMonthlyTotal: (monthlyTotal) => set({ monthlyTotal }),
   resetMonthlyTotal: () => set({ monthlyTotal: '$0.00' }),

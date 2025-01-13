@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import { BudgetAllocations, Expense } from '../stores/expenseStore';
 
 
