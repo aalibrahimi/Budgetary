@@ -1,69 +1,263 @@
-import Plotly from 'plotly.js-dist'
-import { useEffect, useState } from 'react'
-import '../assets/expenses.css'
+import React, { useState, useEffect } from 'react';
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-const Graphs = () => {
-  const [expenses, setExpenses] = useState<any[]>(() => {
-    // State to store the list of expenses. The initial value is loaded from `localStorage` if available.
-    const savedExpenses = localStorage.getItem('expenses') // This looks for the saved expenses in the local storage
-    return savedExpenses ? JSON.parse(savedExpenses) : []
-    // If expenes exist in local we parse them (convert from string to Object)
-  })
-  // use effect for the graph, we will start with showing the default bar graph
-  useEffect(() => {
-    updateGraph('bar') //Default graph type
-  }, [])
 
-  const updateGraph = (graphType: string) => {
-    if (expenses.length === 0) {
-      Plotly.newPlot('graphContainer', [], {
-        title: 'No Expenses to Display'
-      })
-      return
-    }
-    const categories = expenses.map((expense) => expense.category)
-    const amounts = expenses.map((expense) => expense.amount)
 
-    const data =
-      graphType === 'pie'
-        ? [
-            {
-              values: amounts,
-              labels: categories,
-              type: 'pie'
-            }
-          ]
-        : [
-            {
-              x: categories,
-              y: amounts,
-              type: graphType //"bar" or "line"
-            }
-          ]
-
-    Plotly.newPlot('graphContainer', data, {
-      // this Segment is where it displays the graph on the app
-      title: `<b>Spending Overview</b><br> <span style= "font-size: 16px;">Month: </span>`,
-      xaxis: { title: 'Categories' },
-      yaxis: { title: 'Amount ($)' }
-    })
-  }
-
-  return (
-    <>
-      {/* graph section Here */}
-      {/* for each tab, you would need to wrap it in an activeTab code and the contents under it */}
-      <div id="graphs" className="tab-content">
-        <h2>Spending Graphs</h2>
-        <select onChange={(e) => updateGraph(e.target.value)} className="graph-select">
-          <option value="bar">Bar Chart</option>
-          <option value="pie">Pie Chart</option>
-          <option value="line">Line Chart</option>
-        </select>
-        <div id="graphContainer"></div>
-      </div>
-    </>
-  )
+// Define interfaces for type safety
+interface Expense {
+  category: string;
+  amount: number;
 }
 
-export default Graphs
+interface CategoryTotal {
+  [key: string]: number;
+}
+
+interface TopCategory {
+  name: string;
+  amount: number;
+}
+
+
+const ExpenseGraphs = () => {
+  // Initialize expenses state from localStorage with proper typing
+  const [expenses, setExpenses] = useState<Expense[]>(() => {
+    const savedExpenses = localStorage.getItem('expenses');
+    return savedExpenses ? JSON.parse(savedExpenses) : [];
+  });
+  
+  const [graphType, setGraphType] = useState<'bar' | 'line' | 'pie'>('bar');
+  const [totalSpent, setTotalSpent] = useState(0);
+  const [topCategory, setTopCategory] = useState<TopCategory>({ name: '', amount: 0 });
+
+  // Theme colors
+  const lightThemeColors = ['#40E0D0', '#3CCCBD', '#38B8AB', '#34A499', '#309088'];
+  const darkThemeColors = ['#ff6b6b', '#ff5252', '#ff3838', '#ff1f1f', '#ff0505'];
+
+  useEffect(() => {
+    // Calculate total spent
+    const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+    setTotalSpent(total);
+
+    // Calculate category totals with proper typing
+    const categoryTotals = expenses.reduce<CategoryTotal>((acc, exp) => {
+      acc[exp.category] = (acc[exp.category] || 0) + exp.amount;
+      return acc;
+    }, {});
+
+    // Find top category
+    const topCategoryEntry = Object.entries(categoryTotals)
+      .reduce<[string, number]>((max, current) => {
+        return current[1] > max[1] ? current : max;
+      }, ['', 0]);
+
+    setTopCategory({
+      name: topCategoryEntry[0],
+      amount: topCategoryEntry[1]
+    });
+  }, [expenses]);
+
+  // Aggregate data for charts
+  const aggregatedData = expenses.reduce<Expense[]>((acc, expense) => {
+    const existingCategory = acc.find(item => item.category === expense.category);
+    if (existingCategory) {
+      existingCategory.amount += expense.amount;
+    } else {
+      acc.push({
+        category: expense.category,
+        amount: expense.amount
+      });
+    }
+    return acc;
+  }, []);
+
+  const renderGraph = () => {
+    switch (graphType) {
+      case 'bar':
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <BarChart data={aggregatedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+              <XAxis 
+                dataKey="category" 
+                tick={{ fill: 'var(--text-primary)' }}
+              />
+              <YAxis 
+                tick={{ fill: 'var(--text-primary)' }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'var(--card-background)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-primary)'
+                }}
+                formatter={(value) => [`$${value}`, 'Amount']}
+              />
+              <Bar 
+                dataKey="amount" 
+                fill="var(--primary)"
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        );
+      
+      case 'line':
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={aggregatedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+              <XAxis 
+                dataKey="category" 
+                tick={{ fill: 'var(--text-primary)' }}
+              />
+              <YAxis 
+                tick={{ fill: 'var(--text-primary)' }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'var(--card-background)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-primary)'
+                }}
+                formatter={(value) => [`$${value}`, 'Amount']}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="amount" 
+                stroke="var(--primary)"
+                strokeWidth={2} 
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        );
+      
+        case 'pie':
+          // Define color scheme that complements the dark/red theme
+          const pieColors = [
+            '#ff6b6b',  // Main red
+            '#845EC2',  // Purple
+            '#FF9671',  // Coral
+            '#FFC75F',  // Gold
+            '#F9F871',  // Yellow
+            '#00C9A7',  // Teal
+            '#C34A36',  // Dark red
+            '#4B4453'   // Dark gray
+          ];
+  
+          return (
+            <ResponsiveContainer width="100%" height={400}>
+              <PieChart>
+                <Pie
+                  data={aggregatedData}
+                  dataKey="amount"
+                  nameKey="category"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={150}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {aggregatedData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={pieColors[index % pieColors.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  formatter={(value) => `$${value}`}
+                  contentStyle={{ 
+                    backgroundColor: 'var(--card-background)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-primary)'
+                  }}
+                />
+                <Legend 
+                  formatter={(value) => (
+                    <span style={{ color: 'var(--text-primary)' }}>{value}</span>
+                  )}
+                  iconType="circle"
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          );
+    }
+  };
+
+  return (
+    <div className="p-6 space-y-6" style={{
+      background: `var(--gradient-end))`,
+      minHeight: '100vh'
+    }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Total Spent Card */}
+        <div style={{ backgroundColor: 'var(--card-background)' }} className="p-6 rounded-lg shadow-lg">
+          <div className="flex items-center justify-between">
+            <h3 style={{ color: 'var(--text-primary)' }} className="text-sm font-medium">
+              Total Spent
+            </h3>
+            <span style={{ color: 'var(--text-secondary)' }}>$</span>
+          </div>
+          <div className="mt-2">
+            <p style={{ color: 'var(--text-primary)' }} className="text-2xl font-bold">
+              ${totalSpent.toFixed(2)}
+            </p>
+            <p style={{ color: 'var(--text-secondary)' }} className="text-xs">
+              +20.1% from last month
+            </p>
+          </div>
+        </div>
+
+        {/* Top Category Card */}
+        <div style={{ backgroundColor: 'var(--card-background)' }} className="p-6 rounded-lg shadow-lg">
+          <div className="flex items-center justify-between">
+            <h3 style={{ color: 'var(--text-primary)' }} className="text-sm font-medium">
+              Top Category
+            </h3>
+          </div>
+          <div className="mt-2">
+            <p style={{ color: 'var(--text-primary)' }} className="text-2xl font-bold">
+              {topCategory.name}
+            </p>
+            <p style={{ color: 'var(--text-secondary)' }} className="text-xs">
+              ${topCategory.amount.toFixed(2)}
+            </p>
+          </div>
+        </div>
+      </div>
+
+
+      {/* Main Chart Section */}
+      <div style={{ backgroundColor: 'var(--card-background)' }} className="p-6 rounded-lg shadow-lg">
+        <div className="flex items-center justify-between mb-6">
+          <h2 style={{ color: 'var(--text-primary)' }} className="text-lg font-semibold">
+            Expense Analysis
+          </h2>
+          <select 
+            value={graphType}
+            onChange={(e) => setGraphType(e.target.value)}
+            style={{
+              backgroundColor: 'var(--card-background)',
+              color: 'var(--text-primary)',
+              borderColor: 'var(--border-color)'
+            }}
+            className="px-4 py-2 rounded-md focus:outline-none focus:ring-2"
+          >
+            <option value="bar">Bar Chart</option>
+            <option value="line">Line Chart</option>
+            <option value="pie">Pie Chart</option>
+          </select>
+        </div>
+        
+        {expenses.length === 0 ? (
+          <div style={{ color: 'var(--text-secondary)' }} className="flex h-96 items-center justify-center">
+            No expenses to display
+          </div>
+        ) : (
+          renderGraph()
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ExpenseGraphs;
