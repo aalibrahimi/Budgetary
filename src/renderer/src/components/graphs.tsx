@@ -1,38 +1,64 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
+
+
+// Define interfaces for type safety
+interface Expense {
+  category: string;
+  amount: number;
+}
+
+interface CategoryTotal {
+  [key: string]: number;
+}
+
+interface TopCategory {
+  name: string;
+  amount: number;
+}
+
+
 const ExpenseGraphs = () => {
-  const [expenses, setExpenses] = useState(() => {
+  // Initialize expenses state from localStorage with proper typing
+  const [expenses, setExpenses] = useState<Expense[]>(() => {
     const savedExpenses = localStorage.getItem('expenses');
     return savedExpenses ? JSON.parse(savedExpenses) : [];
   });
   
-  const [graphType, setGraphType] = useState('bar');
+  const [graphType, setGraphType] = useState<'bar' | 'line' | 'pie'>('bar');
   const [totalSpent, setTotalSpent] = useState(0);
-  const [topCategory, setTopCategory] = useState({ name: '', amount: 0 });
+  const [topCategory, setTopCategory] = useState<TopCategory>({ name: '', amount: 0 });
 
-  // Theme colors using CSS variables
+  // Theme colors
   const lightThemeColors = ['#40E0D0', '#3CCCBD', '#38B8AB', '#34A499', '#309088'];
   const darkThemeColors = ['#ff6b6b', '#ff5252', '#ff3838', '#ff1f1f', '#ff0505'];
 
   useEffect(() => {
+    // Calculate total spent
     const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
     setTotalSpent(total);
 
-    const categoryTotals = expenses.reduce((acc, exp) => {
+    // Calculate category totals with proper typing
+    const categoryTotals = expenses.reduce<CategoryTotal>((acc, exp) => {
       acc[exp.category] = (acc[exp.category] || 0) + exp.amount;
       return acc;
     }, {});
 
-    const topCat = Object.entries(categoryTotals).reduce((a, b) => 
-      b[1] > a[1] ? [b[0], b[1]] : a, 
-      ['', 0]
-    );
-    
-    setTopCategory({ name: topCat[0], amount: topCat[1] });
+    // Find top category
+    const topCategoryEntry = Object.entries(categoryTotals)
+      .reduce<[string, number]>((max, current) => {
+        return current[1] > max[1] ? current : max;
+      }, ['', 0]);
+
+    setTopCategory({
+      name: topCategoryEntry[0],
+      amount: topCategoryEntry[1]
+    });
   }, [expenses]);
 
-  const aggregatedData = expenses.reduce((acc, expense) => {
+  // Aggregate data for charts
+  const aggregatedData = expenses.reduce<Expense[]>((acc, expense) => {
     const existingCategory = acc.find(item => item.category === expense.category);
     if (existingCategory) {
       existingCategory.amount += expense.amount;
@@ -105,43 +131,55 @@ const ExpenseGraphs = () => {
           </ResponsiveContainer>
         );
       
-      case 'pie':
-        return (
-          <ResponsiveContainer width="100%" height={400}>
-            <PieChart>
-              <Pie
-                data={aggregatedData}
-                dataKey="amount"
-                nameKey="category"
-                cx="50%"
-                cy="50%"
-                outerRadius={150}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              >
-                {aggregatedData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={`var(--primary)`}
-                    opacity={1 - (index * 0.15)}
-                  />
-                ))}
-              </Pie>
-              <Tooltip 
-                formatter={(value) => `$${value}`}
-                contentStyle={{ 
-                  backgroundColor: 'var(--card-background)',
-                  border: '1px solid var(--border-color)',
-                  color: 'var(--text-primary)'
-                }}
-              />
-              <Legend 
-                formatter={(value) => (
-                  <span style={{ color: 'var(--text-primary)' }}>{value}</span>
-                )}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        );
+        case 'pie':
+          // Define color scheme that complements the dark/red theme
+          const pieColors = [
+            '#ff6b6b',  // Main red
+            '#845EC2',  // Purple
+            '#FF9671',  // Coral
+            '#FFC75F',  // Gold
+            '#F9F871',  // Yellow
+            '#00C9A7',  // Teal
+            '#C34A36',  // Dark red
+            '#4B4453'   // Dark gray
+          ];
+  
+          return (
+            <ResponsiveContainer width="100%" height={400}>
+              <PieChart>
+                <Pie
+                  data={aggregatedData}
+                  dataKey="amount"
+                  nameKey="category"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={150}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {aggregatedData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={pieColors[index % pieColors.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  formatter={(value) => `$${value}`}
+                  contentStyle={{ 
+                    backgroundColor: 'var(--card-background)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-primary)'
+                  }}
+                />
+                <Legend 
+                  formatter={(value) => (
+                    <span style={{ color: 'var(--text-primary)' }}>{value}</span>
+                  )}
+                  iconType="circle"
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          );
     }
   };
 
