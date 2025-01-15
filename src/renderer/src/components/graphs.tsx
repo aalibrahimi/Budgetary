@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { ArrowUpDown, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 
@@ -26,24 +27,59 @@ const ExpenseGraphs = () => {
     return savedExpenses ? JSON.parse(savedExpenses) : [];
   });
   
+  // filter features HERE
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [showCategorySelector, setShowCategorySelector] = useState(false);
+  const categories = useMemo(() => 
+    [...new Set(expenses.map(exp => exp.category))], 
+    [expenses]
+  );
+
+  // ADD THIS HERE - right after your state declarations
+const handleCategorySelect = (category: string) => {
+  setSelectedCategories(prev => 
+    prev.includes(category)
+      ? prev.filter(c => c !== category)
+      : [...prev, category]
+  );
+};
+
+  // Setting up the Graph type here, along with two category at the top for Total Spent and Top Category
   const [graphType, setGraphType] = useState<'bar' | 'line' | 'pie'>('bar');
   const [totalSpent, setTotalSpent] = useState(0);
   const [topCategory, setTopCategory] = useState<TopCategory>({ name: '', amount: 0 });
 
-  // Theme colors
-  const lightThemeColors = ['#40E0D0', '#3CCCBD', '#38B8AB', '#34A499', '#309088'];
-  const darkThemeColors = ['#ff6b6b', '#ff5252', '#ff3838', '#ff1f1f', '#ff0505'];
+// ADD THIS after your state declarations
+useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (showCategorySelector && !(event.target as Element).closest('.category-selector')) {
+      setShowCategorySelector(false);
+    }
+  };
 
+  document.addEventListener('mousedown', handleClickOutside);
+  return () => document.removeEventListener('mousedown', handleClickOutside);
+}, [showCategorySelector]);
+
+
+  // Updating useEffect to consider selected categories
   useEffect(() => {
-    // Calculate total spent
-    const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+
+
+
+    // Calculate total spent from filtered data
+    const total = expenses
+    .filter(exp => selectedCategories.length === 0 || selectedCategories.includes(exp.category))
+    .reduce((sum, exp) => sum + exp.amount, 0);
     setTotalSpent(total);
 
-    // Calculate category totals with proper typing
-    const categoryTotals = expenses.reduce<CategoryTotal>((acc, exp) => {
-      acc[exp.category] = (acc[exp.category] || 0) + exp.amount;
-      return acc;
-    }, {});
+   // Calculate category totals with filtering
+   const categoryTotals = expenses
+   .filter(exp => selectedCategories.length === 0 || selectedCategories.includes(exp.category))
+   .reduce<CategoryTotal>((acc, exp) => {
+    acc[exp.category] = (acc[exp.category] || 0) + exp.amount;
+    return acc;
+  }, {});
 
     // Find top category
     const topCategoryEntry = Object.entries(categoryTotals)
@@ -55,10 +91,17 @@ const ExpenseGraphs = () => {
       name: topCategoryEntry[0],
       amount: topCategoryEntry[1]
     });
-  }, [expenses]);
+  }, [expenses, selectedCategories]); // Add selectedCategories as dependency
 
   // Aggregate data for charts
-  const aggregatedData = expenses.reduce<Expense[]>((acc, expense) => {
+  const aggregatedData = useMemo(() => expenses.reduce<Expense[]>((acc, expense) => {
+
+    // applying category filter 
+    if (selectedCategories.length > 0 && !selectedCategories.includes(expense.category)) {
+      return acc;
+    }
+
+
     const existingCategory = acc.find(item => item.category === expense.category);
     if (existingCategory) {
       existingCategory.amount += expense.amount;
@@ -69,7 +112,7 @@ const ExpenseGraphs = () => {
       });
     }
     return acc;
-  }, []);
+  }, []), [expenses, selectedCategories]);
 
   const renderGraph = () => {
     switch (graphType) {
@@ -183,11 +226,78 @@ const ExpenseGraphs = () => {
     }
   };
 
+
+
   return (
     <div className="p-6 space-y-6" style={{
-      background: `var(--gradient-end))`,
+      background: 'var(--background)',
       minHeight: '100vh'
     }}>
+      {/* Filter Controls Section */}
+      <div className="flex flex-wrap gap-4 items-center justify-between">
+        <div className="relative">
+          <button
+            onClick={() => setShowCategorySelector(!showCategorySelector)}
+            className="flex items-center gap-2 px-4 py-2 rounded-md"
+            style={{
+              backgroundColor: 'var(--card-background)',
+              color: 'var(--text-primary)',
+              borderColor: 'var(--border-color)'
+            }}
+          >
+            <ArrowUpDown size={16} />
+            Filter Categories
+            {selectedCategories.length > 0 && (
+              <span className="ml-1 text-sm">({selectedCategories.length})</span>
+            )}
+            <ChevronDown size={16} />
+          </button>
+  
+          {showCategorySelector && (
+            <div
+              className="absolute top-full mt-2 p-2 rounded-md shadow-lg z-10 category-selector"
+              style={{
+                backgroundColor: 'var(--card-background)',
+                border: '1px solid var(--border-color)'
+              }}
+            >
+              {categories.map(category => (
+                <div
+                  key={category}
+                  className="flex items-center gap-2 p-2 hover:opacity-80 cursor-pointer"
+                  onClick={() => handleCategorySelect(category)}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.includes(category)}
+                    onChange={() => {}}
+                    className="rounded"
+                  />
+                  <span style={{ color: 'var(--text-primary)' }}>{category}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+  
+        {/* Graph Type Selector */}
+        <select 
+          value={graphType}
+          onChange={(e) => setGraphType(e.target.value as 'bar' | 'line' | 'pie')}
+          style={{
+            backgroundColor: 'var(--card-background)',
+            color: 'var(--text-primary)',
+            borderColor: 'var(--border-color)'
+          }}
+          className="px-4 py-2 rounded-md focus:outline-none focus:ring-2"
+        >
+          <option value="bar">Bar Chart</option>
+          <option value="line">Line Chart</option>
+          <option value="pie">Pie Chart</option>
+        </select>
+      </div>
+  
+      {/* Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Total Spent Card */}
         <div style={{ backgroundColor: 'var(--card-background)' }} className="p-6 rounded-lg shadow-lg">
@@ -206,7 +316,7 @@ const ExpenseGraphs = () => {
             </p>
           </div>
         </div>
-
+  
         {/* Top Category Card */}
         <div style={{ backgroundColor: 'var(--card-background)' }} className="p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
@@ -224,28 +334,13 @@ const ExpenseGraphs = () => {
           </div>
         </div>
       </div>
-
-
+  
       {/* Main Chart Section */}
       <div style={{ backgroundColor: 'var(--card-background)' }} className="p-6 rounded-lg shadow-lg">
         <div className="flex items-center justify-between mb-6">
           <h2 style={{ color: 'var(--text-primary)' }} className="text-lg font-semibold">
             Expense Analysis
           </h2>
-          <select 
-            value={graphType}
-            onChange={(e) => setGraphType(e.target.value)}
-            style={{
-              backgroundColor: 'var(--card-background)',
-              color: 'var(--text-primary)',
-              borderColor: 'var(--border-color)'
-            }}
-            className="px-4 py-2 rounded-md focus:outline-none focus:ring-2"
-          >
-            <option value="bar">Bar Chart</option>
-            <option value="line">Line Chart</option>
-            <option value="pie">Pie Chart</option>
-          </select>
         </div>
         
         {expenses.length === 0 ? (
@@ -258,6 +353,5 @@ const ExpenseGraphs = () => {
       </div>
     </div>
   );
-};
-
+}
 export default ExpenseGraphs;
