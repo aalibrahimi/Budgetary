@@ -4,227 +4,190 @@ import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Cart
 
 
 
-// Define interfaces for type safety
+// These are blueprints for the data we’re working with
 interface Expense {
-  category: string;
-  amount: number;
+  category: string; // Name of the category (for example: "Food", "Transport")
+  amount: number;   // How much was spent
 }
 
 interface CategoryTotal {
-  [key: string]: number;
+  [key: string]: number; // Tracks how much was spent in each category
 }
 
 interface TopCategory {
-  name: string;
-  amount: number;
+  name: string;  // Name of the category with the most spending
+  amount: number; // How much was spent in that category
 }
 
-
+// This is the main component for showing expense graphs
 const ExpenseGraphs = () => {
-  // Initialize expenses state from localStorage with proper typing
+  // Save and load expenses from the browser’s local storage (like a mini database)
   const [expenses, setExpenses] = useState<Expense[]>(() => {
     const savedExpenses = localStorage.getItem('expenses');
-    return savedExpenses ? JSON.parse(savedExpenses) : [];
+    return savedExpenses ? JSON.parse(savedExpenses) : []; // Load saved data or start fresh
   });
-  
-  // filter features HERE
+
+  // Keeps track of which categories the user picks to filter the data
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [showCategorySelector, setShowCategorySelector] = useState(false);
-  const categories = useMemo(() => 
-    [...new Set(expenses.map(exp => exp.category))], 
+  const [showCategorySelector, setShowCategorySelector] = useState(false); // Toggle for showing the category picker
+
+  // Get a list of unique categories from the expenses
+  const categories = useMemo(
+    () => [...new Set(expenses.map(exp => exp.category))],
     [expenses]
   );
 
-  // ADD THIS HERE - right after your state declarations
-const handleCategorySelect = (category: string) => {
-  setSelectedCategories(prev => 
-    prev.includes(category)
-      ? prev.filter(c => c !== category)
-      : [...prev, category]
-  );
-};
-
-  // Setting up the Graph type here, along with two category at the top for Total Spent and Top Category
-  const [graphType, setGraphType] = useState<'bar' | 'line' | 'pie'>('bar');
-  const [totalSpent, setTotalSpent] = useState(0);
-  const [topCategory, setTopCategory] = useState<TopCategory>({ name: '', amount: 0 });
-
-// ADD THIS after your state declarations
-useEffect(() => {
-  const handleClickOutside = (event: MouseEvent) => {
-    if (showCategorySelector && !(event.target as Element).closest('.category-selector')) {
-      setShowCategorySelector(false);
-    }
+  // Add or remove a category from the list of selected ones
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category) // If it's already selected, remove it
+        : [...prev, category]             // If not, add it
+    );
   };
 
-  document.addEventListener('mousedown', handleClickOutside);
-  return () => document.removeEventListener('mousedown', handleClickOutside);
-}, [showCategorySelector]);
+  // These control what kind of graph we’re showing and some summary info
+  const [graphType, setGraphType] = useState<'bar' | 'line' | 'pie'>('bar'); // Pick the type of graph
+  const [totalSpent, setTotalSpent] = useState(0); // Total amount of money spent
+  const [topCategory, setTopCategory] = useState<TopCategory>({ name: '', amount: 0 }); // The "winner" category for spending
 
-
-  // Updating useEffect to consider selected categories
+  // Automatically hide the category picker when clicking outside of it
   useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showCategorySelector && !(event.target as Element).closest('.category-selector')) {
+        setShowCategorySelector(false); // Close the picker
+      }
+    };
 
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showCategorySelector]);
 
-
-    // Calculate total spent from filtered data
+  // Update total spending and find the top spending category whenever the data changes
+  useEffect(() => {
+    // Add up all the spending (only include selected categories if any are picked)
     const total = expenses
-    .filter(exp => selectedCategories.length === 0 || selectedCategories.includes(exp.category))
-    .reduce((sum, exp) => sum + exp.amount, 0);
+      .filter(exp => selectedCategories.length === 0 || selectedCategories.includes(exp.category))
+      .reduce((sum, exp) => sum + exp.amount, 0);
     setTotalSpent(total);
 
-   // Calculate category totals with filtering
-   const categoryTotals = expenses
-   .filter(exp => selectedCategories.length === 0 || selectedCategories.includes(exp.category))
-   .reduce<CategoryTotal>((acc, exp) => {
-    acc[exp.category] = (acc[exp.category] || 0) + exp.amount;
-    return acc;
-  }, {});
+    // Group expenses by category and add up their totals
+    const categoryTotals = expenses
+      .filter(exp => selectedCategories.length === 0 || selectedCategories.includes(exp.category))
+      .reduce<CategoryTotal>((acc, exp) => {
+        acc[exp.category] = (acc[exp.category] || 0) + exp.amount;
+        return acc;
+      }, {});
 
-    // Find top category
-    const topCategoryEntry = Object.entries(categoryTotals)
-      .reduce<[string, number]>((max, current) => {
-        return current[1] > max[1] ? current : max;
-      }, ['', 0]);
+    // Find the category with the highest total
+    const topCategoryEntry = Object.entries(categoryTotals).reduce<[string, number]>(
+      (max, current) => (current[1] > max[1] ? current : max),
+      ['', 0]
+    );
+    setTopCategory({ name: topCategoryEntry[0], amount: topCategoryEntry[1] });
+  }, [expenses, selectedCategories]);
 
-    setTopCategory({
-      name: topCategoryEntry[0],
-      amount: topCategoryEntry[1]
-    });
-  }, [expenses, selectedCategories]); // Add selectedCategories as dependency
+  // Combine expenses of the same category into a single item for the graph
+  const aggregatedData = useMemo(() => {
+    return expenses.reduce<Expense[]>((acc, expense) => {
+      // Skip expenses not in the selected categories (if there are any filters)
+      if (selectedCategories.length > 0 && !selectedCategories.includes(expense.category)) {
+        return acc;
+      }
 
-  // Aggregate data for charts
-  const aggregatedData = useMemo(() => expenses.reduce<Expense[]>((acc, expense) => {
-
-    // applying category filter 
-    if (selectedCategories.length > 0 && !selectedCategories.includes(expense.category)) {
+      // Check if the category already exists in the result, and if so, add the amount
+      const existingCategory = acc.find(item => item.category === expense.category);
+      if (existingCategory) {
+        existingCategory.amount += expense.amount;
+      } else {
+        acc.push({ category: expense.category, amount: expense.amount });
+      }
       return acc;
-    }
+    }, []);
+  }, [expenses, selectedCategories]);
 
-
-    const existingCategory = acc.find(item => item.category === expense.category);
-    if (existingCategory) {
-      existingCategory.amount += expense.amount;
-    } else {
-      acc.push({
-        category: expense.category,
-        amount: expense.amount
-      });
-    }
-    return acc;
-  }, []), [expenses, selectedCategories]);
-
+  // Pick which type of graph to show based on the user's choice
   const renderGraph = () => {
     switch (graphType) {
       case 'bar':
+        // Show a bar chart
         return (
           <ResponsiveContainer width="100%" height={400}>
             <BarChart data={aggregatedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-              <XAxis 
-                dataKey="category" 
-                tick={{ fill: 'var(--text-primary)' }}
-              />
-              <YAxis 
-                tick={{ fill: 'var(--text-primary)' }}
-              />
-              <Tooltip 
-                contentStyle={{ 
+              <XAxis dataKey="category" tick={{ fill: 'var(--text-primary)' }} />
+              <YAxis tick={{ fill: 'var(--text-primary)' }} />
+              <Tooltip
+                contentStyle={{
                   backgroundColor: 'var(--card-background)',
                   border: '1px solid var(--border-color)',
-                  color: 'var(--text-primary)'
+                  color: 'var(--text-primary)',
                 }}
-                formatter={(value) => [`$${value}`, 'Amount']}
+                formatter={value => [`$${value}`, 'Amount']}
               />
-              <Bar 
-                dataKey="amount" 
-                fill="var(--primary)"
-              />
+              <Bar dataKey="amount" fill="var(--primary)" />
             </BarChart>
           </ResponsiveContainer>
         );
-      
+
       case 'line':
+        // Show a line chart
         return (
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={aggregatedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-              <XAxis 
-                dataKey="category" 
-                tick={{ fill: 'var(--text-primary)' }}
-              />
-              <YAxis 
-                tick={{ fill: 'var(--text-primary)' }}
-              />
-              <Tooltip 
-                contentStyle={{ 
+              <XAxis dataKey="category" tick={{ fill: 'var(--text-primary)' }} />
+              <YAxis tick={{ fill: 'var(--text-primary)' }} />
+              <Tooltip
+                contentStyle={{
                   backgroundColor: 'var(--card-background)',
                   border: '1px solid var(--border-color)',
-                  color: 'var(--text-primary)'
+                  color: 'var(--text-primary)',
                 }}
-                formatter={(value) => [`$${value}`, 'Amount']}
+                formatter={value => [`$${value}`, 'Amount']}
               />
-              <Line 
-                type="monotone" 
-                dataKey="amount" 
-                stroke="var(--primary)"
-                strokeWidth={2} 
-              />
+              <Line type="monotone" dataKey="amount" stroke="var(--primary)" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         );
-      
-        case 'pie':
-          // Define color scheme that complements the dark/red theme
-          const pieColors = [
-            '#ff6b6b',  // Main red
-            '#845EC2',  // Purple
-            '#FF9671',  // Coral
-            '#FFC75F',  // Gold
-            '#F9F871',  // Yellow
-            '#00C9A7',  // Teal
-            '#C34A36',  // Dark red
-            '#4B4453'   // Dark gray
-          ];
-  
-          return (
-            <ResponsiveContainer width="100%" height={400}>
-              <PieChart>
-                <Pie
-                  data={aggregatedData}
-                  dataKey="amount"
-                  nameKey="category"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={150}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  {aggregatedData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={pieColors[index % pieColors.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value) => `$${value}`}
-                  contentStyle={{ 
-                    backgroundColor: 'var(--card-background)',
-                    border: '1px solid var(--border-color)',
-                    color: 'var(--text-primary)'
-                  }}
-                />
-                <Legend 
-                  formatter={(value) => (
-                    <span style={{ color: 'var(--text-primary)' }}>{value}</span>
-                  )}
-                  iconType="circle"
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          );
+
+      case 'pie':
+        // Show a pie chart with some nice colors
+        const pieColors = ['#ff6b6b', '#845EC2', '#FF9671', '#FFC75F', '#F9F871', '#00C9A7', '#C34A36', '#4B4453'];
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <PieChart>
+              <Pie
+                data={aggregatedData}
+                dataKey="amount"
+                nameKey="category"
+                cx="50%"
+                cy="50%"
+                outerRadius={150}
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              >
+                {aggregatedData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                ))}
+              </Pie>
+              <Tooltip
+                formatter={value => `$${value}`}
+                contentStyle={{
+                  backgroundColor: 'var(--card-background)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-primary)',
+                }}
+              />
+              <Legend
+                formatter={value => <span style={{ color: 'var(--text-primary)' }}>{value}</span>}
+                iconType="circle"
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        );
     }
   };
+
 
 
 
