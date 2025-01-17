@@ -9,7 +9,6 @@ import Graphs from '@renderer/components/graphs'
 import { useDarkModeStore } from './__root'
 import BudgetPlanner from '../components/BudgetPlanner'
 import { useExpenseStore } from '../stores/expenseStore'
-import NotifyButton from '@renderer/components/notifications/notificationButton'
 
 
 const Expenses = () => {
@@ -104,15 +103,15 @@ const Expenses = () => {
     setSelectedDate(null)
   }
 
-  const testNotif = async () => {
-    document.getElementById('test-pop')!.click()
-    await new Promise((r) => setTimeout(r, 3000))
-    document.getElementById('test-pop')!.click()
-  }
+  // const testNotif = async () => {
+  //   document.getElementById('test-pop')!.click()
+  //   await new Promise((r) => setTimeout(r, 3000))
+  //   document.getElementById('test-pop')!.click()
+  // }
 
-  const testNotifDesk = async () => {
-    await window.api.notify()
-  }
+  // const testNotifDesk = async () => {
+  //   await window.api.notify()
+  // }
 
   return (
     <>
@@ -132,14 +131,14 @@ const Expenses = () => {
             <Link to="/" className="btn btn-secondary" viewTransition={true}>
               Home
             </Link>
-            <button type="button" onClick={() => testNotif()}>
+            {/* <button type="button" onClick={() => testNotif()}>
               Test Notif
             </button>
             <button type="button" onClick={() => testNotifDesk()}>
               Test Notif Desktop
             </button>
             <input type="checkbox" name="testpop" id="test-pop" style={{ display: 'none' }} />
-            <NotifyButton category='Notification Category' msg='test notif' />
+            <NotifyButton category='Notification Category' msg='test notif' /> */}
           </div>
           {/* new section {Monthly spending} */}
           <div className="stats-grid">
