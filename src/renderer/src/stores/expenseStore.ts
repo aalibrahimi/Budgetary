@@ -64,7 +64,7 @@ export interface SavingsGoal {
 export interface BillSchedule {
   id: string;
   category: string;
-  dueDate: number;
+  dueDate: Date;
   amount: number;
   isRecurring: boolean;
   frequency: 'monthly' | 'quarterly' | 'annual';
@@ -83,9 +83,6 @@ interface ExpenseState {
   setExpenseCount: (expenseCount: number) => void;
   activeTab: string;
   setActiveTab: (activeTab: string) => void;
-  notif: boolean;
-  setNotif: (notif: boolean) => void;
-  resetNotif: () => void;
   income: number;
   setIncome: (income: number) => void;
   savingsGoal: number;
@@ -134,9 +131,6 @@ export const useExpenseStore = create<ExpenseState>()((set) => ({
   setExpenseCount: (expenseCount) => set({ expenseCount }),
   activeTab: 'expense',
   setActiveTab: (activeTab) => set({ activeTab }),
-  notif: false,
-  setNotif: (notif) => set({ notif }),
-  resetNotif: () => set({ notif: false }),
   income: 0,
   setIncome: (income) => set({ income }),
   savingsGoal: 0,

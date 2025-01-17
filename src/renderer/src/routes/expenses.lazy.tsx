@@ -7,16 +7,14 @@ import DatePicker from '@renderer/components/DatePicker'
 import { useState } from 'react'
 import Graphs from '@renderer/components/graphs'
 import { useDarkModeStore } from './__root'
-import NotifyButton from '@renderer/components/notificationButton'
 import BudgetPlanner from '../components/BudgetPlanner'
 import { useExpenseStore } from '../stores/expenseStore'
+import NotifyButton from '@renderer/components/notifications/notificationButton'
 
 
 const Expenses = () => {
   const { isDarkMode } = useDarkModeStore()
   const {
-    notif,
-    setNotif,
     monthlyTotal,
     topCategory,
     setMonthlyTotal,
@@ -106,14 +104,14 @@ const Expenses = () => {
     setSelectedDate(null)
   }
 
-  const testNotif = () => {
+  const testNotif = async () => {
     document.getElementById('test-pop')!.click()
-    setNotif(!notif)
+    await new Promise((r) => setTimeout(r, 3000))
+    document.getElementById('test-pop')!.click()
   }
 
   const testNotifDesk = async () => {
     await window.api.notify()
-    setNotif(!notif)
   }
 
   return (
@@ -141,7 +139,7 @@ const Expenses = () => {
               Test Notif Desktop
             </button>
             <input type="checkbox" name="testpop" id="test-pop" style={{ display: 'none' }} />
-            <NotifyButton />
+            <NotifyButton category='Notification Category' msg='test notif' />
           </div>
           {/* new section {Monthly spending} */}
           <div className="stats-grid">
