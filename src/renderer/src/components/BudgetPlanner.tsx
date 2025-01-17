@@ -10,6 +10,7 @@ import {
   type SavingsGoal,
   type BillSchedule
 } from '../stores/expenseStore'
+import NotifyButton from './notifications/notificationButton'
 
 // Helper function to calculate months between dates
 const monthsBetween = (date1: Date, date2: Date) => {
@@ -42,13 +43,13 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
 
   const [newBill, setNewBill] = useState<{
     category: string
-    dueDate: number
+    dueDate: Date
     amount: number
     isRecurring: boolean
     frequency: 'monthly' | 'quarterly' | 'annual'
   }>({
     category: '',
-    dueDate: 1,
+    dueDate: new Date(),
     amount: 0,
     isRecurring: true,
     frequency: 'monthly'
@@ -93,6 +94,8 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
 
     upcoming.forEach((bill) => {
       console.info(`Upcoming bill: ${bill.category} due on ${bill.nextDueDate.toLocaleDateString()}`)
+      // <NotifyButton category='Upcoming Bill' msg={`Upcoming bill: ${bill.category} due on ${bill.nextDueDate.toLocaleDateString()}`} />
+      // document.getElementById('test-pop')!.click()
     })
   }, [billSchedules])
 
@@ -248,7 +251,7 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
     // Reset form
     setNewBill({
       category: '',
-      dueDate: 1,
+      dueDate: new Date(),
       amount: 0,
       isRecurring: true,
       frequency: 'monthly'
@@ -521,15 +524,15 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
               <div>
                 <label className="block text-sm font-medium mb-1">Due Date</label>
                 <input
-                  type="number"
+                  type="date"
                   min="1"
                   max="31"
                   className="w-full p-2 border rounded"
-                  value={newBill.dueDate} // This was wrong - was using category
+                  value={newBill.dueDate.toISOString().split('T')[0]} // This was wrong - was using category
                   onChange={(e) =>
                     setNewBill({
                       ...newBill,
-                      dueDate: Number(e.target.value) // This was wrong - was setting category
+                      dueDate: new Date(e.target.value) // This was wrong - was setting category
                     })
                   }
                   placeholder="Day of month (1-31)"

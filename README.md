@@ -1,34 +1,5 @@
-# budgetary
+# Budgetary
 
-An Electron application with React and TypeScript
+ Budgetary is an intuitive, open-source desktop application designed to help individuals and small businesses track their expenses and manage their budgets effortlessly. Built for simplicity and functionality.
 
-## Recommended IDE Setup
-
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
-
-## Project Setup
-
-### Install
-
-```bash
-$ npm install
-```
-
-### Development
-
-```bash
-$ npm run dev
-```
-
-### Build
-
-```bash
-# For windows
-$ npm run build:win
-
-# For macOS
-$ npm run build:mac
-
-# For Linux
-$ npm run build:linux
-```
+>*\*Budgetary is licensed under the terms of the GNU GPLv3 License*

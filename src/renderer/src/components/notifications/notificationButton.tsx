@@ -1,13 +1,18 @@
 
-import './componentAssets/notificationButton.css'
+import '../componentAssets/notificationButton.css'
 
-const NotifyButton = () => {
+interface Props {
+  category: string
+  msg: string
+}
+
+const NotifyButton = (props: Props) => {
   return (
     <button className="group relative" id="notif-trans">
       <div className="absolute -right-2 -top-2 z-10">
         <div className="flex h-5 w-5 items-center justify-center">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-          <span className="relative inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">3</span>
+          <span className="relative inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white"></span>
         </div>
       </div>
       <div className="relative overflow-hidden rounded-xl bg-gradient-to-bl from-gray-900 via-gray-950 to-black p-[1px] shadow-2xl shadow-emerald-500/20">
@@ -19,14 +24,14 @@ const NotifyButton = () => {
             <div className="absolute inset-0 rounded-lg bg-emerald-500/50 blur-sm transition-all duration-300 group-hover:blur-md" />
           </div>
           <div className="flex flex-col items-start">
-            <span className="text-sm font-semibold text-white">New Updates</span>
-            <span className="text-[10px] font-medium text-emerald-400/80">Check your notifications</span>
+            <span className="text-sm font-semibold text-white">{props.category}</span>
+            <span className="text-[10px] font-medium text-emerald-400/80">{props.msg}</span>
           </div>
-          <div className="ml-auto flex items-center gap-1">
+          {/* <div className="ml-auto flex items-center gap-1">
             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 transition-transform duration-300 group-hover:scale-150" />
             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500/50 transition-transform duration-300 group-hover:scale-150 group-hover:delay-100" />
             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500/30 transition-transform duration-300 group-hover:scale-150 group-hover:delay-200" />
-          </div>
+          </div> */}
         </div>
         <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-emerald-400 via-emerald-500 to-emerald-600 opacity-20 transition-opacity duration-300 group-hover:opacity-40" />
       </div>
