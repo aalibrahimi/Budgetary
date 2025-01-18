@@ -15,10 +15,12 @@
 - Click the 'search bar' on top *(e.g. The bar says `Desktop > Coding`)*
 ---
 Once you're in the terminal (CMD), follow these steps:
+
+**If you dont have bun installed, please do that before running `bun i`.*
 1. run in bash `git clone https://github.com/CodeWithAli-Co/Budgetary.git`
 2. `bun i`
 3. `bun run dev`
    
-**If you dont have bun installed, please do that before running `bun i`.*
+
 
 And that's it! Your app should be up and running. If you're having any trouble with getting the project on your device, please contact Ali or an Admin in the [Discord](https://discord.gg/GpxwDDvFVY) Server.
