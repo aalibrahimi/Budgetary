@@ -1,32 +1,65 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
-import { Wallet, PieChart, Bell, TrendingUp, Sparkles, Target } from 'lucide-react';
+import { Wallet, PieChart, Bell, TrendingUp, Sparkles, Target, Quote } from 'lucide-react';
 
 const About = () => {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'rgb(10, 10, 10)', color: 'rgb(250, 125, 125)' }}>
-      {/* Floating Icons Background */}
-      {/* <div className="hero-visual">
-        <DollarSign className="floating-icon" />
-        <Wallet className="floating-icon" />
-        <CreditCard className="floating-icon" />
-      </div> */}
-
       {/* Hero Section */}
       <div className="relative overflow-hidden py-20 sm:py-32 lg:pb-32 xl:pb-36">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="lg:grid lg:grid-cols-12 lg:gap-8">
-            <div className="lg:col-span-7">
-              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl xl:text-6xl" 
-                  style={{ color: '#40E0D0' }}>
-                Take Control of Your Money with{' '}
-                <span style={{ color: '#FF6B6B' }}>
-                  Budgetary
-                </span>
-              </h1>
-              <p className="mt-6 text-xl" style={{ color: '#F0F8FF' }}>
-                Your financial journey reimagined. Experience a new way of managing expenses 
-                with intelligent tracking, real-time alerts, and personalized insights.
-              </p>
+          {/* Title Section */}
+          <div className="text-center mb-16">
+            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl xl:text-6xl mb-6">
+              <span style={{ color: '#40E0D0' }}>Take Control of Your Money with </span>
+              <span style={{ color: '#FF6B6B' }}>Budgetary</span>
+            </h1>
+            <p className="text-xl mx-auto max-w-3xl" style={{ color: '#F0F8FF' }}>
+              Your financial journey reimagined. Experience a new way of managing expenses 
+              with intelligent tracking, real-time alerts, and personalized insights.
+            </p>
+          </div>
+
+          {/* Story Section */}
+          <div className="max-w-4xl mx-auto">
+            <div className="rounded-2xl p-8 shadow-xl" 
+                 style={{ backgroundColor: 'rgba(47, 79, 79, 0.1)', border: '1px solid rgba(64, 224, 208, 0.2)' }}>
+              <div className="flex items-start mb-6">
+                <Quote className="h-8 w-8 mr-4 flex-shrink-0 mt-1" style={{ color: '#40E0D0' }} />
+                <h2 className="text-2xl font-semibold" style={{ color: '#40E0D0' }}>
+                  Our Story
+                </h2>
+              </div>
+
+              <div className="space-y-6" style={{ color: '#F0F8FF' }}>
+                <p className="leading-relaxed">
+                  The idea for Budgetary came to me when I noticed how many of my friends and family 
+                  struggled to keep tabs on their finances. I wanted to create something user-friendly 
+                  and accessible that would not only help people understand their spending habits but 
+                  also empower them to make smarter financial decisions.
+                </p>
+
+                <p className="leading-relaxed">
+                  With Budgetary, I aim to bridge the gap between technology and financial literacy, 
+                  making budgeting an easy and stress-free experience for everyone. My goal is to turn 
+                  something that often feels overwhelming into a tool for growth and success.
+                </p>
+
+                <p className="leading-relaxed">
+                  Budgetary is an innovative financial management app that gives you complete control 
+                  of your financial future. It uses AI-powered insights, interactive and customizable 
+                  displays, smart reminders, and real-time personalized financial analysis to help you 
+                  master your finances.
+                </p>
+
+                <div className="pt-6 border-t" style={{ borderColor: 'rgba(64, 224, 208, 0.2)' }}>
+                  <p className="font-semibold" style={{ color: '#40E0D0' }}>
+                    Take control of your money with Budgetary - your financial journey, reimagined.
+                  </p>
+                  <p className="mt-2" style={{ color: '#F0F8FF' }}>
+                    — Ali Alibrahimi, Founder
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -88,7 +121,8 @@ const About = () => {
             <h2 className="text-2xl font-semibold mb-8" style={{ color: '#40E0D0' }}>
               Start Your Financial Journey Today
             </h2>
-            <button className="auth-button">
+            <button className="px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105"
+                    style={{ backgroundColor: '#FF6B6B', color: '#F0F8FF' }}>
               Get Started Now
             </button>
           </div>
@@ -108,9 +142,9 @@ const About = () => {
               View on GitHub
             </a>
           </div>
-        </div>
-        <div className="copyright">
-          &copy; 2025 Budgetary Tracker. All rights reserved.
+          <div className="text-center mt-4 text-gray-400">
+            &copy; 2025 Budgetary Tracker. All rights reserved.
+          </div>
         </div>
       </footer>
     </div>
