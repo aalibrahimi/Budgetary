@@ -23,4 +23,4 @@ Once you're in the terminal (CMD), follow these steps:
    
 
 
-And that's it! Your app should be up and running. If you're having any trouble with getting the project on your device, please contact Ali or an Admin in the [Discord](https://discord.gg/GpxwDDvFVY) Server.
+And that's it! Your app should be up and running. If you're having any trouble with getting the project on your device, please contact Ali or an Admin in the Discord Server.
