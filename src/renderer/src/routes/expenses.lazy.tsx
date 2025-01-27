@@ -274,7 +274,7 @@ const Expenses = () => {
             {activeTab === 'Categories' && (
               <div id="categories" className="tab-content">
                 <div className="categories-list">
-                  <h2>Henlo!</h2>
+                  <h2>Hello!</h2>
                   {/* Categories content will go here */}
                   <p>Categories will be populated here!</p>
                 </div>
@@ -284,7 +284,7 @@ const Expenses = () => {
             {activeTab === 'budgetPlan' && (
               <div id="budgetPlan" className="tab-content budget-plan">
                 
-                <BudgetPlanner expenses ={expenses} />
+                <BudgetPlanner expenses={expenses} />
      
              </div>
              

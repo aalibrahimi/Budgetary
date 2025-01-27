@@ -129,7 +129,7 @@ export const useExpenseStore = create<ExpenseState>()((set) => ({
   setTopCategory: (topCategory) => set({ topCategory }),
   expenseCount: 0,
   setExpenseCount: (expenseCount) => set({ expenseCount }),
-  activeTab: 'expense',
+  activeTab: 'expenses',
   setActiveTab: (activeTab) => set({ activeTab }),
   income: 0,
   setIncome: (income) => set({ income }),

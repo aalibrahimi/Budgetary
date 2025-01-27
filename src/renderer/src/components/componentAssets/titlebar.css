@@ -10,7 +10,7 @@
     background: black;
     width: 100vw;
     height: var(--titlebar-H);
-    position: sticky;
+    position: fixed;
     top: 0px;
     /* transform: translate(-25vw, -17vh); */
     z-index: 9999;
