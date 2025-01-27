@@ -24,8 +24,6 @@ function createWindow(): void {
     }
   })
 
-  mainWindow.setIcon(appIcon)
-
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
   })
