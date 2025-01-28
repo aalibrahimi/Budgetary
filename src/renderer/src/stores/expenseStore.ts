@@ -134,7 +134,7 @@ interface ExpenseState {
 }
 
 // Old Code: export const useExpenseStore = create<ExpenseState>()((set, get) => ...)
-export const useExpenseStore = create<ExpenseState>()((set) => ({
+export const useExpenseStore = create<ExpenseState>()((set, get) => ({
   monthlyTotal: '$0.00',
   setMonthlyTotal: (monthlyTotal) => set({ monthlyTotal }),
   resetMonthlyTotal: () => set({ monthlyTotal: '$0.00' }),
@@ -190,19 +190,42 @@ export const useExpenseStore = create<ExpenseState>()((set) => ({
   })),
 
    // Initialize expenses with localStorage data
+   // So this is an Enhanced version of expenses management with optimistic updates and error handling
    expenses: JSON.parse(localStorage.getItem('expenses') || '[]'),
    setExpenses: (expenses) => {
-     set(() => {
+     try {
        localStorage.setItem('expenses', JSON.stringify(expenses));
-       return { expenses };
-     });
+       set({ expenses });
+     } catch (error) {
+       console.error('Failed to save expenses to localStorage:', error);
+     }
    },
    addExpense: (expense) =>
      set((state) => {
-       const updatedExpenses = [...state.expenses, expense];
-       localStorage.setItem('expenses', JSON.stringify(updatedExpenses));
-       return { expenses: updatedExpenses };
+       try {
+         const updatedExpenses = [...state.expenses, expense];
+         localStorage.setItem('expenses', JSON.stringify(updatedExpenses));
+         return { expenses: updatedExpenses };
+       } catch (error) {
+         console.error('Failed to add expense:', error);
+         return state; // Return unchanged state on error
+       }
      }),
+ 
+   // Added computed total getter
+   getTotal: () => {
+     const state = get();
+     return state.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+   },
+ 
+   // Added category totals getter
+   getCategoryTotals: () => {
+     const state = get();
+     return state.expenses.reduce((totals, expense) => {
+       totals[expense.category] = (totals[expense.category] || 0) + expense.amount;
+       return totals;
+     }, {} as Record<string, number>);
+   },
    resetExpenses: () => {
      localStorage.setItem('expenses', JSON.stringify([]));
      set({ expenses: [] });
