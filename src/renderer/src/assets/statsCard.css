@@ -1,4 +1,4 @@
-/* Stats Component Variables */
+/* This file is only the styling for the 2 glass-like cards in the Dashboard page */
 .dark-mode {
     --card1-gradient-start: rgba(0, 0, 0, 0.9);
     --card1-gradient-end: rgba(255, 69, 69, 0.7);

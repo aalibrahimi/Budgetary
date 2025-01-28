@@ -1,6 +1,12 @@
+/* The `main.css` file provides universal styles like typography, colors, and buttons, automatically applied across all 
+   CSS files to ensure consistent design unless overridden.
+*/
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
 
 :root {
   --primary-color: #40E0D0;
