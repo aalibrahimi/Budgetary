@@ -28,15 +28,18 @@ const Expenses = () => {
 
   //Removing the useState and replacing it with Zustand
   // const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [expenses, setExpenses] = useState<any[]>(() => {
-    try {
-      const savedExpenses = localStorage.getItem('expenses')
-      return savedExpenses ? JSON.parse(savedExpenses) : []
-    } catch (error) {
-      console.error('Failed to parse expenses from localStorage:', error)
-      return []  //Return an empty array if parsing fails
-    }
-  })
+  // const [expenses, setExpenses] = useState<any[]>(() => {
+  //   try {
+  //     const savedExpenses = localStorage.getItem('expenses')
+  //     return savedExpenses ? JSON.parse(savedExpenses) : []
+  //   } catch (error) {
+  //     console.error('Failed to parse expenses from localStorage:', error)
+  //     return []  
+  //   }
+  // })
+
+ // zustand expenses
+ const { expenses, setExpenses, addExpense} = useExpenseStore();
 
   // date form
 
@@ -46,9 +49,10 @@ const Expenses = () => {
     console.log(expenses.length)
   }
 
-  useEffect(() => {
-    localStorage.setItem('expenses', JSON.stringify(expenses)) //save the current expenses to local whenever it changes
-  }, [expenses])
+  // no longer in needed ( this is the usestate for expenses)
+  // useEffect(() => {
+  //   localStorage.setItem('expenses', JSON.stringify(expenses)) //save the current expenses to local whenever it changes
+  // }, [expenses])
 
   useEffect(() => {
     // we are going to apply the darkm mode in this instance
@@ -83,24 +87,33 @@ const Expenses = () => {
   // this is where i'll add the logic for adding an expense
   const handleAddExpense = (e: React.FormEvent) => {
     e.preventDefault()
-    const form = e.target as HTMLFormElement
+    const form = e.target as HTMLFormElement;
 
-    const category = form.expenseCategory.value
-    const amount = parseFloat(form.expenseAmount.value)
+    const category = form.expenseCategory.value;
+    const amount = parseFloat(form.expenseAmount.value);
 
     if (!category || isNaN(amount) || !selectedDate) {
       alert('Please fill in all fields correctly')
       return
     }
 
-    setExpenses((prevExpenses) => [
-      ...prevExpenses,
-      {
+      const newExpense = {
         date: selectedDate.toISOString().split('T')[0],
         category,
-        amount
-      }
-    ])
+        amount,
+      };
+
+      addExpense(newExpense); //add expense via zustand store
+
+      //this is pre-zustand code below
+    // setExpenses((prevExpenses) => [
+    //   ...prevExpenses,
+    //   {
+    //     date: selectedDate.toISOString().split('T')[0],
+    //     category,
+    //     amount
+    //   }
+    // ])
 
     // Reset form
     form.reset()
@@ -259,7 +272,7 @@ const Expenses = () => {
                     <ul id="expenseList">
                       {expenses.map((expense, index) => (
                         <li key={index}>
-                          <span>{expense.date}</span> - <span>{expense.category}</span> -{''}
+                          <span>{expense.date}</span> - <span>{expense.category}</span> -{' '}
                           <span>${expense.amount.toFixed(2)}</span>
                         </li>
                       ))}

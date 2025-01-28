@@ -87,6 +87,7 @@ interface ExpenseState {
   setIncome: (income: number) => void;
   savingsGoal: number;
   setSavingsGoal: (savingsGoal: number) => void;
+  
   budgetAllocation: BudgetAllocations;
   setBudgetAllocation: (budgetAllocation: BudgetAllocations) => void;
   isPlanGenerated: boolean;
@@ -118,6 +119,14 @@ interface ExpenseState {
   setBillSchedules: (bills: BillSchedule[]) => void;
   addBillSchedule: (bill: BillSchedule) => void;
   updateBillSchedule: (id: string, updates: Partial<BillSchedule>) => void;
+
+  //expenses (Expense Tab)
+  expenses: Expense[];
+  setExpenses: (expenses: Expense[]) => void;
+  addExpense: (expense: Expense) => void;
+  // resetExpenses: () => void;
+
+
 
   // Selected date
   selectedDate: Date | null;
@@ -179,6 +188,25 @@ export const useExpenseStore = create<ExpenseState>()((set) => ({
   addBudgetSnapshot: (snapshot) => set((state) => ({
     budgetHistory: [...state.budgetHistory, snapshot],
   })),
+
+   // Initialize expenses with localStorage data
+   expenses: JSON.parse(localStorage.getItem('expenses') || '[]'),
+   setExpenses: (expenses) => {
+     set(() => {
+       localStorage.setItem('expenses', JSON.stringify(expenses));
+       return { expenses };
+     });
+   },
+   addExpense: (expense) =>
+     set((state) => {
+       const updatedExpenses = [...state.expenses, expense];
+       localStorage.setItem('expenses', JSON.stringify(updatedExpenses));
+       return { expenses: updatedExpenses };
+     }),
+   resetExpenses: () => {
+     localStorage.setItem('expenses', JSON.stringify([]));
+     set({ expenses: [] });
+   },
 
   savingsGoals: [],
   setSavingsGoals: (goals) => set({ savingsGoals: goals }),
