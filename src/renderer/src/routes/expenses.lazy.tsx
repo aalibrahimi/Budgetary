@@ -24,35 +24,18 @@ const Expenses = () => {
     setActiveTab,
     selectedDate,
     setSelectedDate,
+    expenses,
+    addExpense
   } = useExpenseStore()
 
-  //Removing the useState and replacing it with Zustand
-  // const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  // const [expenses, setExpenses] = useState<any[]>(() => {
-  //   try {
-  //     const savedExpenses = localStorage.getItem('expenses')
-  //     return savedExpenses ? JSON.parse(savedExpenses) : []
-  //   } catch (error) {
-  //     console.error('Failed to parse expenses from localStorage:', error)
-  //     return []  
-  //   }
-  // })
 
- // zustand expenses
- const { expenses, setExpenses, addExpense} = useExpenseStore();
 
-  // date form
 
   // tab switching is active
   const handleTabClick = (tab: string) => {
     setActiveTab(tab)
-    console.log(expenses.length)
   }
 
-  // no longer in needed ( this is the usestate for expenses)
-  // useEffect(() => {
-  //   localStorage.setItem('expenses', JSON.stringify(expenses)) //save the current expenses to local whenever it changes
-  // }, [expenses])
 
   useEffect(() => {
     // we are going to apply the darkm mode in this instance
@@ -105,17 +88,7 @@ const Expenses = () => {
 
       addExpense(newExpense); //add expense via zustand store
 
-      //this is pre-zustand code below
-    // setExpenses((prevExpenses) => [
-    //   ...prevExpenses,
-    //   {
-    //     date: selectedDate.toISOString().split('T')[0],
-    //     category,
-    //     amount
-    //   }
-    // ])
 
-    // Reset form
     form.reset()
     setSelectedDate(null)
   }
