@@ -22,15 +22,19 @@ const Expenses = () => {
     setExpenseCount,
     activeTab,
     setActiveTab,
+    selectedDate,
+    setSelectedDate,
   } = useExpenseStore()
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+
+  //Removing the useState and replacing it with Zustand
+  // const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [expenses, setExpenses] = useState<any[]>(() => {
     try {
       const savedExpenses = localStorage.getItem('expenses')
       return savedExpenses ? JSON.parse(savedExpenses) : []
     } catch (error) {
       console.error('Failed to parse expenses from localStorage:', error)
-      return [] // Return an empty array if parsing fails
+      return []  //Return an empty array if parsing fails
     }
   })
 
