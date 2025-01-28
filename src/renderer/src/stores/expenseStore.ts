@@ -125,6 +125,8 @@ interface ExpenseState {
   setExpenses: (expenses: Expense[]) => void;
   addExpense: (expense: Expense) => void;
   // resetExpenses: () => void;
+  getTotal: () => number;
+  getCategoryTotals: () => Record<string, number >;
 
 
 
@@ -213,10 +215,10 @@ export const useExpenseStore = create<ExpenseState>()((set, get) => ({
      }),
  
    // Added computed total getter
-   getTotal: () => {
-     const state = get();
-     return state.expenses.reduce((sum, expense) => sum + expense.amount, 0);
-   },
+   getTotal: (): number => {
+    const state = get();
+    return state.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  },
  
    // Added category totals getter
    getCategoryTotals: () => {

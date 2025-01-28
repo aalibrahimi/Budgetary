@@ -4,7 +4,7 @@ import '../assets/expenses.css'
 import '../assets/statsCard.css'
 import React, { useEffect } from 'react'
 import DatePicker from '@renderer/components/DatePicker'
-import { useState } from 'react'
+// import { useState } from 'react'
 import Graphs from '@renderer/components/graphs'
 import { useDarkModeStore } from './__root'
 import BudgetPlanner from '../components/BudgetPlanner'
@@ -25,7 +25,9 @@ const Expenses = () => {
     selectedDate,
     setSelectedDate,
     expenses,
-    addExpense
+    addExpense,
+    getTotal,
+    getCategoryTotals,
   } = useExpenseStore()
 
 
@@ -38,35 +40,34 @@ const Expenses = () => {
 
 
   useEffect(() => {
-    // we are going to apply the darkm mode in this instance
     const expensesContainer = document.getElementById('darky')
-
+  
     if (expenses.length > 0 || expensesContainer) {
       if (isDarkMode) {
         expensesContainer?.classList.add('dark-mode')
       } else {
         expensesContainer?.classList.remove('dark-mode')
       }
-      //Checks if theres more than one expenses
-      const total = expenses.reduce((sum, expense) => sum + expense.amount, 0) //`reduce` calculates the sum of all amounts in the `expenses` array.
+      
+      // Use new store functions for calculations
+      const total = getTotal()
       setMonthlyTotal(`$${total.toFixed(2)}`)
       setExpenseCount(expenses.length)
-
-      const categoryTotals: { [key: string]: number } = {} // Create an object to store total amounts per category. The keys are category names.
-      expenses.forEach((expense) => {
-        categoryTotals[expense.category] = (categoryTotals[expense.category] || 0) + expense.amount
-        // so for each expense, add its amount to the rightful category in `categoryTotals`.
-      })
-
-      const mostSpentCategory = Object.entries(categoryTotals).reduce(
-        (max, entry) => (entry[1] > max[1] ? entry : max),
-        ['', 0]
-      )[0]
-      // Turns `categoryTotals` into an array of [key, value] pairs, finds the one with the highest value (spending), and grabs the key (category name).
+  
+      const categoryTotals = getCategoryTotals()
+      
+      // Fixed type error by explicitly typing the reducer accumulator and return value
+      const mostSpentCategory = Object.entries(categoryTotals)
+        .reduce<[string, number]>(
+          (max: [string, number], [category, amount]: [string, number]) => {
+            return amount > max[1] ? [category, amount] : max;
+          },
+          ['', 0]
+        )[0];
+      
       setTopCategory(mostSpentCategory)
     }
-  }, [expenses, isDarkMode])
-
+  }, [expenses, isDarkMode, getTotal, getCategoryTotals, setMonthlyTotal, setExpenseCount, setTopCategory])
   // this is where i'll add the logic for adding an expense
   const handleAddExpense = (e: React.FormEvent) => {
     e.preventDefault()
@@ -292,3 +293,7 @@ const Expenses = () => {
 export const Route = createLazyFileRoute('/expenses')({
   component: Expenses
 })
+function getTotal() {
+  throw new Error('Function not implemented.')
+}
+
