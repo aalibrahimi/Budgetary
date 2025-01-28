@@ -2,8 +2,6 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './assets/main.css'
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router'
-
-// Import the generated route tree
 import { routeTree } from './routeTree.gen'
 import TitleBar from './components/Titlebar'
 import { ClerkProvider } from '@clerk/clerk-react'

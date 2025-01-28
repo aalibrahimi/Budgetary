@@ -1,17 +1,17 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import '../assets/index.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 import { useDarkModeStore } from './__root';
 
 // Types
-interface User {
-  isAuthenticated: boolean;
-}
+// interface User {
+//   isAuthenticated: boolean;
+// }
 
 const Index = () => {
   const { isDarkMode, setIsDarkMode } = useDarkModeStore(); // Zustand store
-  const [user, setUser] = useState<User>({ isAuthenticated: false });
+  // const [user, setUser] = useState<User>({ isAuthenticated: false });
 
   // Sync state with localStorage and DOM on initial load
   useEffect(() => {

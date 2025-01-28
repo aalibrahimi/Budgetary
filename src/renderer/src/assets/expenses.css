@@ -202,6 +202,11 @@ main {
 }
 
 
+.stat-card {
+  user-select: none;
+}
+
+
 /* Navigation Tabs */
 .surrounding-tabs {
   display: flex;
