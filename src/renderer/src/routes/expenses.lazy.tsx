@@ -212,7 +212,7 @@ const Expenses = () => {
                   <div className="form-inputs">
                     <DatePicker
                       selectedDate={selectedDate}
-                      onDateChange={setSelectedDate}
+                      onDateChange={(date) => setSelectedDate(date)}
                       className="expense-input"
                     />
                     <select name="expenseCategory" id="category" required>
