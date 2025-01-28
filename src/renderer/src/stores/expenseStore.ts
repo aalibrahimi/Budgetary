@@ -118,6 +118,10 @@ interface ExpenseState {
   setBillSchedules: (bills: BillSchedule[]) => void;
   addBillSchedule: (bill: BillSchedule) => void;
   updateBillSchedule: (id: string, updates: Partial<BillSchedule>) => void;
+
+  // Selected date
+  selectedDate: Date | null;
+  setSelectedDate: (date: Date | null ) => void;
 }
 
 // Old Code: export const useExpenseStore = create<ExpenseState>()((set, get) => ...)
@@ -186,6 +190,10 @@ export const useExpenseStore = create<ExpenseState>()((set) => ({
       goal.id === id ? { ...goal, ...updates } : goal
     ),
   })),
+
+  //date
+  selectedDate: null,
+  setSelectedDate: (date: Date | null) => set({ selectedDate: date }),  //this action updates the selected date
 
   billSchedules: [],
   setBillSchedules: (bills) => set({ billSchedules: bills }),
