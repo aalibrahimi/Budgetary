@@ -194,8 +194,7 @@ export const useExpenseStore = create<ExpenseState>()((set, get) => ({
    // Initialize expenses with localStorage data
    // So this is an Enhanced version of expenses management with optimistic updates and error handling
    // getting an error here saying that im parsing something undefined
-  //  expenses: JSON.parse(localStorage.getItem('expenses') || '[]')
-  // exp
+  
   
   expenses: (() => {
     if (typeof window === 'undefined' || !window.localStorage) {
