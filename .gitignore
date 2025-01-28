@@ -10,3 +10,5 @@ out
 *.db-journal
 *.sql
 bun.lockb
+.vscode
+build
