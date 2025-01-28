@@ -193,26 +193,53 @@ export const useExpenseStore = create<ExpenseState>()((set, get) => ({
 
    // Initialize expenses with localStorage data
    // So this is an Enhanced version of expenses management with optimistic updates and error handling
-   expenses: JSON.parse(localStorage.getItem('expenses') || '[]'),
-   setExpenses: (expenses) => {
-     try {
-       localStorage.setItem('expenses', JSON.stringify(expenses));
-       set({ expenses });
-     } catch (error) {
-       console.error('Failed to save expenses to localStorage:', error);
-     }
-   },
-   addExpense: (expense) =>
-     set((state) => {
-       try {
-         const updatedExpenses = [...state.expenses, expense];
-         localStorage.setItem('expenses', JSON.stringify(updatedExpenses));
-         return { expenses: updatedExpenses };
-       } catch (error) {
-         console.error('Failed to add expense:', error);
-         return state; // Return unchanged state on error
-       }
-     }),
+   // getting an error here saying that im parsing something undefined
+  //  expenses: JSON.parse(localStorage.getItem('expenses') || '[]')
+  // exp
+  
+  expenses: (() => {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return [];
+    }
+    
+    try {
+      const storedExpenses = window.localStorage.getItem('expenses');
+      if (!storedExpenses) return [];
+      const parsedExpenses = JSON.parse(storedExpenses);
+      return Array.isArray(parsedExpenses) ? parsedExpenses : [];
+    } catch (error) {
+      console.error('Failed to parse expenses from localStorage:', error);
+      return [];
+    }
+  })(),
+  setExpenses: (expenses) => {
+    if (!Array.isArray(expenses)) {
+      console.error('Invalid expenses data type');
+      return;
+    }
+    try {
+      window.localStorage.setItem('expenses', JSON.stringify(expenses));
+      set({ expenses });
+    } catch (error) {
+      console.error('Failed to save expenses:', error);
+    }
+  },
+  
+  addExpense: (expense) =>
+    set((state) => {
+      if (!expense || typeof expense !== 'object') {
+        console.error('Invalid expense data');
+        return state;
+      }
+      try {
+        const updatedExpenses = [...state.expenses, expense];
+        window.localStorage.setItem('expenses', JSON.stringify(updatedExpenses));
+        return { expenses: updatedExpenses };
+      } catch (error) {
+        console.error('Failed to add expense:', error);
+        return state;
+      }
+    }),
  
    // Added computed total getter
    getTotal: (): number => {
