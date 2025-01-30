@@ -409,11 +409,11 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
                 <input
                   type="number"
                   className="w-full p-2 border rounded"
-                  value={newSavingGoal.currentAmount || ''}
+                  value={newSavingGoal.targetAmount || ''}
                   onChange={(e) =>
                     setNewSavingGoal({
                       ...newSavingGoal,
-                      currentAmount: Number(e.target.value)
+                      targetAmount: Number(e.target.value)
                     })
                   }
                   placeholder="Enter target amount"
