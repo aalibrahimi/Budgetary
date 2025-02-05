@@ -9,6 +9,7 @@ import Graphs from '@renderer/components/graphs'
 import { useDarkModeStore } from './__root'
 import BudgetPlanner from '../components/BudgetPlanner'
 import { useExpenseStore } from '../stores/expenseStore'
+import NotifyButton from '@renderer/components/notifications/notificationButton'
 
 
 const Expenses = () => {
@@ -29,6 +30,22 @@ const Expenses = () => {
     getTotal,
     getCategoryTotals,
   } = useExpenseStore()
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [expenses, setExpenses] = useState<any[]>(() => {
+    try {
+      const savedExpenses = localStorage.getItem('expenses')
+      return savedExpenses ? JSON.parse(savedExpenses) : []
+    } catch (error) {
+      console.error('Failed to parse expenses from localStorage:', error)
+      return [] // Return an empty array if parsing fails
+    }
+  })
+  const [notification, setNotification] = useState<{ category: string; msg: string } | null>(null);
+// Function for notification when adding an expense
+const showNotification = (category: string, msg: string) => {
+  setNotification({ category, msg });
+  setTimeout(() => setNotification(null), 5000); // Hide notification after 5 seconds
+};
 
 
 
@@ -41,21 +58,21 @@ const Expenses = () => {
 
   useEffect(() => {
     const expensesContainer = document.getElementById('darky')
-  
+
     if (expenses.length > 0 || expensesContainer) {
       if (isDarkMode) {
         expensesContainer?.classList.add('dark-mode')
       } else {
         expensesContainer?.classList.remove('dark-mode')
       }
-      
+
       // Use new store functions for calculations
       const total = getTotal()
       setMonthlyTotal(`$${total.toFixed(2)}`)
       setExpenseCount(expenses.length)
-  
+
       const categoryTotals = getCategoryTotals()
-      
+
       // Fixed type error by explicitly typing the reducer accumulator and return value
       const mostSpentCategory = Object.entries(categoryTotals)
         .reduce<[string, number]>(
@@ -64,7 +81,7 @@ const Expenses = () => {
           },
           ['', 0]
         )[0];
-      
+
       setTopCategory(mostSpentCategory)
     }
   }, [expenses, isDarkMode, getTotal, getCategoryTotals, setMonthlyTotal, setExpenseCount, setTopCategory])
@@ -84,11 +101,11 @@ const Expenses = () => {
       const newExpense = {
         date: selectedDate.toISOString().split('T')[0],
         category,
-        amount,
-      };
-
-      addExpense(newExpense); //add expense via zustand store
-
+        amount
+      }
+    ]);
+    // Show success notification
+    showNotification('Expense Added', `${category} - $${amount.toFixed(2)}`);
 
     form.reset()
     setSelectedDate(null)
@@ -111,7 +128,7 @@ const Expenses = () => {
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>Expense Tracker</title>
       <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-      
+
       </head> */}
 
       <div className={`app-container ${isDarkMode ? 'dark-mode ' : ''}`} id="darky">
@@ -122,6 +139,13 @@ const Expenses = () => {
             <Link to="/" className="btn btn-secondary" viewTransition={true}>
               Home
             </Link>
+          {notification && (
+            <NotifyButton
+              category={notification.category}
+              msg={notification.msg}
+              isVisible={!!notification}
+            />
+          )}
             {/* <button type="button" onClick={() => testNotif()}>
               Test Notif
             </button>
@@ -274,11 +298,11 @@ const Expenses = () => {
             {/*  */}
             {activeTab === 'budgetPlan' && (
               <div id="budgetPlan" className="tab-content budget-plan">
-                
-                <BudgetPlanner expenses={expenses} />
-     
+
+                <BudgetPlanner expenses ={expenses} />
+
              </div>
-             
+
             )}
           </main>
           </div>
