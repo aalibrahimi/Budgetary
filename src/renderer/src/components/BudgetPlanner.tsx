@@ -10,7 +10,6 @@ import {
   type SavingsGoal,
   type BillSchedule
 } from '../stores/expenseStore'
-import NotifyButton from './notifications/notificationButton'
 
 // Helper function to calculate months between dates
 const monthsBetween = (date1: Date, date2: Date) => {
