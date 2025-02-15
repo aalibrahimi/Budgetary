@@ -2,16 +2,30 @@
 import { createLazyFileRoute, Link } from '@tanstack/react-router'
 import '../assets/expenses.css'
 import '../assets/statsCard.css'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import DatePicker from '@renderer/components/DatePicker'
 // import { useState } from 'react'
 import Graphs from '@renderer/components/graphs'
 import { useDarkModeStore } from './__root'
 import BudgetPlanner from '../components/BudgetPlanner'
 import { useExpenseStore } from '../stores/expenseStore'
+import NotifyButton2 from '@renderer/components/notifications/notificationButton2'
 
 
 const Expenses = () => {
+  const [notificationVisible, setNotificationVisible] = useState(false);
+const [notificationMessage, setNotificationMessage] = useState({ category: '', msg: '' });
+
+const showNotification = (category: string, msg: string) => {
+  setNotificationMessage({ category, msg });
+  setNotificationVisible(true);
+
+  // Hide the notification after 5 seconds
+  setTimeout(() => {
+    setNotificationVisible(false);
+  }, 5000);
+};
+
   const { isDarkMode } = useDarkModeStore()
   const {
     monthlyTotal,
@@ -41,21 +55,21 @@ const Expenses = () => {
 
   useEffect(() => {
     const expensesContainer = document.getElementById('darky')
-  
+
     if (expenses.length > 0 || expensesContainer) {
       if (isDarkMode) {
         expensesContainer?.classList.add('dark-mode')
       } else {
         expensesContainer?.classList.remove('dark-mode')
       }
-      
+
       // Use new store functions for calculations
       const total = getTotal()
       setMonthlyTotal(`$${total.toFixed(2)}`)
       setExpenseCount(expenses.length)
-  
+
       const categoryTotals = getCategoryTotals()
-      
+
       // Fixed type error by explicitly typing the reducer accumulator and return value
       const mostSpentCategory = Object.entries(categoryTotals)
         .reduce<[string, number]>(
@@ -64,7 +78,7 @@ const Expenses = () => {
           },
           ['', 0]
         )[0];
-      
+
       setTopCategory(mostSpentCategory)
     }
   }, [expenses, isDarkMode, getTotal, getCategoryTotals, setMonthlyTotal, setExpenseCount, setTopCategory])
@@ -77,8 +91,8 @@ const Expenses = () => {
     const amount = parseFloat(form.expenseAmount.value);
 
     if (!category || isNaN(amount) || !selectedDate) {
-      alert('Please fill in all fields correctly')
-      return
+      showNotification('Error', 'Please select a date');
+      return;
     }
 
       const newExpense = {
@@ -111,7 +125,7 @@ const Expenses = () => {
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>Expense Tracker</title>
       <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-      
+
       </head> */}
 
       <div className={`app-container ${isDarkMode ? 'dark-mode ' : ''}`} id="darky">
@@ -228,6 +242,12 @@ const Expenses = () => {
                     </button>
                   </div>
                 </form>
+                <NotifyButton2
+                  category={notificationMessage.category}
+                  msg={notificationMessage.msg}
+                  isVisible={notificationVisible}
+                  onClose={() => setNotificationVisible(false)}
+                />
 
                 {/* month selection */}
                 <section className="surrounding-month">
@@ -274,11 +294,11 @@ const Expenses = () => {
             {/*  */}
             {activeTab === 'budgetPlan' && (
               <div id="budgetPlan" className="tab-content budget-plan">
-                
+
                 <BudgetPlanner expenses={expenses} />
-     
+
              </div>
-             
+
             )}
           </main>
           </div>

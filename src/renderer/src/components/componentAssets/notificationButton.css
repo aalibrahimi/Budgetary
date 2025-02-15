@@ -1,6 +1,6 @@
 #notif-trans {
   position: fixed;
-  top: 20px;
+  bottom: 20px;
   right: 20px;
   z-index: 9999;
   transition: opacity 0.5s ease-in-out;

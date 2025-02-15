@@ -11,6 +11,7 @@ import {
   type BillSchedule
 } from '../stores/expenseStore'
 import NotifyButton from './notifications/notificationButton';
+import NotifyButton2 from './notifications/notificationButton2';
 
 
 // Helper function to calculate months between dates
@@ -574,6 +575,15 @@ const showNotification = (category: string, msg: string) => {
               {/*goals notification */}
               {notifications.map(notif => (
                 <NotifyButton
+                  key={notif.id}
+                  category={notif.category}
+                  msg={notif.msg}
+                  isVisible={true}
+                />
+              ))}
+              {/*second notification */}
+              {notifications.map(notif => (
+                <NotifyButton2
                   key={notif.id}
                   category={notif.category}
                   msg={notif.msg}
