@@ -93,7 +93,9 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
     })
 
     upcoming.forEach((bill) => {
-      console.info(`Upcoming bill: ${bill.category} due on ${bill.nextDueDate.toLocaleDateString()}`)
+      console.info(
+        `Upcoming bill: ${bill.category} due on ${bill.nextDueDate.toLocaleDateString()}`
+      )
       // <NotifyButton category='Upcoming Bill' msg={`Upcoming bill: ${bill.category} due on ${bill.nextDueDate.toLocaleDateString()}`} />
       // document.getElementById('test-pop')!.click()
     })
@@ -197,7 +199,7 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
   // Event handlers
   const handleAddSavingsGoal = (e: FormEvent) => {
     e.preventDefault()
-    
+
     const today = new Date()
     const monthsUntilDeadline = monthsBetween(today, newSavingGoal.deadline)
     const remainingAmount = newSavingGoal.targetAmount - newSavingGoal.currentAmount
@@ -226,12 +228,13 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
 
   const handleAddBillSchedule = (e: FormEvent) => {
     e.preventDefault()
-    
+
     // Calculate the next due date based on the day of month
     const today = new Date()
-    const nextDueDate = new Date(today.getFullYear(), today.getMonth(), newBill.dueDate)
-    
+    const nextDueDate = new Date(today.getFullYear(), today.getMonth(), newBill.dueDate.getDate())
+
     // If the day has already passed this month, set it to next month
+    console.log(nextDueDate, today)
     if (nextDueDate < today) {
       nextDueDate.setMonth(nextDueDate.getMonth() + 1)
     }
@@ -284,8 +287,6 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
       ]
     })
   }
-
-
 
   return (
     <div className="max-w-6xl mx-auto p-4 relative">
@@ -408,11 +409,11 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
                 <input
                   type="number"
                   className="w-full p-2 border rounded"
-                  value={newSavingGoal.currentAmount || ''}
+                  value={newSavingGoal.targetAmount || ''}
                   onChange={(e) =>
                     setNewSavingGoal({
                       ...newSavingGoal,
-                      currentAmount: Number(e.target.value)
+                      targetAmount: Number(e.target.value)
                     })
                   }
                   placeholder="Enter target amount"
