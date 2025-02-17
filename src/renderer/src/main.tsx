@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client'
 import './assets/main.css'
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
-import TitleBar from './components/Titlebar'
+// import TitleBar from './components/Titlebar'
 import { ClerkProvider } from '@clerk/clerk-react'
 
 // Need this in order for app to see routes during production mode
@@ -31,7 +31,7 @@ if (!PUBLISHABLE_KEY) {
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
       <ClerkProvider publishableKey={PUBLISHABLE_KEY}>    
-        <TitleBar />
+        {/* <TitleBar /> */}
         <RouterProvider router={router} />
       </ClerkProvider>
   </React.StrictMode>

@@ -9,11 +9,11 @@ import appIcon from '../../resources/Budgetary_light.jpg?asset'
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 1250,
+    height: 875,
     show: false,
     autoHideMenuBar: true,
-    frame: false,
+    // frame: false,
     icon: appIcon,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {

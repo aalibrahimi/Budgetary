@@ -14,7 +14,8 @@
   --accent-color: #FF6B6B;
   --background-color: #F0F8FF;
   --text-color: #333333;
-  --card-background: #FFFFFF;
+  --card-background: #40E0D0;
+  --h3: rgb(15, 90, 130);
 }
 
 * {
