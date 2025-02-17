@@ -11,7 +11,6 @@ import BudgetPlanner from '../components/BudgetPlanner'
 import { useExpenseStore } from '../stores/expenseStore'
 import NotifyButton2 from '@renderer/components/notifications/notificationButton2'
 
-
 const Expenses = () => {
   const [notificationVisible, setNotificationVisible] = useState(false);
 const [notificationMessage, setNotificationMessage] = useState({ category: '', msg: '' });
@@ -41,17 +40,13 @@ const showNotification = (category: string, msg: string) => {
     expenses,
     addExpense,
     getTotal,
-    getCategoryTotals,
+    getCategoryTotals
   } = useExpenseStore()
-
-
-
 
   // tab switching is active
   const handleTabClick = (tab: string) => {
     setActiveTab(tab)
   }
-
 
   useEffect(() => {
     const expensesContainer = document.getElementById('darky')
@@ -71,38 +66,44 @@ const showNotification = (category: string, msg: string) => {
       const categoryTotals = getCategoryTotals()
 
       // Fixed type error by explicitly typing the reducer accumulator and return value
-      const mostSpentCategory = Object.entries(categoryTotals)
-        .reduce<[string, number]>(
-          (max: [string, number], [category, amount]: [string, number]) => {
-            return amount > max[1] ? [category, amount] : max;
-          },
-          ['', 0]
-        )[0];
+      const mostSpentCategory = Object.entries(categoryTotals).reduce<[string, number]>(
+        (max: [string, number], [category, amount]: [string, number]) => {
+          return amount > max[1] ? [category, amount] : max
+        },
+        ['', 0]
+      )[0]
 
       setTopCategory(mostSpentCategory)
     }
-  }, [expenses, isDarkMode, getTotal, getCategoryTotals, setMonthlyTotal, setExpenseCount, setTopCategory])
+  }, [
+    expenses,
+    isDarkMode,
+    getTotal,
+    getCategoryTotals,
+    setMonthlyTotal,
+    setExpenseCount,
+    setTopCategory
+  ])
   // this is where i'll add the logic for adding an expense
   const handleAddExpense = (e: React.FormEvent) => {
     e.preventDefault()
-    const form = e.target as HTMLFormElement;
+    const form = e.target as HTMLFormElement
 
-    const category = form.expenseCategory.value;
-    const amount = parseFloat(form.expenseAmount.value);
+    const category = form.expenseCategory.value
+    const amount = parseFloat(form.expenseAmount.value)
 
     if (!category || isNaN(amount) || !selectedDate) {
       showNotification('Error', 'Please select a date');
       return;
     }
 
-      const newExpense = {
-        date: selectedDate.toISOString().split('T')[0],
-        category,
-        amount,
-      };
+    const newExpense = {
+      date: selectedDate.toISOString().split('T')[0],
+      category,
+      amount
+    }
 
-      addExpense(newExpense); //add expense via zustand store
-
+    addExpense(newExpense) //add expense via zustand store
 
     form.reset()
     setSelectedDate(null)
@@ -294,18 +295,13 @@ const showNotification = (category: string, msg: string) => {
             {/*  */}
             {activeTab === 'budgetPlan' && (
               <div id="budgetPlan" className="tab-content budget-plan">
-
                 <BudgetPlanner expenses={expenses} />
-
-             </div>
-
+              </div>
             )}
           </main>
-          </div>
         </div>
-        <div className="copyright">
-          &copy; 2025 Budgetary Tracker. All rights reserved.
-        </div>
+      </div>
+      <div className="copyright">&copy; 2025 Budgetary Tracker. All rights reserved.</div>
     </>
   )
 }
