@@ -10,7 +10,9 @@ import {
   type SavingsGoal,
   type BillSchedule
 } from '../stores/expenseStore'
-import NotifyButton from './notifications/notificationButton'
+import NotifyButton from './notifications/notificationButton';
+import NotifyButton2 from './notifications/notificationButton2';
+
 
 // Helper function to calculate months between dates
 const monthsBetween = (date1: Date, date2: Date) => {
@@ -26,6 +28,8 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
     const saved = localStorage.getItem('fixedExpenses')
     return saved ? JSON.parse(saved) : []
   })
+  const [notifications, setNotifications] = useState<Array<{ id: number; category: string; msg: string }>>([]);
+  const [nearCompleteGoals, setNearCompleteGoals] = useState<SavingsGoal[]>([]);
 
   // const [newGoal, setNewGoal] = useState({
   //   category: '',
@@ -69,7 +73,8 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
     setBudgetAllocation,
     setIsPlanGenerated,
     setSavingsGoal,
-    isPlanGenerated
+    isPlanGenerated,
+    updateSavingsGoal,
   } = useExpenseStore()
 
   // useEffect hooks at the component level
@@ -93,7 +98,9 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
     })
 
     upcoming.forEach((bill) => {
-      console.info(`Upcoming bill: ${bill.category} due on ${bill.nextDueDate.toLocaleDateString()}`)
+      console.info(
+        `Upcoming bill: ${bill.category} due on ${bill.nextDueDate.toLocaleDateString()}`
+      )
       // <NotifyButton category='Upcoming Bill' msg={`Upcoming bill: ${bill.category} due on ${bill.nextDueDate.toLocaleDateString()}`} />
       // document.getElementById('test-pop')!.click()
     })
@@ -140,6 +147,30 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
       setSavingsGoal(newAllocations.Savings)
     }
   }, [fixedExpenses])
+
+  useEffect(() => {
+    checkApproachingDeadlines();
+    checkNearCompleteSavingsGoals();
+    // Check for approaching deadlines and near-complete goals every day
+    const intervalId = setInterval(() => {
+      checkApproachingDeadlines();
+      checkNearCompleteSavingsGoals();
+    }, 24 * 60 * 60 * 1000);
+    return () => clearInterval(intervalId);
+  }, [savingsGoals]);
+
+  useEffect(() => {
+    // Check for upcoming bills when the component mounts
+    checkUpcomingBills(billSchedules)
+
+    // Set up an interval to check for upcoming bills every day
+    const intervalId = setInterval(() => {
+      checkUpcomingBills(billSchedules)
+    }, 24 * 60 * 60 * 1000) // 24 hours
+
+    // Clean up the interval when the component unmounts
+    return () => clearInterval(intervalId)
+  }, [billSchedules])
 
   // Core budget generation function
   const generateSmartBudget = (monthlyIncome: number): BudgetAllocations => {
@@ -194,10 +225,52 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
     return adjustedAllocations
   }
 
+  //Function to check approaching deadlines
+  const checkApproachingDeadlines = () => {
+    const today = new Date();
+    const sevenDaysFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const approaching = savingsGoals.filter(goal => {
+      const deadline = new Date(goal.deadline);
+      return deadline > today && deadline <= sevenDaysFromNow;
+    });
+    if (approaching.length > 0) {
+      showNotification('Savings Goal', `${approaching.length} goal(s) approaching deadline`);
+    }
+  };
+//function to handle multiple notifications
+const showNotification = (category: string, msg: string) => {
+  const id = Date.now(); // Generate a unique ID for each notification
+  setNotifications(current => [...current, { id, category, msg }]);
+
+  setTimeout(() => {
+    setNotifications(current => current.filter(notif => notif.id !== id));
+  }, 5000); // 5 seconds for visibility
+};
+
+  //Function to update the current amount in savings goal
+
+
+
+  //Function to check if a goal is near completion
+  const checkNearCompleteSavingsGoals = () => {
+    const nearComplete = savingsGoals.filter(goal => {
+      const remainingAmount = goal.targetAmount - goal.currentAmount;
+      return remainingAmount > 0 && remainingAmount <= 10;
+    });
+
+    setNearCompleteGoals(nearComplete);
+
+    if (nearComplete.length > 0) {
+      nearComplete.forEach(goal => {
+        showNotification('Savings Goal', `You're just $${(goal.targetAmount - goal.currentAmount).toFixed(2)} away from your "${goal.name}" goal!`);
+      });
+    }
+  };
+
   // Event handlers
   const handleAddSavingsGoal = (e: FormEvent) => {
     e.preventDefault()
-    
+
     const today = new Date()
     const monthsUntilDeadline = monthsBetween(today, newSavingGoal.deadline)
     const remainingAmount = newSavingGoal.targetAmount - newSavingGoal.currentAmount
@@ -226,12 +299,13 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
 
   const handleAddBillSchedule = (e: FormEvent) => {
     e.preventDefault()
-    
+
     // Calculate the next due date based on the day of month
     const today = new Date()
-    const nextDueDate = new Date(today.getFullYear(), today.getMonth(), newBill.dueDate)
-    
+    const nextDueDate = new Date(today.getFullYear(), today.getMonth(), newBill.dueDate.getDate())
+
     // If the day has already passed this month, set it to next month
+    console.log(nextDueDate, today)
     if (nextDueDate < today) {
       nextDueDate.setMonth(nextDueDate.getMonth() + 1)
     }
@@ -248,6 +322,10 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
 
     addBillSchedule(billSchedule)
 
+    // Check if the new bill is upcoming and notify if necessary
+  checkUpcomingBills([billSchedule])
+
+
     // Reset form
     setNewBill({
       category: '',
@@ -255,6 +333,21 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
       amount: 0,
       isRecurring: true,
       frequency: 'monthly'
+    })
+  }
+
+  const checkUpcomingBills = (bills: BillSchedule[]) => {
+    const today = new Date()
+    const sevenDaysFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+
+    bills.forEach(bill => {
+      if (bill.nextDueDate >= today && bill.nextDueDate <= sevenDaysFromNow) {
+        const daysUntilDue = Math.ceil((bill.nextDueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+        showNotification(
+          'Upcoming Bill',
+          `${bill.category} bill of $${bill.amount} is due in ${daysUntilDue} day${daysUntilDue > 1 ? 's' : ''}`
+        )
+      }
     })
   }
 
@@ -285,8 +378,6 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
     })
   }
 
-
-
   return (
     <div className="max-w-6xl mx-auto p-4 relative">
       {/* Header Actions */}
@@ -313,7 +404,6 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
           <Settings className="h-5 w-5" />
         </button>
       </div>
-
       {/* Settings Modal */}
       {showSettings && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -382,9 +472,7 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
             <button onClick={() => setShowGoalsModal(false)} className="absolute top-4 right-4">
               <X className="h-5 w-5" />
             </button>
-
             <h3 className="text-lg font-semibold mb-4">Savings Goals</h3>
-
             <form onSubmit={handleAddSavingsGoal} className="space-y-4 mb-6">
               <div>
                 <label className="block text-sm font-medium mb-1">Goal Name</label>
@@ -402,17 +490,16 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
                   required
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium mb-1">Target Amount</label>
                 <input
                   type="number"
                   className="w-full p-2 border rounded"
-                  value={newSavingGoal.currentAmount || ''}
+                  value={newSavingGoal.targetAmount || ''}
                   onChange={(e) =>
                     setNewSavingGoal({
                       ...newSavingGoal,
-                      currentAmount: Number(e.target.value)
+                      targetAmount: Number(e.target.value)
                     })
                   }
                   placeholder="Enter target amount"
@@ -460,6 +547,7 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
                 Add Savings Goal
               </button>
             </form>
+          </div>
 
             {/* Display existing savings goals */}
             <div className="space-y-4">
@@ -484,9 +572,50 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
                 )
               })}
             </div>
+            <div>
+              {/*goals notification */}
+              {notifications.map(notif => (
+                <NotifyButton
+                  key={notif.id}
+                  category={notif.category}
+                  msg={notif.msg}
+                  isVisible={true}
+                />
+              ))}
+              {/*second notification */}
+              {notifications.map(notif => (
+                <NotifyButton2
+                  key={notif.id}
+                  category={notif.category}
+                  msg={notif.msg}
+                  isVisible={true}
+                />
+              ))}
+            </div>
+            <div className="mt-8">
+        <h3 className="text-xl font-semibold mb-4">Savings Goals</h3>
+        {savingsGoals.map(goal => (
+          <div key={goal.id} className="mb-4 p-4 bg-white rounded-lg shadow">
+            <h4 className="text-lg font-medium">{goal.name}</h4>
+            <p>Target: ${goal.targetAmount.toFixed(2)}</p>
+            <p>Current: ${goal.currentAmount.toFixed(2)}</p>
+            <input
+              type="number"
+              value={goal.currentAmount}
+              onChange={(e) => updateSavingsGoal(goal.id, { currentAmount: Number(e.target.value) })}
+              className="mt-2 p-2 border rounded"
+            />
+            <div className="mt-2 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+              <div
+                className="bg-blue-600 h-2.5 rounded-full"
+                style={{width: `${(goal.currentAmount / goal.targetAmount) * 100}%`}}
+              ></div>
           </div>
         </div>
-      )}
+        ))}
+      </div>
+    </div>
+    )}
 
       {/* Bills Modal */}
       {showBillsModal && (
@@ -601,7 +730,17 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
                 Add Bill Schedule
               </button>
             </form>
-
+            <div>
+              {/*goals notification */}
+              {notifications.map(notification => (
+                <NotifyButton
+                  key={notification.id}
+                  category={notification.category}
+                  msg={notification.msg}
+                  isVisible={true}
+                />
+              ))}
+            </div>
             {/* Display upcoming bills */}
             <div className="space-y-4">
               <h4 className="font-medium">Upcoming Bills</h4>
@@ -671,7 +810,12 @@ const BudgetPlanner: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default BudgetPlanner
+
+
+
+
+
+    export default BudgetPlanner
