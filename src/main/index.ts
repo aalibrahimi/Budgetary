@@ -1,4 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import http from "http"
+import { neon } from "@neondatabase/serverless"
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -9,11 +11,11 @@ import appIcon from '../../resources/Budgetary_light.jpg?asset'
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 1250,
+    height: 875,
     show: false,
     autoHideMenuBar: true,
-    frame: false,
+    // frame: false,
     icon: appIcon,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
@@ -56,6 +58,22 @@ function createWindow(): void {
     mainWindow.close()
   })
 }
+
+require("dotenv").config();
+
+
+const sql = neon(process.env.DATABASE_URL!);
+
+const requestHandler = async (req, res) => {
+  const result = await sql`SELECT version()`;
+  const { version } = result[0];
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  res.end(version);
+};
+
+http.createServer(requestHandler).listen(3000, () => {
+  console.log("Server running at http://localhost:3000");
+});
 
 function showCustomNotification() {
   const screen = require('electron').screen

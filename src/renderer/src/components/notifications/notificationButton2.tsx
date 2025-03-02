@@ -5,7 +5,7 @@ interface Props {
   category: string;
   msg: string;
   isVisible: boolean;
-  onClose: () => void;
+  onClose?: () => void;
 }
 
 const NotifyButton2: React.FC<Props> = ({ category, msg, isVisible, onClose }) => {

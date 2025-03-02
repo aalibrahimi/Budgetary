@@ -11,20 +11,19 @@ import BudgetPlanner from '../components/BudgetPlanner'
 import { useExpenseStore } from '../stores/expenseStore'
 import NotifyButton2 from '@renderer/components/notifications/notificationButton2'
 
-
 const Expenses = () => {
-  const [notificationVisible, setNotificationVisible] = useState(false);
-const [notificationMessage, setNotificationMessage] = useState({ category: '', msg: '' });
+  const [notificationVisible, setNotificationVisible] = useState(false)
+  const [notificationMessage, setNotificationMessage] = useState({ category: '', msg: '' })
 
-const showNotification = (category: string, msg: string) => {
-  setNotificationMessage({ category, msg });
-  setNotificationVisible(true);
+  const showNotification = (category: string, msg: string) => {
+    setNotificationMessage({ category, msg })
+    setNotificationVisible(true)
 
-  // Hide the notification after 5 seconds
-  setTimeout(() => {
-    setNotificationVisible(false);
-  }, 5000);
-};
+    // Hide the notification after 5 seconds
+    setTimeout(() => {
+      setNotificationVisible(false)
+    }, 5000)
+  }
 
   const { isDarkMode } = useDarkModeStore()
   const {
@@ -41,28 +40,26 @@ const showNotification = (category: string, msg: string) => {
     expenses,
     addExpense,
     getTotal,
-    getCategoryTotals,
+    getCategoryTotals
   } = useExpenseStore()
-
-
-
 
   // tab switching is active
   const handleTabClick = (tab: string) => {
     setActiveTab(tab)
   }
 
-
+  // *Using functions as dependency in useEffect: https://stackoverflow.com/questions/71814755/use-case-for-passing-function-as-an-dependency-in-useeffect-in-react
+  //  -> need to double check if we're doing this right
   useEffect(() => {
     const expensesContainer = document.getElementById('darky')
 
-    if (expenses.length > 0 || expensesContainer) {
-      if (isDarkMode) {
-        expensesContainer?.classList.add('dark-mode')
-      } else {
-        expensesContainer?.classList.remove('dark-mode')
-      }
+    if (isDarkMode) {
+      expensesContainer?.classList.add('dark-mode')
+    } else {
+      expensesContainer?.classList.remove('dark-mode')
+    }
 
+    if (expenses.length > 0 || expensesContainer) {
       // Use new store functions for calculations
       const total = getTotal()
       setMonthlyTotal(`$${total.toFixed(2)}`)
@@ -71,38 +68,44 @@ const showNotification = (category: string, msg: string) => {
       const categoryTotals = getCategoryTotals()
 
       // Fixed type error by explicitly typing the reducer accumulator and return value
-      const mostSpentCategory = Object.entries(categoryTotals)
-        .reduce<[string, number]>(
-          (max: [string, number], [category, amount]: [string, number]) => {
-            return amount > max[1] ? [category, amount] : max;
-          },
-          ['', 0]
-        )[0];
+      const mostSpentCategory = Object.entries(categoryTotals).reduce<[string, number]>(
+        (max: [string, number], [category, amount]: [string, number]) => {
+          return amount > max[1] ? [category, amount] : max
+        },
+        ['', 0]
+      )[0]
 
       setTopCategory(mostSpentCategory)
     }
-  }, [expenses, isDarkMode, getTotal, getCategoryTotals, setMonthlyTotal, setExpenseCount, setTopCategory])
+  }, [
+    expenses,
+    isDarkMode,
+    getTotal,
+    getCategoryTotals,
+    setMonthlyTotal,
+    setExpenseCount,
+    setTopCategory
+  ])
   // this is where i'll add the logic for adding an expense
   const handleAddExpense = (e: React.FormEvent) => {
     e.preventDefault()
-    const form = e.target as HTMLFormElement;
+    const form = e.target as HTMLFormElement
 
-    const category = form.expenseCategory.value;
-    const amount = parseFloat(form.expenseAmount.value);
+    const category = form.expenseCategory.value
+    const amount = parseFloat(form.expenseAmount.value)
 
     if (!category || isNaN(amount) || !selectedDate) {
-      showNotification('Error', 'Please select a date');
-      return;
+      showNotification('Error', 'Please select a date')
+      return
     }
 
-      const newExpense = {
-        date: selectedDate.toISOString().split('T')[0],
-        category,
-        amount,
-      };
+    const newExpense = {
+      date: selectedDate.toISOString().split('T')[0],
+      category,
+      amount
+    }
 
-      addExpense(newExpense); //add expense via zustand store
-
+    addExpense(newExpense) //add expense via zustand store
 
     form.reset()
     setSelectedDate(null)
@@ -120,14 +123,6 @@ const showNotification = (category: string, msg: string) => {
 
   return (
     <>
-      {/* <head>
-      <meta charSet="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Expense Tracker</title>
-      <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-
-      </head> */}
-
       <div className={`app-container ${isDarkMode ? 'dark-mode ' : ''}`} id="darky">
         <header className="header">
           <div className="header-top">
@@ -206,106 +201,99 @@ const showNotification = (category: string, msg: string) => {
             </nav>
           </section>
 
-          <main>
-            {activeTab === 'expenses' && (
-              <div id="expenses" className="tab-content active">
-                <form id="expenseForm" className="expenseDate" onSubmit={handleAddExpense}>
-                  <div className="form-inputs">
-                    <DatePicker
-                      selectedDate={selectedDate}
-                      onDateChange={(date) => setSelectedDate(date)}
-                      className="expense-input"
-                    />
-                    <select name="expenseCategory" id="category" required>
-                      <option value="" disabled selected>
-                        Select Category
-                      </option>
-                      <option value="Groceries">Groceries</option>
-                      <option value="Rent">Rent</option>
-                      <option value="Insurance">Insurance</option>
-                      <option value="Dining Out">Dining Out</option>
-                      <option value="Entertainment">Entertainment</option>
-                      <option value="Clothes">Clothes</option>
-                      <option value="Transportation">Transportation</option>
-                      <option value="Other">Other</option>
-                    </select>
-                    <input
-                      type="text"
-                      id="expenseAmount"
-                      name="amount"
-                      placeholder="Amount"
-                      step="0.1"
-                      required
-                    />
-                    <button type="submit" id="addExpenseButton" className="add-expense-btn">
-                      Add Expense
-                    </button>
-                  </div>
-                </form>
-                <NotifyButton2
-                  category={notificationMessage.category}
-                  msg={notificationMessage.msg}
-                  isVisible={notificationVisible}
-                  onClose={() => setNotificationVisible(false)}
-                />
+          {activeTab === 'expenses' && (
+            <div id="expenses" className="tab-content active">
+              <form id="expenseForm" className="expenseDate" onSubmit={handleAddExpense}>
+                <div className="form-inputs">
+                  <DatePicker
+                    selectedDate={selectedDate}
+                    onDateChange={(date) => setSelectedDate(date)}
+                    className="expense-input"
+                  />
+                  <select name="expenseCategory" id="category" defaultValue="" required>
+                    <option value="" disabled>
+                      Select Category
+                    </option>
+                    <option value="Groceries">Groceries</option>
+                    <option value="Rent">Rent</option>
+                    <option value="Insurance">Insurance</option>
+                    <option value="Dining Out">Dining Out</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Clothes">Clothes</option>
+                    <option value="Transportation">Transportation</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <input
+                    type="text"
+                    id="expenseAmount"
+                    name="amount"
+                    placeholder="Amount"
+                    step="0.1"
+                    required
+                  />
+                  <button type="submit" id="addExpenseButton" className="add-expense-btn">
+                    Add Expense
+                  </button>
+                </div>
+              </form>
+              <NotifyButton2
+                category={notificationMessage.category}
+                msg={notificationMessage.msg}
+                isVisible={notificationVisible}
+                onClose={() => setNotificationVisible(false)}
+              />
 
-                {/* month selection */}
-                <section className="surrounding-month">
-                  <div id="monthSelector" className="month-selector">
-                    <label id="" htmlFor="monthPicker">
-                      SelectMonth:
-                    </label>
-                    <input type="month" id="monthPicker" />
-                  </div>
-                </section>
+              {/* month selection */}
+              <section className="surrounding-month">
+                <div id="monthSelector" className="month-selector">
+                  <label id="" htmlFor="monthPicker">
+                    SelectMonth:
+                  </label>
+                  <input type="month" id="monthPicker" />
+                </div>
+              </section>
 
-                {/* Your Expense Listed out */}
+              {/* Your Expense Listed out */}
 
-                <div className="surrouding-expense">
-                  <div className="expense-list-container">
-                    <ul id="expenseList">
-                      {expenses.map((expense, index) => (
-                        <li key={index}>
-                          <span>{expense.date}</span> - <span>{expense.category}</span> -{' '}
-                          <span>${expense.amount.toFixed(2)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <p id="total" className="total-amount">
-                      Total: {monthlyTotal}
-                    </p>
-                  </div>
+              <div className="surrouding-expense">
+                <div className="expense-list-container">
+                  <ul id="expenseList">
+                    {expenses.map((expense, index) => (
+                      <li key={index}>
+                        <span>{expense.date}</span> - <span>{expense.category}</span> -{' '}
+                        <span>${expense.amount.toFixed(2)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p id="total" className="total-amount">
+                    Total: {monthlyTotal}
+                  </p>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {activeTab === 'graphs' && <Graphs />}
+          {activeTab === 'graphs' && <Graphs />}
 
-            {/* Categories Tab Content */}
-            {activeTab === 'Categories' && (
-              <div id="categories" className="tab-content">
-                <div className="categories-list">
-                  <h2>Hello!</h2>
-                  {/* Categories content will go here */}
-                  <p>Categories will be populated here!</p>
-                </div>
+          {/* Categories Tab Content */}
+          {activeTab === 'Categories' && (
+            <div id="categories" className="tab-content">
+              <div className="categories-list">
+                <h2>Hello!</h2>
+                {/* Categories content will go here */}
+                <p>Categories will be populated here!</p>
               </div>
-            )}
-            {/*  */}
-            {activeTab === 'budgetPlan' && (
-              <div id="budgetPlan" className="tab-content budget-plan">
+            </div>
+          )}
 
-                <BudgetPlanner expenses={expenses} />
-
-             </div>
-
-            )}
-          </main>
-          </div>
+          {/*  */}
+          {activeTab === 'budgetPlan' && (
+            <div id="budgetPlan" className="tab-content budget-plan">
+              <BudgetPlanner expenses={expenses} />
+            </div>
+          )}
         </div>
-        <div className="copyright">
-          &copy; 2025 Budgetary Tracker. All rights reserved.
-        </div>
+      </div>
     </>
   )
 }
@@ -313,6 +301,3 @@ const showNotification = (category: string, msg: string) => {
 export const Route = createLazyFileRoute('/expenses')({
   component: Expenses
 })
-function getTotal() {
-  throw new Error('Function not implemented.')
-}
