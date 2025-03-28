@@ -107,7 +107,8 @@ const CashFlowForecast: React.FC<CashFlowForecastProps> = ({ initialTransactions
   const days = getDays();
 
   return (
-    <div className="dashboard-card">
+    
+    <div className="dashboard-card w-[1150px] mx-auto">
       <div className="dashboard-card-header">
         <h2>
           <AlertTriangle className="dashboard-card-icon" /> 
