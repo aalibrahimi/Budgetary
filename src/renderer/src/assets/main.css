@@ -319,3 +319,10 @@ ul {
     transform: translateY(-20px); /* Adds the floating effect */
   }
 }
+
+
+/* selection */
+::selection {
+  background: gray;
+  color: rgb(0, 0, 0);
+}

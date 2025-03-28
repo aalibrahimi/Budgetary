@@ -477,7 +477,7 @@ const FinancialWellness = () => {
           {/* Challenges Tab */}
           {activeTab === 'challenges' && (
             <div className="p-6">
-              <div className="mb-8 bg-gradient-to-r from-purple-600 to-blue-500 rounded-lg p-6 text-white">
+              <div className="mb-8 bg-gradient-to-r from-blue-500 via-blue-700 to-blue-950-lg p-6 text-white">
                 <h2 className="text-xl font-bold mb-2">
                   Financial Fitness Program
                 </h2>

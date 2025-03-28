@@ -415,19 +415,16 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ expenses, isD
           </div>
         ) : (
           <div className="divide-y" style={{
-            divideColor: isDarkMode ? 'var(--border-color)' : undefined
+            borderColor: isDarkMode ? 'var(--border-color)' : undefined
           }}>
             {subscriptions.map((subscription) => (
               <div 
                 key={subscription.id}
-                className="p-4 hover:bg-gray-50 transition-colors"
+                className="p-4 transition-colors hover:bg-gray-50 dark:hover:bg-[var(--hover-background)]"
                 style={{
                   backgroundColor: selectedSubscription?.id === subscription.id 
-                    ? isDarkMode ? 'var(--hover-background)' : '#F9FAFB'
-                    : undefined,
-                  hover: {
-                    backgroundColor: isDarkMode ? 'var(--hover-background)' : undefined
-                  }
+                    ? isDarkMode ? 'var(--hover-background)' : '#333333'
+                    : undefined
                 }}
                 onClick={() => setSelectedSubscription(
                   selectedSubscription?.id === subscription.id ? null : subscription
@@ -561,7 +558,7 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ expenses, isD
       </div>
       
       <div 
-        className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-lg p-6 text-white"
+        className="bg-gradient-to-r from-blue-500 via-blue-700 to-blue-950 rounded-lg shadow-lg p-6 text-white"
       >
         <h3 className="text-xl font-bold mb-2">Subscription Optimization</h3>
         <p className="mb-4">Based on your subscription patterns, here are some ways you could save:</p>
