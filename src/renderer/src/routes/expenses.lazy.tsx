@@ -193,7 +193,7 @@ const showNotification = (category: string, msg: string) => {
                 Graphs
               </button>
 
-              <button
+              {/* <button
                 className={`tab-button ${activeTab === 'Categories' ? 'active' : ''}`}
                 onClick={() => handleTabClick('Categories')}
               >
@@ -204,7 +204,7 @@ const showNotification = (category: string, msg: string) => {
                 onClick={() => handleTabClick('budgetPlan')}
               >
                 Budget Plan
-              </button>
+              </button> */}
             </nav>
           </section>
 
