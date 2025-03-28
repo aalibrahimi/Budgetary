@@ -13,12 +13,12 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as SmartAssistantImport } from './routes/smart-assistant'
 
 // Create Virtual Routes
 
 const ExpensesLazyImport = createFileRoute('/expenses')()
 const AboutLazyImport = createFileRoute('/about')()
-const FinancialQuizLazyImport = createFileRoute('/FinancialQuiz')()
 const IndexLazyImport = createFileRoute('/')()
 
 // Create/Update Routes
@@ -35,11 +35,11 @@ const AboutLazyRoute = AboutLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/about.lazy').then((d) => d.Route))
 
-const FinancialQuizLazyRoute = FinancialQuizLazyImport.update({
-  id: '/FinancialQuiz',
-  path: '/FinancialQuiz',
+const SmartAssistantRoute = SmartAssistantImport.update({
+  id: '/smart-assistant',
+  path: '/smart-assistant',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/FinancialQuiz.lazy').then((d) => d.Route))
+} as any)
 
 const IndexLazyRoute = IndexLazyImport.update({
   id: '/',
@@ -58,11 +58,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexLazyImport
       parentRoute: typeof rootRoute
     }
-    '/FinancialQuiz': {
-      id: '/FinancialQuiz'
-      path: '/FinancialQuiz'
-      fullPath: '/FinancialQuiz'
-      preLoaderRoute: typeof FinancialQuizLazyImport
+    '/smart-assistant': {
+      id: '/smart-assistant'
+      path: '/smart-assistant'
+      fullPath: '/smart-assistant'
+      preLoaderRoute: typeof SmartAssistantImport
       parentRoute: typeof rootRoute
     }
     '/about': {
@@ -86,14 +86,14 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
-  '/FinancialQuiz': typeof FinancialQuizLazyRoute
+  '/smart-assistant': typeof SmartAssistantRoute
   '/about': typeof AboutLazyRoute
   '/expenses': typeof ExpensesLazyRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
-  '/FinancialQuiz': typeof FinancialQuizLazyRoute
+  '/smart-assistant': typeof SmartAssistantRoute
   '/about': typeof AboutLazyRoute
   '/expenses': typeof ExpensesLazyRoute
 }
@@ -101,30 +101,30 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
-  '/FinancialQuiz': typeof FinancialQuizLazyRoute
+  '/smart-assistant': typeof SmartAssistantRoute
   '/about': typeof AboutLazyRoute
   '/expenses': typeof ExpensesLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/FinancialQuiz' | '/about' | '/expenses'
+  fullPaths: '/' | '/smart-assistant' | '/about' | '/expenses'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/FinancialQuiz' | '/about' | '/expenses'
-  id: '__root__' | '/' | '/FinancialQuiz' | '/about' | '/expenses'
+  to: '/' | '/smart-assistant' | '/about' | '/expenses'
+  id: '__root__' | '/' | '/smart-assistant' | '/about' | '/expenses'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
-  FinancialQuizLazyRoute: typeof FinancialQuizLazyRoute
+  SmartAssistantRoute: typeof SmartAssistantRoute
   AboutLazyRoute: typeof AboutLazyRoute
   ExpensesLazyRoute: typeof ExpensesLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
-  FinancialQuizLazyRoute: FinancialQuizLazyRoute,
+  SmartAssistantRoute: SmartAssistantRoute,
   AboutLazyRoute: AboutLazyRoute,
   ExpensesLazyRoute: ExpensesLazyRoute,
 }
@@ -140,7 +140,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/FinancialQuiz",
+        "/smart-assistant",
         "/about",
         "/expenses"
       ]
@@ -148,8 +148,8 @@ export const routeTree = rootRoute
     "/": {
       "filePath": "index.lazy.tsx"
     },
-    "/FinancialQuiz": {
-      "filePath": "FinancialQuiz.lazy.tsx"
+    "/smart-assistant": {
+      "filePath": "smart-assistant.tsx"
     },
     "/about": {
       "filePath": "about.lazy.tsx"
