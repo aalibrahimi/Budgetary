@@ -14,8 +14,8 @@ interface darkModeState {
 export const useDarkModeStore = create<darkModeState>()((set) => ({
   isDarkMode: JSON.parse(localStorage.getItem('isDarkMode') || 'false'), // Initialize from localStorage
   setIsDarkMode: (isDarkMode: boolean) => {
-    localStorage.setItem('isDarkMode', JSON.stringify(isDarkMode)); // Save to localStorage
     set({ isDarkMode });
+    localStorage.setItem('isDarkMode', JSON.stringify(isDarkMode)); // Save to localStorage
   },
 }));
 
@@ -26,20 +26,16 @@ export const Route = createRootRoute({
 
     // Toggle Dark Mode
     const toggleDarkMode = () => {
-      const newMode = !isDarkMode; // Determine the new state
-      setIsDarkMode(newMode); // Update Zustand store
+      setIsDarkMode(!isDarkMode); // Update Zustand store
     
       // Apply or remove the class based on the new state
-      if (newMode) {
+      if (isDarkMode) {
         document.body.classList.add('dark-mode');
         document.getElementById('darky')?.classList.add('dark-mode');
       } else {
         document.body.classList.remove('dark-mode');
         document.getElementById('darky')?.classList.remove('dark-mode');
       }
-    
-      // Update localStorage to noww showw the new state
-      localStorage.setItem('isDarkMode', JSON.stringify(newMode));
     };
     
 
@@ -63,15 +59,15 @@ export const Route = createRootRoute({
           </Link>
 
           <div className="navbar-links">
-            <Link to="/" className="nav-link">Home</Link>
-            <Link to="/about" className="nav-link">About</Link>
+            <Link to="/" className="nav-link" draggable={false}>Home</Link>
+            <Link to="/about" className="nav-link" draggable={false}>About</Link>
             <SignedOut>
               <SignInButton>
                 <div className="auth-button">Login/Register</div>
               </SignInButton>
             </SignedOut>
             <SignedIn>
-              <Link to="/expenses" className="nav-link" viewTransition={true}>Dashboard</Link>
+              <Link to="/expenses" className="nav-link" viewTransition={true} draggable={false}>Dashboard</Link>
               <UserButton showName={true} />
             </SignedIn>
 
@@ -87,9 +83,9 @@ export const Route = createRootRoute({
           </div>
         </nav>
 
-        <div className="content-body">
+        <section className="content-body">
           <Outlet />
-        </div>
+        </section>
       </div>
     );
   },

@@ -1,10 +1,13 @@
 #notif-trans {
-  position: absolute;
-  transform: translateX(100vw);
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
   z-index: 9999;
-  transition: transform 0.5s ease-in-out;
+  transition: opacity 0.5s ease-in-out;
+  opacity: 1;
 }
 
-#test-pop:checked ~ #notif-trans {
-  transform: translateX(0);
+#notif-trans.hidden {
+  opacity: 0;
+  pointer-events: none;
 }

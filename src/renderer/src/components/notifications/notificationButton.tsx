@@ -1,14 +1,27 @@
-
+import { useState, useEffect } from 'react';
 import '../componentAssets/notificationButton.css'
 
 interface Props {
-  category: string
-  msg: string
+  category: string;
+  msg: string;
+  isVisible: boolean;
 }
 
 const NotifyButton = (props: Props) => {
+  const [isRendered, setIsRendered] = useState(props.isVisible);
+
+  useEffect(() => {
+    if (props.isVisible) {
+      setIsRendered(true);
+    } else {
+      const timer = setTimeout(() => setIsRendered(false), 300); // match this to your transition duration
+      return () => clearTimeout(timer);
+    }
+  }, [props.isVisible]);
+
+  if (!isRendered) return null;
   return (
-    <button className="group relative" id="notif-trans">
+    <button className={`group relative ${props.isVisible ? '' : 'hidden'}`} id="notif-trans">
       <div className="absolute -right-2 -top-2 z-10">
         <div className="flex h-5 w-5 items-center justify-center">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
