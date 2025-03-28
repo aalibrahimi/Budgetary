@@ -18,6 +18,7 @@ import { Route as rootRoute } from './routes/__root'
 
 const ExpensesLazyImport = createFileRoute('/expenses')()
 const AboutLazyImport = createFileRoute('/about')()
+const FinancialQuizLazyImport = createFileRoute('/FinancialQuiz')()
 const IndexLazyImport = createFileRoute('/')()
 
 // Create/Update Routes
@@ -34,6 +35,12 @@ const AboutLazyRoute = AboutLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/about.lazy').then((d) => d.Route))
 
+const FinancialQuizLazyRoute = FinancialQuizLazyImport.update({
+  id: '/FinancialQuiz',
+  path: '/FinancialQuiz',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/FinancialQuiz.lazy').then((d) => d.Route))
+
 const IndexLazyRoute = IndexLazyImport.update({
   id: '/',
   path: '/',
@@ -49,6 +56,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/FinancialQuiz': {
+      id: '/FinancialQuiz'
+      path: '/FinancialQuiz'
+      fullPath: '/FinancialQuiz'
+      preLoaderRoute: typeof FinancialQuizLazyImport
       parentRoute: typeof rootRoute
     }
     '/about': {
@@ -72,12 +86,14 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
+  '/FinancialQuiz': typeof FinancialQuizLazyRoute
   '/about': typeof AboutLazyRoute
   '/expenses': typeof ExpensesLazyRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
+  '/FinancialQuiz': typeof FinancialQuizLazyRoute
   '/about': typeof AboutLazyRoute
   '/expenses': typeof ExpensesLazyRoute
 }
@@ -85,27 +101,30 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
+  '/FinancialQuiz': typeof FinancialQuizLazyRoute
   '/about': typeof AboutLazyRoute
   '/expenses': typeof ExpensesLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/expenses'
+  fullPaths: '/' | '/FinancialQuiz' | '/about' | '/expenses'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/expenses'
-  id: '__root__' | '/' | '/about' | '/expenses'
+  to: '/' | '/FinancialQuiz' | '/about' | '/expenses'
+  id: '__root__' | '/' | '/FinancialQuiz' | '/about' | '/expenses'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
+  FinancialQuizLazyRoute: typeof FinancialQuizLazyRoute
   AboutLazyRoute: typeof AboutLazyRoute
   ExpensesLazyRoute: typeof ExpensesLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
+  FinancialQuizLazyRoute: FinancialQuizLazyRoute,
   AboutLazyRoute: AboutLazyRoute,
   ExpensesLazyRoute: ExpensesLazyRoute,
 }
@@ -121,12 +140,16 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/FinancialQuiz",
         "/about",
         "/expenses"
       ]
     },
     "/": {
       "filePath": "index.lazy.tsx"
+    },
+    "/FinancialQuiz": {
+      "filePath": "FinancialQuiz.lazy.tsx"
     },
     "/about": {
       "filePath": "about.lazy.tsx"
