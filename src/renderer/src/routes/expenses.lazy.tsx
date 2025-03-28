@@ -10,6 +10,7 @@ import { useDarkModeStore } from './__root'
 import BudgetPlanner from '../components/BudgetPlanner'
 import { useExpenseStore } from '../stores/expenseStore'
 import NotifyButton2 from '@renderer/components/notifications/notificationButton2'
+import CategoryInsights from '@renderer/components/CategoryInsights'
 
 const Expenses = () => {
   const [notificationVisible, setNotificationVisible] = useState(false);
@@ -283,21 +284,17 @@ const showNotification = (category: string, msg: string) => {
             {activeTab === 'graphs' && <Graphs />}
 
             {/* Categories Tab Content */}
-            {activeTab === 'Categories' && (
+            {/* {activeTab === 'Categories' && (
               <div id="categories" className="tab-content">
-                <div className="categories-list">
-                  <h2>Hello!</h2>
-                  {/* Categories content will go here */}
-                  <p>Categories will be populated here!</p>
-                </div>
+                <CategoryInsights />
               </div>
-            )}
+            )} */}
             {/*  */}
-            {activeTab === 'budgetPlan' && (
+            {/* {activeTab === 'budgetPlan' && (
               <div id="budgetPlan" className="tab-content budget-plan">
                 <BudgetPlanner expenses={expenses} />
               </div>
-            )}
+            )} */}
           </main>
         </div>
       </div>
