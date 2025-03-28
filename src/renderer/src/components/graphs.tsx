@@ -1,13 +1,13 @@
-import { ArrowUpDown, ChevronDown } from 'lucide-react';
+import { ArrowUpDown, ChevronDown, TrendingUp, Calendar, BarChart3, CalendarClock, RefreshCw } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import FinancialForecasting from './FinancialForecast';
 
-
-
-// These are blueprints for the data we’re working with
+// These are blueprints for the data we're working with
 interface Expense {
   category: string; // Name of the category (for example: "Food", "Transport")
   amount: number;   // How much was spent
+  date: string;     // Date of the expense
 }
 
 interface CategoryTotal {
@@ -19,9 +19,17 @@ interface TopCategory {
   amount: number; // How much was spent in that category
 }
 
+// Define interface for forecast data
+interface ForecastData {
+  month: string;
+  income: number;
+  expenses: number;
+  savings: number;
+}
+
 // This is the main component for showing expense graphs
 const ExpenseGraphs = () => {
-  // Save and load expenses from the browser’s local storage (like a mini database)
+  // Save and load expenses from the browser's local storage (like a mini database)
   const [expenses, setExpenses] = useState<Expense[]>(() => {
     const savedExpenses = localStorage.getItem('expenses');
     return savedExpenses ? JSON.parse(savedExpenses) : []; // Load saved data or start fresh
@@ -46,10 +54,14 @@ const ExpenseGraphs = () => {
     );
   };
 
-  // These control what kind of graph we’re showing and some summary info
+  // These control what kind of graph we're showing and some summary info
   const [graphType, setGraphType] = useState<'bar' | 'line' | 'pie'>('bar'); // Pick the type of graph
   const [totalSpent, setTotalSpent] = useState(0); // Total amount of money spent
   const [topCategory, setTopCategory] = useState<TopCategory>({ name: '', amount: 0 }); // The "winner" category for spending
+  
+  // Forecast state
+  const [forecastData, setForecastData] = useState<ForecastData[]>([]);
+  const [isPredicting, setIsPredicting] = useState(false);
 
   // Automatically hide the category picker when clicking outside of it
   useEffect(() => {
@@ -100,14 +112,114 @@ const ExpenseGraphs = () => {
       if (existingCategory) {
         existingCategory.amount += expense.amount;
       } else {
-        acc.push({ category: expense.category, amount: expense.amount });
+        acc.push({ category: expense.category, amount: expense.amount, date: expense.date });
       }
       return acc;
     }, []);
   }, [expenses, selectedCategories]);
 
+  // Generate forecast data on component mount
+  useEffect(() => {
+    generateForecastData();
+  }, []);
+
+  // Mock forecast data function
+  const generateForecastData = () => {
+    const currentDate = new Date();
+    const data: ForecastData[] = [];
+    
+    // Base values from actual expense data
+    const monthlyExpenses = calculateMonthlyAverageExpense();
+    const baseIncome = 3500; // This could come from income state if available
+    
+    // Generate for the next 6 months
+    for (let i = 0; i < 6; i++) {
+      const forecastDate = new Date(currentDate);
+      forecastDate.setMonth(currentDate.getMonth() + i);
+      
+      // Add some trend - expenses increase during holidays
+      const month = forecastDate.getMonth();
+      let expenseMultiplier = 1.0;
+      
+      // Higher expenses in November-December, lower in January-February
+      if (month === 10 || month === 11) {
+        expenseMultiplier = 1.2;
+      } else if (month === 0 || month === 1) {
+        expenseMultiplier = 0.9;
+      }
+      
+      // Add randomness
+      const randomFactor = 0.9 + Math.random() * 0.2;
+      
+      const income = Math.round(baseIncome * (1 + (i * 0.01))); // Small increase over time
+      const expenses = Math.round(monthlyExpenses * expenseMultiplier * randomFactor);
+      const savings = income - expenses;
+      
+      data.push({
+        month: forecastDate.toLocaleString('default', { month: 'short', year: 'numeric' }),
+        income,
+        expenses,
+        savings
+      });
+    }
+    
+    setForecastData(data);
+  };
+
+  // Calculate monthly average expense
+  const calculateMonthlyAverageExpense = () => {
+    if (expenses.length === 0) return 2800; // Default value if no expense data
+    
+    // Group expenses by month
+    const expensesByMonth: Record<string, number> = {};
+    
+    expenses.forEach(exp => {
+      const date = new Date(exp.date);
+      const monthKey = `${date.getMonth()}-${date.getFullYear()}`;
+      
+      if (!expensesByMonth[monthKey]) {
+        expensesByMonth[monthKey] = 0;
+      }
+      
+      expensesByMonth[monthKey] += exp.amount;
+    });
+    
+    // Calculate average
+    const monthTotals = Object.values(expensesByMonth);
+    if (monthTotals.length === 0) return 2800;
+    
+    return monthTotals.reduce((sum, amount) => sum + amount, 0) / monthTotals.length;
+  };
+
+  // Run expense prediction
+  const runPrediction = () => {
+    setIsPredicting(true);
+    
+    // Simulate processing
+    setTimeout(() => {
+      generateForecastData();
+      setIsPredicting(false);
+    }, 1500);
+  };
+
+  // Format currency helper
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
+
   // Pick which type of graph to show based on the user's choice
   const renderGraph = () => {
+    if (aggregatedData.length === 0) {
+      return (
+        <div className="flex justify-center items-center h-64 text-gray-500">
+          No data available for the selected period
+        </div>
+      );
+    }
+    
     switch (graphType) {
       case 'bar':
         // Show a bar chart
@@ -185,11 +297,11 @@ const ExpenseGraphs = () => {
             </PieChart>
           </ResponsiveContainer>
         );
+      
+      default:
+        return null;
     }
   };
-
-
-
 
   return (
     <div className="p-6 space-y-6" style={{
@@ -306,14 +418,9 @@ const ExpenseGraphs = () => {
           </h2>
         </div>
         
-        {expenses.length === 0 ? (
-          <div style={{ color: 'var(--text-secondary)' }} className="flex h-96 items-center justify-center">
-            No expenses to display
-          </div>
-        ) : (
-          renderGraph()
-        )}
+        {renderGraph()}
       </div>
+      <FinancialForecasting isDarkMode={true} expenses={[]} income={0} />
     </div>
   );
 }
