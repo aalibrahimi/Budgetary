@@ -6,7 +6,7 @@ import '../assets/statsCard.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 import { useDarkModeStore } from './__root';
 import { Bar, BarChart, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
-import { Calendar, ChevronDown, DollarSign, PiggyBank, Wallet } from 'lucide-react';
+import { Calendar, ChevronDown, DollarSign, PiggyBank, Wallet, Sparkles, Plus, TrendingUp, AlertTriangle } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 
 // Sample data (in real app, would come from store or API)
@@ -55,6 +55,21 @@ const DashboardIndex = () => {
 
   // Chart colors
   const COLORS = ['#FF6B6B', '#4ECDC4', '#1A535C', '#FFE66D', '#FF9E80'];
+
+  // Helper function to get icon based on category
+  const getCategoryIcon = (category: string): string => {
+    const icons: Record<string, string> = {
+      'Groceries': 'shopping-cart',
+      'Rent': 'home',
+      'Insurance': 'shield',
+      'Dining Out': 'utensils',
+      'Entertainment': 'film',
+      'Transportation': 'car',
+      'Clothes': 'tshirt',
+      'Other': 'tag'
+    };
+    return icons[category] || 'circle';
+  };
 
   return (
     <div className={`app-container ${isDarkMode ? 'dark-mode' : ''}`} id="darky">
@@ -218,20 +233,99 @@ const DashboardIndex = () => {
               <h2><DollarSign className="dashboard-card-icon" /> Budget Allocation</h2>
               <Link to="/expenses?tab=budgetPlan" className="dashboard-card-link">Adjust Budget</Link>
             </div>
-            <div className="chart-container">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart
-                  data={sampleData.categoryData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                >
-                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                  <Bar dataKey="value" fill="var(--primary)">
-                    {sampleData.categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="budget-allocation-container">
+              {sampleData.categoryData.map((category, index) => (
+                <div key={index} className="budget-allocation-item">
+                  <div className="budget-allocation-header">
+                    <span className="category-icon" style={{ backgroundColor: COLORS[index % COLORS.length] }}>
+                      <i className={`fas fa-${getCategoryIcon(category.name)}`}></i>
+                    </span>
+                    <div className="category-details">
+                      <span className="category-name">{category.name}</span>
+                      <span className="category-amount">{formatCurrency(category.value)}</span>
+                    </div>
+                    <span className="category-percentage">
+                      {Math.round((category.value / sampleData.budgetOverview.income) * 100)}%
+                    </span>
+                  </div>
+                  <div className="budget-progress-bg">
+                    <div 
+                      className="budget-progress-bar" 
+                      style={{ 
+                        width: `${Math.min(100, (category.value / (category.value * 1.2)) * 100)}%`,
+                        backgroundColor: COLORS[index % COLORS.length] 
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Financial Insights Card */}
+          <div className="dashboard-card">
+            <div className="dashboard-card-header">
+              <h2><Sparkles className="dashboard-card-icon" /> Financial Insights</h2>
+            </div>
+            <div className="insights-container">
+              <div className="insight-item">
+                <div className="insight-icon" style={{ backgroundColor: COLORS[0] }}>
+                  <i className="fas fa-arrow-trend-up"></i>
+                </div>
+                <div className="insight-content">
+                  <h3>Spending Trend</h3>
+                  <p>Your spending on Dining Out is 15% higher than last month. Consider setting a stricter budget.</p>
+                </div>
+              </div>
+              <div className="insight-item">
+                <div className="insight-icon" style={{ backgroundColor: COLORS[1] }}>
+                  <i className="fas fa-piggy-bank"></i>
+                </div>
+                <div className="insight-content">
+                  <h3>Savings Opportunity</h3>
+                  <p>You could save an extra $120/month by reducing your Entertainment expenses by 20%.</p>
+                </div>
+              </div>
+              <div className="insight-item">
+                <div className="insight-icon" style={{ backgroundColor: COLORS[2] }}>
+                  <i className="fas fa-chart-line"></i>
+                </div>
+                <div className="insight-content">
+                  <h3>Income Allocation</h3>
+                  <p>You're currently saving 8% of your income. Financial experts recommend 15-20%.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Quick Entry */}
+          <div className="dashboard-card">
+            <div className="dashboard-card-header">
+              <h2><Plus className="dashboard-card-icon" /> Quick Expense Entry</h2>
+            </div>
+            <div className="quick-entry-container">
+              <form className="quick-entry-form">
+                <div className="quick-entry-inputs">
+                  <div className="quick-entry-field">
+                    <label>Date</label>
+                    <input type="date" defaultValue={new Date().toISOString().split('T')[0]} className="quick-entry-input" />
+                  </div>
+                  <div className="quick-entry-field">
+                    <label>Category</label>
+                    <select className="quick-entry-input">
+                      <option value="">Select Category</option>
+                      {sampleData.categoryData.map((cat, i) => (
+                        <option key={i} value={cat.name}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="quick-entry-field">
+                    <label>Amount</label>
+                    <input type="number" placeholder="0.00" className="quick-entry-input" />
+                  </div>
+                </div>
+                <button type="button" className="quick-entry-btn">Add Expense</button>
+              </form>
             </div>
           </div>
         </main>
