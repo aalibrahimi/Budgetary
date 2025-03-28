@@ -8,6 +8,7 @@ import { useDarkModeStore } from './__root';
 import { Bar, BarChart, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { Calendar, ChevronDown, DollarSign, PiggyBank, Wallet, Sparkles, Plus, TrendingUp, AlertTriangle } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
+import CashFlowForecast from '@renderer/components/CashFlowForecast';
 
 // Sample data (in real app, would come from store or API)
 const sampleData = {
@@ -331,6 +332,8 @@ const DashboardIndex = () => {
         </main>
       </div>
       
+        <CashFlowForecast />
+
       <div className="copyright">
         &copy; 2025 Budgetary Tracker. All rights reserved.
       </div>
