@@ -1,72 +1,73 @@
-import React, { useState, useEffect } from 'react';
-import { TrendingUp, RefreshCw, BarChart3, CalendarClock } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { TrendingUp } from 'lucide-react';
+import { useExpenseStore } from '@renderer/stores/expenseStore';
 
-// Define interface for forecast data
-interface ForecastData {
+interface MonthlyData {
   month: string;
+  monthKey: string; // For sorting (YYYY-MM)
   income: number;
   expenses: number;
   savings: number;
+  savingsRate: number;
 }
 
 interface FinancialForecastingProps {
   isDarkMode: boolean;
-  expenses: any[];
-  income: number;
 }
 
-// Mock forecast data function
-const generateForecastData = (): ForecastData[] => {
-  const currentDate = new Date();
-  const data: ForecastData[] = [];
+const FinancialForecasting: React.FC<FinancialForecastingProps> = ({ isDarkMode }) => {
+  // Get data from the store
+  const { expenses, cashFlowTransaction } = useExpenseStore();
   
-  // Generate for the next 6 months
-  for (let i = 0; i < 6; i++) {
-    const forecastDate = new Date(currentDate);
-    forecastDate.setMonth(currentDate.getMonth() + i);
-    
-    // Base values with some randomness
-    const baseIncome = 3500;
-    const baseExpenses = 2800;
-    
-    // Add some trend - expenses increase during holidays
-    const month = forecastDate.getMonth();
-    let expenseMultiplier = 1.0;
-    
-    // Higher expenses in November-December, lower in January-February
-    if (month === 10 || month === 11) {
-      expenseMultiplier = 1.2;
-    } else if (month === 0 || month === 1) {
-      expenseMultiplier = 0.9;
-    }
-    
-    // Add randomness
-    const randomFactor = 0.9 + Math.random() * 0.2;
-    
-    const income = Math.round(baseIncome * (1 + (i * 0.01))); // Small increase over time
-    const expenses = Math.round(baseExpenses * expenseMultiplier * randomFactor);
-    const savings = income - expenses;
-    
-    data.push({
-      month: forecastDate.toLocaleString('default', { month: 'short', year: 'numeric' }),
-      income,
-      expenses,
-      savings
+  // Calculate monthly data based on actual expenses and income
+  const monthlyData = useMemo(() => {
+    // Step 1: Group expenses by month
+    const expensesByMonth: Record<string, number> = {};
+    expenses.forEach(exp => {
+      const monthKey = exp.date.substring(0, 7); // YYYY-MM
+      expensesByMonth[monthKey] = (expensesByMonth[monthKey] || 0) + exp.amount;
     });
-  }
-  
-  return data;
-};
-
-const FinancialForecasting: React.FC<FinancialForecastingProps> = ({ isDarkMode, expenses, income }) => {
-  const [forecastData, setForecastData] = useState<ForecastData[]>([]);
-  const [isPredicting, setIsPredicting] = useState(false);
-  
-  // Generate forecast data on component mount
-  useEffect(() => {
-    const data = generateForecastData();
-    setForecastData(data);
-  }, []);
+    
+    // Step 2: Group income by month
+    const incomeByMonth: Record<string, number> = {};
+    cashFlowTransaction
+      .filter(t => t.type === 'income')
+      .forEach(income => {
+        const monthKey = income.date.substring(0, 7); // YYYY-MM
+        incomeByMonth[monthKey] = (incomeByMonth[monthKey] || 0) + income.amount;
+      });
+    
+    // Step 3: Merge all months from both datasets
+    const allMonths = new Set([
+      ...Object.keys(expensesByMonth),
+      ...Object.keys(incomeByMonth)
+    ]);
+    
+    // Step 4: Create result data
+    const result: MonthlyData[] = Array.from(allMonths).map(monthKey => {
+      const income = incomeByMonth[monthKey] || 0;
+      const expenses = expensesByMonth[monthKey] || 0;
+      const savings = income - expenses;
+      const savingsRate = income > 0 ? (savings / income) * 100 : 0;
+      
+      // Format month for display
+      const [year, month] = monthKey.split('-');
+      const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+      const monthName = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+      
+      return {
+        month: monthName,
+        monthKey,
+        income,
+        expenses,
+        savings,
+        savingsRate
+      };
+    });
+    
+    // Sort by date (newest first)
+    return result.sort((a, b) => b.monthKey.localeCompare(a.monthKey));
+  }, [expenses, cashFlowTransaction]);
   
   // Format currency helper
   const formatCurrency = (amount: number) => {
@@ -76,44 +77,18 @@ const FinancialForecasting: React.FC<FinancialForecastingProps> = ({ isDarkMode,
     }).format(amount);
   };
   
-  // Run expense prediction
-  const runPrediction = () => {
-    setIsPredicting(true);
-    
-    // Simulate processing
-    setTimeout(() => {
-      const newForecast = generateForecastData();
-      setForecastData(newForecast);
-      setIsPredicting(false);
-    }, 1500);
-  };
-  
-  // Calculate average monthly expenses
-  const averageMonthlyExpenses = () => {
-    // In a real app, this would calculate true monthly average
-    // For demo, just divide total by 3 to simulate 3 months of data
-    return expenses.reduce((sum, exp) => sum + exp.amount, 0) / 3;
-  };
-  
   return (
-    <>
-  
+    <div className="dashboard-card">
+      <div className="dashboard-card-header">
+        <h2>
+          <TrendingUp className="dashboard-card-icon" /> 
+          Monthly Financial Summary
+        </h2>
+      </div>
       
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden" style={{
-        backgroundColor: isDarkMode ? 'var(--card-background)' : 'white'
-      }}>
-        <div className="p-4 border-b" style={{
-          borderColor: isDarkMode ? 'var(--border-color)' : undefined
-        }}>
-          <h2 className="text-lg font-semibold" style={{
-            color: isDarkMode ? 'var(--text-primary)' : 'inherit'
-          }}>
-            Projected Monthly Cash Flow
-          </h2>
-        </div>
-        
-        <div className="p-4">
-          <div className="overflow-x-auto">
+      <div className="p-4">
+        <div className="overflow-x-auto">
+          {monthlyData.length > 0 ? (
             <table className="min-w-full">
               <thead>
                 <tr className="border-b" style={{
@@ -147,9 +122,9 @@ const FinancialForecasting: React.FC<FinancialForecastingProps> = ({ isDarkMode,
                 </tr>
               </thead>
               <tbody>
-                {forecastData.map((data, idx) => (
+                {monthlyData.map((data, idx) => (
                   <tr 
-                    key={idx} 
+                    key={data.monthKey} 
                     className={idx % 2 === 0 ? 'bg-gray-50' : ''}
                     style={{
                       backgroundColor: idx % 2 === 0 && isDarkMode 
@@ -187,16 +162,22 @@ const FinancialForecasting: React.FC<FinancialForecastingProps> = ({ isDarkMode,
                     <td className="px-6 py-4 whitespace-nowrap text-sm" style={{
                       color: isDarkMode ? 'var(--text-primary)' : 'inherit'
                     }}>
-                      {((data.savings / data.income) * 100).toFixed(1)}%
+                      {data.savingsRate.toFixed(1)}%
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500" style={{
+              color: isDarkMode ? 'var(--text-secondary)' : undefined
+            }}>
+              No financial data available yet. Add expenses and income to see your monthly summary.
+            </div>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
