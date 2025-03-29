@@ -438,3 +438,153 @@
   .dashboard-action:active {
     transform: translateY(1px);
   }
+
+
+  /* swwaapy */
+  /* Add these styles to your existing CSS files */
+
+/* Swappable dashboard grid layout */
+.swappable-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 20px;
+  width: 100%;
+}
+
+/* Make full width cards span both columns */
+.full-width-card {
+  grid-column: 1 / -1;
+}
+
+/* Responsive grid for smaller screens */
+@media (max-width: 768px) {
+  .swappable-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  /* All cards are full width on mobile */
+  .dashboard-card {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Styles for drag and drop */
+.draggable-card {
+  position: relative;
+  cursor: grab;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.draggable-card:active {
+  cursor: grabbing;
+}
+
+/* Visual indicator for draggable cards in edit mode */
+.draggable-card[draggable="true"] {
+  border: 2px dashed rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .draggable-card[draggable="true"] {
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+}
+
+/* Drag handle */
+.drag-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 4px 8px;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #666;
+  font-size: 12px;
+  border-radius: 0 0 4px 0;
+  cursor: move;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 10;
+}
+
+.dark-mode .drag-handle {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ccc;
+}
+
+/* Add some padding to card headers to avoid overlap with drag handle */
+.dashboard-card {
+  position: relative;
+  padding-top: 4px;
+  height: 100%;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease, transform 0.1s ease;
+}
+
+.dashboard-card-header {
+  padding-top: 20px;
+}
+
+/* Header actions container */
+.header-actions {
+  display: flex;
+  align-items: center;
+}
+
+/* Drag effect styles */
+.draggable-card[draggable="true"]:hover {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.dark-mode .draggable-card[draggable="true"]:hover {
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+/* Container heights */
+.chart-container, .expense-list-container, .bills-list, 
+.savings-goals, .budget-allocation-container, .insights-container, 
+.quick-entry-container {
+  height: calc(100% - 60px);
+  overflow-y: auto;
+}
+
+/* Adjust responsive container for pie chart */
+.chart-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Animation for transitioning between edit modes */
+.dashboard-card {
+  transition: all 0.2s ease;
+}
+
+/* Toast notification for layout saved */
+.layout-saved-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  animation: fadeOut 0.5s ease 2.5s forwards;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; visibility: hidden; }
+}
+
+/* Styling for drag highlight */
+.draggable-card.drag-over {
+  border: 2px dashed #3498db;
+  background-color: rgba(52, 152, 219, 0.05);
+}
+
+.dark-mode .draggable-card.drag-over {
+  border: 2px dashed #3498db;
+  background-color: rgba(52, 152, 219, 0.1);
+}

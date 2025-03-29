@@ -7,10 +7,16 @@ import '@fortawesome/fontawesome-free/css/all.css';
 import { useDarkModeStore } from './__root';
 import { useExpenseStore } from '../stores/expenseStore';
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
-import { Calendar, DollarSign, PiggyBank, Wallet, Sparkles, Plus } from 'lucide-react';
+import { Calendar, DollarSign, PiggyBank, Wallet, Sparkles, Plus, Move } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import CashFlowForecast from '@renderer/components/CashFlowForecast';
 import NotifyButton2 from '@renderer/components/notifications/notificationButton2';
+import { Responsive, WidthProvider } from 'react-grid-layout';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
+
+// Create a responsive grid layout
+const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const DashboardIndex = () => {
   const { isDarkMode } = useDarkModeStore();
@@ -23,6 +29,57 @@ const DashboardIndex = () => {
   const [quickEntryAmount, setQuickEntryAmount] = useState('');
   const [notificationVisible, setNotificaitonVisible] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState({category: "", msg: ""});
+  
+  // Layout state for grid items
+  const [layouts, setLayouts] = useState(() => {
+    // Try to load saved layout from localStorage
+    const savedLayouts = localStorage.getItem('dashboardLayouts');
+    if (savedLayouts) {
+      return JSON.parse(savedLayouts);
+    }
+    
+    // Default layout configuration
+    return {
+      lg: [
+        { i: 'stats', x: 0, y: 0, w: 12, h: 1, static: true },
+        { i: 'recent-expenses', x: 0, y: 1, w: 6, h: 4 },
+        { i: 'upcoming-bills', x: 0, y: 5, w: 6, h: 4 },
+        { i: 'spending-category', x: 6, y: 1, w: 6, h: 4 },
+        { i: 'savings-goals', x: 6, y: 5, w: 6, h: 4 },
+        { i: 'budget-allocation', x: 0, y: 9, w: 12, h: 4 },
+        { i: 'financial-insights', x: 0, y: 13, w: 12, h: 3 },
+        { i: 'quick-entry', x: 0, y: 16, w: 12, h: 3 }
+      ],
+      md: [
+        { i: 'stats', x: 0, y: 0, w: 10, h: 1, static: true },
+        { i: 'recent-expenses', x: 0, y: 1, w: 5, h: 4 },
+        { i: 'upcoming-bills', x: 0, y: 5, w: 5, h: 4 },
+        { i: 'spending-category', x: 5, y: 1, w: 5, h: 4 },
+        { i: 'savings-goals', x: 5, y: 5, w: 5, h: 4 },
+        { i: 'budget-allocation', x: 0, y: 9, w: 10, h: 4 },
+        { i: 'financial-insights', x: 0, y: 13, w: 10, h: 3 },
+        { i: 'quick-entry', x: 0, y: 16, w: 10, h: 3 }
+      ],
+      sm: [
+        { i: 'stats', x: 0, y: 0, w: 6, h: 1, static: true },
+        { i: 'recent-expenses', x: 0, y: 1, w: 6, h: 4 },
+        { i: 'upcoming-bills', x: 0, y: 5, w: 6, h: 4 },
+        { i: 'spending-category', x: 0, y: 9, w: 6, h: 4 },
+        { i: 'savings-goals', x: 0, y: 13, w: 6, h: 4 },
+        { i: 'budget-allocation', x: 0, y: 17, w: 6, h: 4 },
+        { i: 'financial-insights', x: 0, y: 21, w: 6, h: 3 },
+        { i: 'quick-entry', x: 0, y: 24, w: 6, h: 3 }
+      ]
+    };
+  });
+  
+  // State to toggle edit mode
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  // Save layouts to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('dashboardLayouts', JSON.stringify(layouts));
+  }, [layouts]);
 
   const showNotification = (category: string, msg: string) => {
     setNotificationMessage({category, msg});
@@ -133,19 +190,53 @@ const DashboardIndex = () => {
     };
     return icons[category] || 'circle';
   };
+  
+  // Handle layout changes
+  const handleLayoutChange = (currentLayout: any, allLayouts: any) => {
+    setLayouts(allLayouts);
+  };
+
+  // Reset layout to default
+  const resetLayout = () => {
+    localStorage.removeItem('dashboardLayouts');
+    window.location.reload();
+  };
+
+  // Toggle edit mode
+  const toggleEditMode = () => {
+    setIsEditMode(!isEditMode);
+  };
 
   return (
     <div className={`app-container ${isDarkMode ? 'dark-mode' : ''}`} id="darky">
       <header className="header">
         <div className="header-top">
           <h1>Dashboard</h1>
-          <Link to="/expenses" className="btn btn-secondary" viewTransition={true}>
-            View Expenses
-          </Link>
+          <div className="header-actions">
+            <button 
+              className={`btn ${isEditMode ? 'btn-success' : 'btn-primary'}`} 
+              onClick={toggleEditMode}
+              style={{ marginRight: '10px' }}
+            >
+              {isEditMode ? 'Save Layout' : 'Edit Layout'}
+            </button>
+            {isEditMode && (
+              <button 
+                className="btn btn-warning" 
+                onClick={resetLayout}
+                style={{ marginRight: '10px' }}
+              >
+                Reset Layout
+              </button>
+            )}
+            <Link to="/expenses" className="btn btn-secondary" viewTransition={true}>
+              View Expenses
+            </Link>
+          </div>
         </div>
         
-        {/* Stats Cards Row */}
-        <div className="stats-grid">
+        {/* Stats Cards Row - This stays at the top */}
+        <div className="stats-grid" id="stats">
           <div className="stat-card">
             <div className="stat-label">Monthly Income</div>
             <div className="stat-value">{formatCurrency(budgetOverview.income)}</div>
@@ -187,233 +278,248 @@ const DashboardIndex = () => {
         </section>
 
         <main className="dashboard-content">
-          {/* Two-column layout for larger screens */}
-          <div className="dashboard-grid">
-            {/* Left column */}
-            <div className="dashboard-section">
-              <div className="dashboard-card">
-                <div className="dashboard-card-header">
-                  <h2><Wallet className="dashboard-card-icon" /> Recent Expenses</h2>
-                  <Link to="/expenses" className="dashboard-card-link">View All</Link>
-                </div>
-                <div className="expense-list-container" style={{ boxShadow: 'none' }}>
-                  <ul id="expenseList">
-                    {recentExpenses.length > 0 ? (
-                      recentExpenses.map((expense, index) => (
-                        <li key={index}>
-                          <span>{formatDate(expense.date)}</span> - <span>{expense.category}</span> - 
-                          <span>{formatCurrency(expense.amount)}</span>
-                        </li>
-                      ))
-                    ) : (
-                      <li className="empty-list-message">No recent expenses</li>
-                    )}
-                  </ul>
-                </div>
+          {/* Swappable Grid Layout */}
+          <ResponsiveGridLayout
+            className="layout"
+            layouts={layouts}
+            breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+            cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+            rowHeight={80}
+            onLayoutChange={handleLayoutChange}
+            isDraggable={isEditMode}
+            isResizable={isEditMode}
+            useCSSTransforms={true}
+          >
+            {/* Recent Expenses Card */}
+            <div key="recent-expenses" className="dashboard-card">
+              {isEditMode && <div className="drag-handle"> Drag</div>}
+              <div className="dashboard-card-header">
+                <h2><Wallet className="dashboard-card-icon" /> Recent Expenses</h2>
+                <Link to="/expenses" className="dashboard-card-link">View All</Link>
               </div>
-
-              <div className="dashboard-card">
-                <div className="dashboard-card-header">
-                  <h2><Calendar className="dashboard-card-icon" /> Upcoming Bills</h2>
-                </div>
-                <div className="bills-list">
-                  {sampleData.upcomingBills.map((bill, index) => (
-                    <div key={index} className="bill-item">
-                      <div className="bill-info">
-                        <span className="bill-name">{bill.name}</span>
-                        <span className="bill-amount">{formatCurrency(bill.amount)}</span>
-                      </div>
-                      <div className="bill-due-date">
-                        Due: {bill.dueDate}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Right column */}
-            <div className="dashboard-section">
-              <div className="dashboard-card">
-                <div className="dashboard-card-header">
-                  <h2>Spending by Category</h2>
-                </div>
-                <div className="chart-container">
-                  {categoryData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={279}>
-                      <PieChart>
-                        <Pie
-                          data={categoryData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        >
-                          {categoryData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
+              <div className="expense-list-container" style={{ boxShadow: 'none' }}>
+                <ul id="expenseList">
+                  {recentExpenses.length > 0 ? (
+                    recentExpenses.map((expense, index) => (
+                      <li key={index}>
+                        <span>{formatDate(expense.date)}</span> - <span>{expense.category}</span> - 
+                        <span>{formatCurrency(expense.amount)}</span>
+                      </li>
+                    ))
                   ) : (
-                    <div className="empty-chart-message">No expense data to display</div>
+                    <li className="empty-list-message">No recent expenses</li>
                   )}
-                </div>
-              </div>
-
-              <div className="dashboard-card">
-                <div className="dashboard-card-header">
-                  <h2><PiggyBank className="dashboard-card-icon" /> Savings Goals</h2>
-                </div>
-                <div className="savings-goals">
-                  {sampleData.savingsGoals.map((goal, index) => {
-                    const progress = (goal.current / goal.target) * 100;
-                    return (
-                      <div key={index} className="savings-goal">
-                        <div className="savings-goal-header">
-                          <span className="savings-goal-name">{goal.name}</span>
-                          <span className="savings-goal-amount">
-                            {formatCurrency(goal.current)} / {formatCurrency(goal.target)}
-                          </span>
-                        </div>
-                        <div className="savings-goal-progress-bg">
-                          <div 
-                            className="savings-goal-progress-bar" 
-                            style={{ 
-                              width: `${progress}%`,
-                              backgroundColor: goal.color 
-                            }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                </ul>
               </div>
             </div>
-          </div>
 
-          {/* Full-width card for budget allocation */}
-          <div className="dashboard-card">
-            <div className="dashboard-card-header">
-              <h2><DollarSign className="dashboard-card-icon" /> Budget Allocation</h2>
-              <Link to="/expenses?tab=budgetPlan" className="dashboard-card-link">Adjust Budget</Link>
-            </div>
-            <div className="budget-allocation-container">
-              {categoryData.length > 0 ? (
-                categoryData.map((category, index) => (
-                  <div key={index} className="budget-allocation-item">
-                    <div className="budget-allocation-header">
-                      <span className="category-icon" style={{ backgroundColor: COLORS[index % COLORS.length] }}>
-                        <i className={`fas fa-${getCategoryIcon(category.name)}`}></i>
-                      </span>
-                      <div className="category-details">
-                        <span className="category-name">{category.name}</span>
-                        <span className="category-amount">{formatCurrency(category.value)}</span>
-                      </div>
-                      <span className="category-percentage">
-                        {Math.round((category.value / budgetOverview.income) * 100)}%
-                      </span>
+            {/* Upcoming Bills Card */}
+            <div key="upcoming-bills" className="dashboard-card">
+              {isEditMode && <div className="drag-handle"> Drag</div>}
+              <div className="dashboard-card-header">
+                <h2><Calendar className="dashboard-card-icon" /> Upcoming Bills</h2>
+              </div>
+              <div className="bills-list">
+                {sampleData.upcomingBills.map((bill, index) => (
+                  <div key={index} className="bill-item">
+                    <div className="bill-info">
+                      <span className="bill-name">{bill.name}</span>
+                      <span className="bill-amount">{formatCurrency(bill.amount)}</span>
                     </div>
-                    <div className="budget-progress-bg">
-                      <div 
-                        className="budget-progress-bar" 
-                        style={{ 
-                          width: `${Math.min(100, (category.value / (category.value * 1.2)) * 100)}%`,
-                          backgroundColor: COLORS[index % COLORS.length] 
-                        }}
-                      ></div>
+                    <div className="bill-due-date">
+                      Due: {bill.dueDate}
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="empty-allocation-message">No categories to display</div>
-              )}
-            </div>
-          </div>
-          
-          {/* Financial Insights Card */}
-          <div className="dashboard-card">
-            <div className="dashboard-card-header">
-              <h2><Sparkles className="dashboard-card-icon" /> Financial Insights</h2>
-            </div>
-            <div className="insights-container">
-              <div className="insight-item">
-                <div className="insight-icon" style={{ backgroundColor: COLORS[0] }}>
-                  <i className="fas fa-arrow-trend-up"></i>
-                </div>
-                <div className="insight-content">
-                  <h3>Spending Trend</h3>
-                  <p>Your spending on Dining Out is 15% higher than last month. Consider setting a stricter budget.</p>
-                </div>
-              </div>
-              <div className="insight-item">
-                <div className="insight-icon" style={{ backgroundColor: COLORS[1] }}>
-                  <i className="fas fa-piggy-bank"></i>
-                </div>
-                <div className="insight-content">
-                  <h3>Savings Opportunity</h3>
-                  <p>You could save an extra $120/month by reducing your Entertainment expenses by 20%.</p>
-                </div>
-              </div>
-              <div className="insight-item">
-                <div className="insight-icon" style={{ backgroundColor: COLORS[2] }}>
-                  <i className="fas fa-chart-line"></i>
-                </div>
-                <div className="insight-content">
-                  <h3>Income Allocation</h3>
-                  <p>You're currently saving 8% of your income. Financial experts recommend 15-20%.</p>
-                </div>
+                ))}
               </div>
             </div>
-          </div>
-          
-          {/* Quick Entry */}
-          <div className="dashboard-card">
-            <div className="dashboard-card-header">
-              <h2><Plus className="dashboard-card-icon" /> Quick Expense Entry</h2>
+
+            {/* Spending by Category Card */}
+            <div key="spending-category" className="dashboard-card">
+              {isEditMode && <div className="drag-handle"> Drag</div>}
+              <div className="dashboard-card-header">
+                <h2>Spending by Category</h2>
+              </div>
+              <div className="chart-container">
+                {categoryData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {categoryData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="empty-chart-message">No expense data to display</div>
+                )}
+              </div>
             </div>
-            <div className="quick-entry-container">
-              <form className="quick-entry-form" onSubmit={handleQuickAddExpense}>
-                <div className="quick-entry-inputs">
-                  <div className="quick-entry-field">
-                    <label>Date</label>
-                    <input type="date" value={quickEntryDate} onChange={(e) => setQuickEntryDate(e.target.value)} className="quick-entry-input" />
+
+            {/* Savings Goals Card */}
+            <div key="savings-goals" className="dashboard-card">
+              {isEditMode && <div className="drag-handle"> Drag</div>}
+              <div className="dashboard-card-header">
+                <h2><PiggyBank className="dashboard-card-icon" /> Savings Goals</h2>
+              </div>
+              <div className="savings-goals">
+                {sampleData.savingsGoals.map((goal, index) => {
+                  const progress = (goal.current / goal.target) * 100;
+                  return (
+                    <div key={index} className="savings-goal">
+                      <div className="savings-goal-header">
+                        <span className="savings-goal-name">{goal.name}</span>
+                        <span className="savings-goal-amount">
+                          {formatCurrency(goal.current)} / {formatCurrency(goal.target)}
+                        </span>
+                      </div>
+                      <div className="savings-goal-progress-bg">
+                        <div 
+                          className="savings-goal-progress-bar" 
+                          style={{ 
+                            width: `${progress}%`,
+                            backgroundColor: goal.color 
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Budget Allocation Card */}
+            <div key="budget-allocation" className="dashboard-card">
+              {isEditMode && <div className="drag-handle"> Drag</div>}
+              <div className="dashboard-card-header">
+                <h2><DollarSign className="dashboard-card-icon" /> Budget Allocation</h2>
+                <Link to="/expenses?tab=budgetPlan" className="dashboard-card-link">Adjust Budget</Link>
+              </div>
+              <div className="budget-allocation-container">
+                {categoryData.length > 0 ? (
+                  categoryData.map((category, index) => (
+                    <div key={index} className="budget-allocation-item">
+                      <div className="budget-allocation-header">
+                        <span className="category-icon" style={{ backgroundColor: COLORS[index % COLORS.length] }}>
+                          <i className={`fas fa-${getCategoryIcon(category.name)}`}></i>
+                        </span>
+                        <div className="category-details">
+                          <span className="category-name">{category.name}</span>
+                          <span className="category-amount">{formatCurrency(category.value)}</span>
+                        </div>
+                        <span className="category-percentage">
+                          {Math.round((category.value / budgetOverview.income) * 100)}%
+                        </span>
+                      </div>
+                      <div className="budget-progress-bg">
+                        <div 
+                          className="budget-progress-bar" 
+                          style={{ 
+                            width: `${Math.min(100, (category.value / (category.value * 1.2)) * 100)}%`,
+                            backgroundColor: COLORS[index % COLORS.length] 
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="empty-allocation-message">No categories to display</div>
+                )}
+              </div>
+            </div>
+            
+            {/* Financial Insights Card */}
+            <div key="financial-insights" className="dashboard-card">
+              {isEditMode && <div className="drag-handle"> Drag</div>}
+              <div className="dashboard-card-header">
+                <h2><Sparkles className="dashboard-card-icon" /> Financial Insights</h2>
+              </div>
+              <div className="insights-container">
+                <div className="insight-item">
+                  <div className="insight-icon" style={{ backgroundColor: COLORS[0] }}>
+                    <i className="fas fa-arrow-trend-up"></i>
                   </div>
-                  <div className="quick-entry-field">
-                    <label>Category</label>
-                    <select className="quick-entry-input" value={quickEntryCategory} onChange={(e) => setQuickEntryCategory(e.target.value)}>
-                      <option value="">Select Category</option>
-                      <option value="Groceries">Groceries</option>
-                      <option value="Rent">Rent</option>
-                      <option value="Insurance">Insurance</option>
-                      <option value="Dining Out">Dining Out</option>
-                      <option value="Entertainment">Entertainment</option>
-                      <option value="Clothes">Clothes</option>
-                      <option value="Transportation">Transportation</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                  <div className="quick-entry-field">
-                    <label>Amount</label>
-                    <input type="number" placeholder="0.00" className="quick-entry-input" value={quickEntryAmount} step="0.01" min="0.01" onChange={(e) => setQuickEntryAmount(e.target.value)} />
+                  <div className="insight-content">
+                    <h3>Spending Trend</h3>
+                    <p>Your spending on Dining Out is 15% higher than last month. Consider setting a stricter budget.</p>
                   </div>
                 </div>
-                <button type="submit" className="quick-entry-btn">Add Expense</button>
-                <NotifyButton2 
-                  category={notificationMessage.category}
-                  msg={notificationMessage.msg}
-                  isVisible={notificationVisible}
-                  onClose={() => setNotificaitonVisible(false)}
-                  />
-              </form>
+                <div className="insight-item">
+                  <div className="insight-icon" style={{ backgroundColor: COLORS[1] }}>
+                    <i className="fas fa-piggy-bank"></i>
+                  </div>
+                  <div className="insight-content">
+                    <h3>Savings Opportunity</h3>
+                    <p>You could save an extra $120/month by reducing your Entertainment expenses by 20%.</p>
+                  </div>
+                </div>
+                <div className="insight-item">
+                  <div className="insight-icon" style={{ backgroundColor: COLORS[2] }}>
+                    <i className="fas fa-chart-line"></i>
+                  </div>
+                  <div className="insight-content">
+                    <h3>Income Allocation</h3>
+                    <p>You're currently saving 8% of your income. Financial experts recommend 15-20%.</p>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+            
+            {/* Quick Entry Card */}
+            <div key="quick-entry" className="dashboard-card">
+              {isEditMode && <div className="drag-handle"> Drag</div>}
+              <div className="dashboard-card-header">
+                <h2><Plus className="dashboard-card-icon" /> Quick Expense Entry</h2>
+              </div>
+              <div className="quick-entry-container">
+                <form className="quick-entry-form" onSubmit={handleQuickAddExpense}>
+                  <div className="quick-entry-inputs">
+                    <div className="quick-entry-field">
+                      <label>Date</label>
+                      <input type="date" value={quickEntryDate} onChange={(e) => setQuickEntryDate(e.target.value)} className="quick-entry-input" />
+                    </div>
+                    <div className="quick-entry-field">
+                      <label>Category</label>
+                      <select className="quick-entry-input" value={quickEntryCategory} onChange={(e) => setQuickEntryCategory(e.target.value)}>
+                        <option value="">Select Category</option>
+                        <option value="Groceries">Groceries</option>
+                        <option value="Rent">Rent</option>
+                        <option value="Insurance">Insurance</option>
+                        <option value="Dining Out">Dining Out</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Clothes">Clothes</option>
+                        <option value="Transportation">Transportation</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div className="quick-entry-field">
+                      <label>Amount</label>
+                      <input type="number" placeholder="0.00" className="quick-entry-input" value={quickEntryAmount} step="0.01" min="0.01" onChange={(e) => setQuickEntryAmount(e.target.value)} />
+                    </div>
+                  </div>
+                  <button type="submit" className="quick-entry-btn">Add Expense</button>
+                  <NotifyButton2 
+                    category={notificationMessage.category}
+                    msg={notificationMessage.msg}
+                    isVisible={notificationVisible}
+                    onClose={() => setNotificaitonVisible(false)}
+                    />
+                </form>
+              </div>
+            </div>
+          </ResponsiveGridLayout>
         </main>
       </div>
       
