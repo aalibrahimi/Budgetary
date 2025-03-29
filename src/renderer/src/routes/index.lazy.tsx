@@ -10,6 +10,7 @@ import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recha
 import { Calendar, DollarSign, PiggyBank, Wallet, Sparkles, Plus } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import CashFlowForecast from '@renderer/components/CashFlowForecast';
+import NotifyButton2 from '@renderer/components/notifications/notificationButton2';
 
 const DashboardIndex = () => {
   const { isDarkMode } = useDarkModeStore();
@@ -404,6 +405,12 @@ const DashboardIndex = () => {
                   </div>
                 </div>
                 <button type="submit" className="quick-entry-btn">Add Expense</button>
+                <NotifyButton2 
+                  category={notificationMessage.category}
+                  msg={notificationMessage.msg}
+                  isVisible={notificationVisible}
+                  onClose={() => setNotificaitonVisible(false)}
+                  />
               </form>
             </div>
           </div>
