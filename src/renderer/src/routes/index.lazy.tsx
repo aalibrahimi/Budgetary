@@ -1,5 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
-import { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import '../assets/index.css';
 import '../assets/expenses.css';
 import '../assets/statsCard.css';
@@ -15,8 +15,44 @@ const DashboardIndex = () => {
   const { isDarkMode } = useDarkModeStore();
   const [activePeriod, setActivePeriod] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
   
-  // Get real expense data from store
-  const { expenses } = useExpenseStore();
+  // For quick entry form
+  const { expenses, addExpense } = useExpenseStore(); // Get real expenses from store
+  const [quickEntryDate, setQuickEntryDate] = useState(new Date().toISOString().split('T')[0]);
+  const [quickEntryCategory, setQuickEntryCategory] = useState('');
+  const [quickEntryAmount, setQuickEntryAmount] = useState('');
+  const [notificationVisible, setNotificaitonVisible] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState({category: "", msg: ""});
+
+  const showNotification = (category: string, msg: string) => {
+    setNotificationMessage({category, msg});
+    setNotificaitonVisible(true);
+    setTimeout(() => {
+      setNotificaitonVisible(false);
+    }, 5000);
+  };
+
+  // Handle quick entry form submition
+  const handleQuickAddExpense = (e: React.FormEvent) => {
+    e.preventDefault();
+    const amount = parseFloat(quickEntryAmount);
+    if (!quickEntryCategory || isNaN(amount) || amount <= 0 || !quickEntryDate) {
+      showNotification('Error', 'Please fill all correctly!');
+      return;
+    }
+    const newExpense = {
+      date: quickEntryDate,
+      category: quickEntryCategory,
+      amount: amount
+    };
+
+    addExpense(newExpense);
+
+    // Reset form
+    setQuickEntryAmount('');
+    setQuickEntryCategory('');
+
+    showNotification('success', `Added ${quickEntryCategory} expense of $${amount.toFixed(2)}`);
+  };
   
   // Format date from YYYY-MM-DD to Month DD, YYYY
   const formatDate = (dateString: string): string => {
@@ -342,15 +378,15 @@ const DashboardIndex = () => {
               <h2><Plus className="dashboard-card-icon" /> Quick Expense Entry</h2>
             </div>
             <div className="quick-entry-container">
-              <form className="quick-entry-form">
+              <form className="quick-entry-form" onSubmit={handleQuickAddExpense}>
                 <div className="quick-entry-inputs">
                   <div className="quick-entry-field">
                     <label>Date</label>
-                    <input type="date" defaultValue={new Date().toISOString().split('T')[0]} className="quick-entry-input" />
+                    <input type="date" value={quickEntryDate} onChange={(e) => setQuickEntryDate(e.target.value)} className="quick-entry-input" />
                   </div>
                   <div className="quick-entry-field">
                     <label>Category</label>
-                    <select className="quick-entry-input">
+                    <select className="quick-entry-input" value={quickEntryCategory} onChange={(e) => setQuickEntryCategory(e.target.value)}>
                       <option value="">Select Category</option>
                       <option value="Groceries">Groceries</option>
                       <option value="Rent">Rent</option>
@@ -364,10 +400,10 @@ const DashboardIndex = () => {
                   </div>
                   <div className="quick-entry-field">
                     <label>Amount</label>
-                    <input type="number" placeholder="0.00" className="quick-entry-input" />
+                    <input type="number" placeholder="0.00" className="quick-entry-input" value={quickEntryAmount} step="0.01" min="0.01" onChange={(e) => setQuickEntryAmount(e.target.value)} />
                   </div>
                 </div>
-                <button type="button" className="quick-entry-btn">Add Expense</button>
+                <button type="submit" className="quick-entry-btn">Add Expense</button>
               </form>
             </div>
           </div>
