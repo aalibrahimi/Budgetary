@@ -7,24 +7,42 @@ import DatePicker from '@renderer/components/DatePicker'
 // import { useState } from 'react'
 import Graphs from '@renderer/components/graphs'
 import { useDarkModeStore } from './__root'
-import BudgetPlanner from '../components/BudgetPlanner'
+
 import { useExpenseStore } from '../stores/expenseStore'
 import NotifyButton2 from '@renderer/components/notifications/notificationButton2'
-import CategoryInsights from '@renderer/components/CategoryInsights'
 
 const Expenses = () => {
-  const [notificationVisible, setNotificationVisible] = useState(false);
-const [notificationMessage, setNotificationMessage] = useState({ category: '', msg: '' });
+  const [notificationVisible, setNotificationVisible] = useState(false)
+  const [notificationMessage, setNotificationMessage] = useState({ category: '', msg: '' })
 
-const showNotification = (category: string, msg: string) => {
-  setNotificationMessage({ category, msg });
-  setNotificationVisible(true);
+  // New statae for selectedd month in month picker
+   const [selectedMonth, setSelectedMonth] = useState<string>(() => {
+    // default to current month
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2,'0')}`;
+  })
 
-  // Hide the notification after 5 seconds
-  setTimeout(() => {
-    setNotificationVisible(false);
-  }, 5000);
-};
+  //  Format data from yyyy-mm-dd to Month dd, yyyy
+
+  const formateDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-Us', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+
+  const showNotification = (category: string, msg: string) => {
+    setNotificationMessage({ category, msg })
+    setNotificationVisible(true)
+
+    // Hide the notification after 5 seconds
+    setTimeout(() => {
+      setNotificationVisible(false)
+    }, 5000)
+  }
 
   const { isDarkMode } = useDarkModeStore()
   const {
@@ -49,42 +67,66 @@ const showNotification = (category: string, msg: string) => {
     setActiveTab(tab)
   }
 
-  useEffect(() => {
-    const expensesContainer = document.getElementById('darky')
+  // handle month selection change 
+  const handleMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedMonth(e.target.value);
+  };
 
-    if (expenses.length > 0 || expensesContainer) {
-      if (isDarkMode) {
-        expensesContainer?.classList.add('dark-mode')
-      } else {
-        expensesContainer?.classList.remove('dark-mode')
+  const filteredExpenses = React.useMemo(() => {
+    return expenses.filter(expense => {
+      // extract yearaand month from the expense date (format: YYYY-MM-DD)
+      const expenseYearMonth = expense.date.substring(0,7); // Gets "YYYY-MM"
+      return expenseYearMonth === selectedMonth
+    });
+  }, [expenses, selectedMonth])
+
+
+    // Handle dark mode
+    useEffect(() => {
+      const expensesContainer = document.getElementById('darky')
+      if (expensesContainer) {
+        if (isDarkMode) {
+          expensesContainer.classList.add('dark-mode')
+        } else {
+          expensesContainer.classList.remove('dark-mode')
+        }
       }
+    }, [isDarkMode]);
 
-      // Use new store functions for calculations
-      const total = getTotal()
-      setMonthlyTotal(`$${total.toFixed(2)}`)
-      setExpenseCount(expenses.length)
+  useEffect(() => {
+  
+      if (filteredExpenses.length > 0) {
+        // calculat the total
+        const total = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+        setMonthlyTotal(`${total.toFixed(2)}`);
+        setExpenseCount(filteredExpenses.length);
+      
+        // calculate every category totals
+        const categoryTotals: Record<string, number> = {};
+        filteredExpenses.forEach(exp => {
+          categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
+          
+        });
 
-      const categoryTotals = getCategoryTotals()
+        // find top category
+        let maxCategory = '';
+        let maxAmount = 0;
+        Object.entries(categoryTotals).forEach(([category, amount]) => {
+          if (amount > maxAmount) {
+            maxCategory = category;
+            maxAmount = amount;
+          }
+        });
 
-      // Fixed type error by explicitly typing the reducer accumulator and return value
-      const mostSpentCategory = Object.entries(categoryTotals).reduce<[string, number]>(
-        (max: [string, number], [category, amount]: [string, number]) => {
-          return amount > max[1] ? [category, amount] : max
-        },
-        ['', 0]
-      )[0]
+        setTopCategory(maxCategory || '-');
+      }else {
+        // no expnes for the selectedd month\
+        setMonthlyTotal('$0.00');
+        setExpenseCount(0);
+        setTopCategory('-');
+      }
+  }, [selectedMonth, expenses]);
 
-      setTopCategory(mostSpentCategory)
-    }
-  }, [
-    expenses,
-    isDarkMode,
-    getTotal,
-    getCategoryTotals,
-    setMonthlyTotal,
-    setExpenseCount,
-    setTopCategory
-  ])
   // this is where i'll add the logic for adding an expense
   const handleAddExpense = (e: React.FormEvent) => {
     e.preventDefault()
@@ -94,8 +136,8 @@ const showNotification = (category: string, msg: string) => {
     const amount = parseFloat(form.expenseAmount.value)
 
     if (!category || isNaN(amount) || !selectedDate) {
-      showNotification('Error', 'Please select a date');
-      return;
+      showNotification('Error', 'Please select a date')
+      return
     }
 
     const newExpense = {
@@ -122,14 +164,6 @@ const showNotification = (category: string, msg: string) => {
 
   return (
     <>
-      {/* <head>
-      <meta charSet="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Expense Tracker</title>
-      <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-
-      </head> */}
-
       <div className={`app-container ${isDarkMode ? 'dark-mode ' : ''}`} id="darky">
         <header className="header">
           <div className="header-top">
@@ -254,10 +288,10 @@ const showNotification = (category: string, msg: string) => {
                 {/* month selection */}
                 <section className="surrounding-month">
                   <div id="monthSelector" className="month-selector">
-                    <label id="" htmlFor="monthPicker">
+                    <label htmlFor="monthPicker">
                       SelectMonth:
                     </label>
-                    <input type="month" id="monthPicker" />
+                    <input type="month" id="monthPicker" value={selectedMonth} onChange={handleMonthChange} />
                   </div>
                 </section>
 
@@ -266,12 +300,16 @@ const showNotification = (category: string, msg: string) => {
                 <div className="surrouding-expense">
                   <div className="expense-list-container">
                     <ul id="expenseList">
-                      {expenses.map((expense, index) => (
+                      {filteredExpenses.length > 0 ? (
+                      filteredExpenses.map((expense, index) => (
                         <li key={index}>
-                          <span>{expense.date}</span> - <span>{expense.category}</span> -{' '}
+                          <span>{formateDate(expense.date)}</span> - <span>{expense.category}</span> -{' '}
                           <span>${expense.amount.toFixed(2)}</span>
                         </li>
-                      ))}
+                      ))
+                      ):(
+                        <li className="empty-list-message">No Expenses found for this month!</li>
+                      )}
                     </ul>
                     <p id="total" className="total-amount">
                       Total: {monthlyTotal}
@@ -306,6 +344,3 @@ const showNotification = (category: string, msg: string) => {
 export const Route = createLazyFileRoute('/expenses')({
   component: Expenses
 })
-function getTotal() {
-  throw new Error('Function not implemented.')
-}
