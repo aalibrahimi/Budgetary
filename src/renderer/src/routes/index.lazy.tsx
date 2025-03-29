@@ -1,50 +1,75 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import '../assets/index.css';
 import '../assets/expenses.css';
 import '../assets/statsCard.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 import { useDarkModeStore } from './__root';
-import { Bar, BarChart, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
-import { Calendar, ChevronDown, DollarSign, PiggyBank, Wallet, Sparkles, Plus, TrendingUp, AlertTriangle } from 'lucide-react';
+import { useExpenseStore } from '../stores/expenseStore';
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { Calendar, DollarSign, PiggyBank, Wallet, Sparkles, Plus } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import CashFlowForecast from '@renderer/components/CashFlowForecast';
-
-// Sample data (in real app, would come from store or API)
-const sampleData = {
-  recentExpenses: [
-    { date: '2025-03-20', category: 'Groceries', amount: 85.42 },
-    { date: '2025-03-19', category: 'Dining Out', amount: 45.67 },
-    { date: '2025-03-17', category: 'Transportation', amount: 32.50 },
-    { date: '2025-03-15', category: 'Entertainment', amount: 60.00 }
-  ],
-  categoryData: [
-    { name: 'Groceries', value: 450 },
-    { name: 'Rent', value: 1200 },
-    { name: 'Insurance', value: 220 },
-    { name: 'Dining Out', value: 280 },
-    { name: 'Entertainment', value: 180 }
-  ],
-  budgetOverview: {
-    income: 3500,
-    spent: 2130,
-    remaining: 1370
-  },
-  upcomingBills: [
-    { name: 'Rent', amount: 1200, dueDate: '2025-04-01' },
-    { name: 'Internet', amount: 65, dueDate: '2025-04-05' },
-    { name: 'Electricity', amount: 120, dueDate: '2025-04-12' }
-  ],
-  savingsGoals: [
-    { name: 'Emergency Fund', target: 10000, current: 6500, color: '#FF6B6B' },
-    { name: 'Vacation', target: 3000, current: 1200, color: '#4ECDC4' },
-    { name: 'New Car', target: 15000, current: 4500, color: '#1A535C' }
-  ]
-};
 
 const DashboardIndex = () => {
   const { isDarkMode } = useDarkModeStore();
   const [activePeriod, setActivePeriod] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
+  
+  // Get real expense data from store
+  const { expenses } = useExpenseStore();
+  
+  // Format date from YYYY-MM-DD to Month DD, YYYY
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  };
+  
+  // Get recent expenses (latest 4)
+  const recentExpenses = useMemo(() => {
+    return [...expenses]
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 4);
+  }, [expenses]);
+  
+  // Calculate category totals for pie chart
+  const categoryData = useMemo(() => {
+    const categoryTotals: {[key: string]: number} = {};
+    
+    expenses.forEach(exp => {
+      categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
+    });
+    
+    return Object.entries(categoryTotals).map(([name, value]) => ({ name, value }));
+  }, [expenses]);
+  
+  // Calculate budget overview
+  const budgetOverview = useMemo(() => {
+    const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const estimatedIncome = 3500; // This would come from income in a real app
+    return {
+      income: estimatedIncome,
+      spent: totalSpent,
+      remaining: estimatedIncome - totalSpent
+    };
+  }, [expenses]);
+
+  // Sample data for sections that would be implemented later
+  const sampleData = {
+    upcomingBills: [
+      { name: 'Rent', amount: 1200, dueDate: '2025-04-01' },
+      { name: 'Internet', amount: 65, dueDate: '2025-04-05' },
+      { name: 'Electricity', amount: 120, dueDate: '2025-04-12' }
+    ],
+    savingsGoals: [
+      { name: 'Emergency Fund', target: 10000, current: 6500, color: '#FF6B6B' },
+      { name: 'Vacation', target: 3000, current: 1200, color: '#4ECDC4' },
+      { name: 'New Car', target: 15000, current: 4500, color: '#1A535C' }
+    ]
+  };
   
   // Format currency helper
   const formatCurrency = (amount: number) => {
@@ -86,15 +111,15 @@ const DashboardIndex = () => {
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-label">Monthly Income</div>
-            <div className="stat-value">{formatCurrency(sampleData.budgetOverview.income)}</div>
+            <div className="stat-value">{formatCurrency(budgetOverview.income)}</div>
           </div>
           <div className="stat-card">
             <div className="stat-label">Spent This Month</div>
-            <div className="stat-value">{formatCurrency(sampleData.budgetOverview.spent)}</div>
+            <div className="stat-value">{formatCurrency(budgetOverview.spent)}</div>
           </div>
           <div className="stat-card">
             <div className="stat-label">Remaining</div>
-            <div className="stat-value">{formatCurrency(sampleData.budgetOverview.remaining)}</div>
+            <div className="stat-value">{formatCurrency(budgetOverview.remaining)}</div>
           </div>
         </div>
       </header>
@@ -136,12 +161,16 @@ const DashboardIndex = () => {
                 </div>
                 <div className="expense-list-container" style={{ boxShadow: 'none' }}>
                   <ul id="expenseList">
-                    {sampleData.recentExpenses.map((expense, index) => (
-                      <li key={index}>
-                        <span>{expense.date}</span> - <span>{expense.category}</span> - 
-                        <span>{formatCurrency(expense.amount)}</span>
-                      </li>
-                    ))}
+                    {recentExpenses.length > 0 ? (
+                      recentExpenses.map((expense, index) => (
+                        <li key={index}>
+                          <span>{formatDate(expense.date)}</span> - <span>{expense.category}</span> - 
+                          <span>{formatCurrency(expense.amount)}</span>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="empty-list-message">No recent expenses</li>
+                    )}
                   </ul>
                 </div>
               </div>
@@ -173,26 +202,30 @@ const DashboardIndex = () => {
                   <h2>Spending by Category</h2>
                 </div>
                 <div className="chart-container">
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={sampleData.categoryData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {sampleData.categoryData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  {categoryData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={categoryData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {categoryData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="empty-chart-message">No expense data to display</div>
+                  )}
                 </div>
               </div>
 
@@ -235,31 +268,35 @@ const DashboardIndex = () => {
               <Link to="/expenses?tab=budgetPlan" className="dashboard-card-link">Adjust Budget</Link>
             </div>
             <div className="budget-allocation-container">
-              {sampleData.categoryData.map((category, index) => (
-                <div key={index} className="budget-allocation-item">
-                  <div className="budget-allocation-header">
-                    <span className="category-icon" style={{ backgroundColor: COLORS[index % COLORS.length] }}>
-                      <i className={`fas fa-${getCategoryIcon(category.name)}`}></i>
-                    </span>
-                    <div className="category-details">
-                      <span className="category-name">{category.name}</span>
-                      <span className="category-amount">{formatCurrency(category.value)}</span>
+              {categoryData.length > 0 ? (
+                categoryData.map((category, index) => (
+                  <div key={index} className="budget-allocation-item">
+                    <div className="budget-allocation-header">
+                      <span className="category-icon" style={{ backgroundColor: COLORS[index % COLORS.length] }}>
+                        <i className={`fas fa-${getCategoryIcon(category.name)}`}></i>
+                      </span>
+                      <div className="category-details">
+                        <span className="category-name">{category.name}</span>
+                        <span className="category-amount">{formatCurrency(category.value)}</span>
+                      </div>
+                      <span className="category-percentage">
+                        {Math.round((category.value / budgetOverview.income) * 100)}%
+                      </span>
                     </div>
-                    <span className="category-percentage">
-                      {Math.round((category.value / sampleData.budgetOverview.income) * 100)}%
-                    </span>
+                    <div className="budget-progress-bg">
+                      <div 
+                        className="budget-progress-bar" 
+                        style={{ 
+                          width: `${Math.min(100, (category.value / (category.value * 1.2)) * 100)}%`,
+                          backgroundColor: COLORS[index % COLORS.length] 
+                        }}
+                      ></div>
+                    </div>
                   </div>
-                  <div className="budget-progress-bg">
-                    <div 
-                      className="budget-progress-bar" 
-                      style={{ 
-                        width: `${Math.min(100, (category.value / (category.value * 1.2)) * 100)}%`,
-                        backgroundColor: COLORS[index % COLORS.length] 
-                      }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <div className="empty-allocation-message">No categories to display</div>
+              )}
             </div>
           </div>
           
@@ -315,9 +352,14 @@ const DashboardIndex = () => {
                     <label>Category</label>
                     <select className="quick-entry-input">
                       <option value="">Select Category</option>
-                      {sampleData.categoryData.map((cat, i) => (
-                        <option key={i} value={cat.name}>{cat.name}</option>
-                      ))}
+                      <option value="Groceries">Groceries</option>
+                      <option value="Rent">Rent</option>
+                      <option value="Insurance">Insurance</option>
+                      <option value="Dining Out">Dining Out</option>
+                      <option value="Entertainment">Entertainment</option>
+                      <option value="Clothes">Clothes</option>
+                      <option value="Transportation">Transportation</option>
+                      <option value="Other">Other</option>
                     </select>
                   </div>
                   <div className="quick-entry-field">
@@ -332,7 +374,7 @@ const DashboardIndex = () => {
         </main>
       </div>
       
-        <CashFlowForecast />
+      <CashFlowForecast />
 
       <div className="copyright">
         &copy; 2025 Budgetary Tracker. All rights reserved.
