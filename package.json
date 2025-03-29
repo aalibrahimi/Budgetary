@@ -32,7 +32,10 @@
     "lucide-react": "0.469.0",
     "plotly.js": "^2.35.3",
     "plotly.js-dist": "^2.35.3",
+    "react-grid-layout": "^1.5.1",
+    "react-resizable": "^3.0.5",
     "recharts": "^2.15.0",
+    "swapy": "^1.0.5",
     "tailwind-merge": "^2.6.0",
     "zustand": "^5.0.2"
   },
