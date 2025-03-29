@@ -203,7 +203,7 @@ const DashboardIndex = () => {
                 </div>
                 <div className="chart-container">
                   {categoryData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={279}>
                       <PieChart>
                         <Pie
                           data={categoryData}
