@@ -21,6 +21,33 @@ import { useNotificationSystem, NotificationType } from '@renderer/components/No
 // Create a responsive grid layout
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
+// Function to group small categories together as "Other"
+const getCombinedCategoryData = (data, maxCategories) => {
+  if (!data || data.length <= maxCategories) return data;
+  
+  // Sort by value (largest first)
+  const sortedData = [...data].sort((a, b) => b.value - a.value);
+  
+  // Take the top categories
+  const topCategories = sortedData.slice(0, maxCategories - 1);
+  
+  // Combine the rest as "Other"
+  const otherCategories = sortedData.slice(maxCategories - 1);
+  const otherValue = otherCategories.reduce((sum, item) => sum + item.value, 0);
+  
+  if (otherValue > 0) {
+    topCategories.push({
+      name: "Other",
+      value: otherValue
+    });
+  }
+  
+  return topCategories;
+};
+
+
+
+
 const DashboardIndex = () => {
   const { isDarkMode } = useDarkModeStore();
   const [activePeriod, setActivePeriod] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
@@ -80,6 +107,32 @@ const DashboardIndex = () => {
       ]
     };
   });
+
+  // Custom label rendering function to prevent overlap
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name, index }) => {
+  // Only show labels for categories with more than 5% of total
+  if (percent < 0.05) return null;
+  
+  const RADIAN = Math.PI / 180;
+  const radius = outerRadius * 1.1;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  
+  return (
+    <text
+      x={x}
+      y={y}
+      fill={isDarkMode ? "white" : "black"}
+      textAnchor={x > cx ? 'start' : 'end'}
+      dominantBaseline="central"
+      fontSize="12"
+      fontWeight="500"
+      className="chart-label"
+    >
+      {`${name}: ${(percent * 100).toFixed(0)}%`}
+    </text>
+  );
+};
   
   // State to toggle edit mode
   const [isEditMode, setIsEditMode] = useState(false);
@@ -415,39 +468,62 @@ const DashboardIndex = () => {
               </div>
             </div>
 
-            {/* Spending by Category Card */}
-            <div key="spending-category" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"> Drag</div>}
-              <div className="dashboard-card-header">
-                <h2>Spending by Category</h2>
-              </div>
-              <div className="chart-container">
-                {categoryData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={200}>
-                    <PieChart>
-                      <Pie
-                        data={categoryData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {categoryData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="empty-chart-message">No expense data to display</div>
-                )}
-              </div>
-            </div>
+        {/* Spending by Category Card - Improved */}
+<div key="spending-category" className="dashboard-card">
+  {isEditMode && <div className="drag-handle"> Drag</div>}
+  <div className="dashboard-card-header">
+    <h2>Spending by Category</h2>
+  </div>
+  <div className="chart-container">
+    {categoryData.length > 0 ? (
+      <ResponsiveContainer width="100%" height={320}>
+        <PieChart>
+          <Pie
+            data={getCombinedCategoryData(categoryData, 5)} // Custom function to group small categories
+            cx="50%"
+            cy="50%"
+            labelLine={true}
+            outerRadius={90}
+            innerRadius={45} // Added inner radius to create a donut chart
+            fill="#8884d8"
+            dataKey="value"
+            paddingAngle={2} // Add space between segments
+            label={renderCustomizedLabel} // Custom label function
+          >
+            {getCombinedCategoryData(categoryData, 5).map((entry, index) => (
+              <Cell 
+                key={`cell-${index}`} 
+                fill={COLORS[index % COLORS.length]} 
+                stroke="rgba(0,0,0,0.2)"
+                strokeWidth={1}
+              />
+            ))}
+          </Pie>
+          <Tooltip 
+            formatter={(value) => formatCurrency(Number(value))} 
+            contentStyle={{ 
+              backgroundColor: isDarkMode ? "#2A2A2A" : "#fff",
+              border: "none",
+              borderRadius: "4px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.2)" 
+            }}
+          />
+          <Legend 
+            layout="horizontal" 
+            verticalAlign="bottom" 
+            align="center"
+            iconType="circle"
+            iconSize={10}
+            wrapperStyle={{ paddingTop: 20 }}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+    ) : (
+      <div className="empty-chart-message">No expense data to display</div>
+    )}
+  </div>
+</div>
+
 
             {/* Savings Goals Card */}
             <div key="savings-goals" className="dashboard-card">
