@@ -558,79 +558,92 @@ const DashboardIndex = () => {
               </div>
             </div>
             
-            {/* Quick Entry Card - Enhanced to support recurring bill entry */}
-            <div key="quick-entry" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"> Drag</div>}
-              <div className="dashboard-card-header">
-                <h2><Plus className="dashboard-card-icon" /> Quick Expense Entry</h2>
-              </div>
-              <div className="quick-entry-container">
-                <form className="quick-entry-form" onSubmit={handleQuickAddExpense}>
-                  <div className="quick-entry-inputs">
-                    <div className="quick-entry-field">
-                      <label>Date</label>
-                      <input 
-                        type="date" 
-                        value={quickEntryDate} 
-                        onChange={(e) => setQuickEntryDate(e.target.value)} 
-                        className="quick-entry-input" 
-                      />
-                    </div>
-                    <div className="quick-entry-field">
-                      <label>Category</label>
-                      <select 
-                        className="quick-entry-input" 
-                        value={quickEntryCategory} 
-                        onChange={(e) => setQuickEntryCategory(e.target.value)}
-                      >
-                        <option value="">Select Category</option>
-                        <option value="Rent">Rent</option>
-                        <option value="Mortgage">Mortgage</option>
-                        <option value="Utilities">Utilities</option>
-                        <option value="Internet">Internet</option>
-                        <option value="Insurance">Insurance</option>
-                        <option value="Phone">Phone</option>
-                        <option value="Groceries">Groceries</option>
-                        <option value="Dining Out">Dining Out</option>
-                        <option value="Entertainment">Entertainment</option>
-                        <option value="Clothes">Clothes</option>
-                        <option value="Transportation">Transportation</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
-                    <div className="quick-entry-field">
-                      <label>Amount</label>
-                      <input 
-                        type="number" 
-                        placeholder="0.00" 
-                        className="quick-entry-input" 
-                        value={quickEntryAmount} 
-                        step="0.01" 
-                        min="0.01" 
-                        onChange={(e) => setQuickEntryAmount(e.target.value)} 
-                      />
-                    </div>
-                  </div>
-                  
-                  {/* Subtle checkbox for recurring expenses */}
-                  <div className="flex items-center mb-3 mt-1">
-                    <input
-                      type="checkbox"
-                      id="isRecurring"
-                      checked={isRecurring}
-                      onChange={(e) => setIsRecurring(e.target.checked)}
-                      className="mr-2 h-4 w-4"
-                    />
-                    <label htmlFor="isRecurring" className="text-sm flex items-center">
-                      <Bell size={14} className="mr-1" />
-                      This is a recurring bill (will appear in upcoming bills)
-                    </label>
-                  </div>
-                  
-                  <button type="submit" className="quick-entry-btn">Add Expense</button>
-                </form>
-              </div>
-            </div>
+        {/* Quick Entry Card - Optimized layout with fixed button spacing */}
+<div key="quick-entry" className="dashboard-card p-5">
+  {isEditMode && <div className="drag-handle">Drag</div>}
+  <div className="dashboard-card-header mb-3">
+    <h2 className="flex items-center text-lg font-medium">
+      <Plus className="dashboard-card-icon mr-2" size={18} /> 
+      Quick Expense Entry
+    </h2>
+  </div>
+  
+  <form className="quick-entry-form" onSubmit={handleQuickAddExpense}>
+    <div className="grid grid-cols-3 gap-3 mb-3">
+      <div className="quick-entry-field">
+        <label className="block text-sm mb-1">Date</label>
+        <input 
+          type="date" 
+          value={quickEntryDate} 
+          onChange={(e) => setQuickEntryDate(e.target.value)} 
+          className="quick-entry-input w-full p-2 rounded border" 
+        />
+      </div>
+      
+      <div className="quick-entry-field">
+        <label className="block text-sm mb-1">Category</label>
+        <select 
+          className="quick-entry-input w-full p-2 rounded border" 
+          value={quickEntryCategory} 
+          onChange={(e) => setQuickEntryCategory(e.target.value)}
+        >
+          <option value="">Select Category</option>
+          <option value="Rent">Rent</option>
+          <option value="Mortgage">Mortgage</option>
+          <option value="Utilities">Utilities</option>
+          <option value="Internet">Internet</option>
+          <option value="Insurance">Insurance</option>
+          <option value="Phone">Phone</option>
+          <option value="Groceries">Groceries</option>
+          <option value="Dining Out">Dining Out</option>
+          <option value="Entertainment">Entertainment</option>
+          <option value="Clothes">Clothes</option>
+          <option value="Transportation">Transportation</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      
+      <div className="quick-entry-field">
+        <label className="block text-sm mb-1">Amount</label>
+        <input 
+          type="number" 
+          placeholder="0.00" 
+          className="quick-entry-input w-full p-2 rounded border" 
+          value={quickEntryAmount} 
+          step="0.01" 
+          min="0.01" 
+          onChange={(e) => setQuickEntryAmount(e.target.value)} 
+        />
+      </div>
+    </div>
+    
+    {/* Simplified recurring checkbox */}
+    <div className="flex items-center mb-3">
+      <input
+        type="checkbox"
+        id="isRecurring"
+        checked={isRecurring}
+        onChange={(e) => setIsRecurring(e.target.checked)}
+        className="mr-2 h-4 w-4"
+      />
+      <label htmlFor="isRecurring" className="text-sm flex items-center text-white">
+        <Bell size={14} className="mr-1" />
+        Recurring bill
+      </label>
+    </div>
+    
+    {/* Button with proper spacing - added padding and margin */}
+    <div className="flex justify-center items-center pb-4">
+      <button 
+        type="submit" 
+        className="w-[600px] py-2 rounded bg-gradient-to-r from-red-700 to-red-500 text-white font-medium hover:opacity-90"
+      >
+        Add Expense
+      </button>
+    </div>
+  </form>
+</div>
+           
           </ResponsiveGridLayout>
         </main>
       </div>
