@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { 
   Trash2, 
   Plus, 
-  CreditCard, 
   AlertCircle, 
   CheckCircle,
   Calendar,
   DollarSign,
   RefreshCw
 } from 'lucide-react';
+import { getSubscriptionIcon } from '@renderer/lib/subscription';
+
 
 // Define interface for subscription
 interface Subscription {
@@ -269,7 +270,27 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ expenses, isD
                     color: isDarkMode ? 'var(--text-primary)' : 'inherit'
                   }}
                   placeholder="Netflix, Spotify, etc."
+                  list="subscription-suggestions"
                 />
+                <datalist id="subscription-suggestions">
+                  <option value="Netflix" />
+                  <option value="Spotify" />
+                  <option value="Disney+" />
+                  <option value="Hulu" />
+                  <option value="Amazon Prime" />
+                  <option value="Apple Music" />
+                  <option value="YouTube Premium" />
+                  <option value="Xbox Game Pass" />
+                  <option value="PlayStation Plus" />
+                  <option value="Discord Nitro" />
+                  <option value="Adobe Creative Cloud" />
+                  <option value="Microsoft 365" />
+                  <option value="Dropbox" />
+                  <option value="Google Drive" />
+                  <option value="iCloud" />
+                  <option value="NordVPN" />
+                  <option value="ExpressVPN" />
+                </datalist>
               </div>
               
               <div>
@@ -331,9 +352,21 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ expenses, isD
                   }}
                 >
                   <option value="Entertainment">Entertainment</option>
+                  <option value="Music">Music</option>
+                  <option value="Video">Video</option>
+                  <option value="Gaming">Gaming</option>
+                  <option value="Software">Software</option>
+                  <option value="Cloud Storage">Cloud Storage</option>
+                  <option value="VPN">VPN</option>
+                  <option value="News">News</option>
+                  <option value="Books">Books</option>
+                  <option value="Fitness">Fitness</option>
+                  <option value="Food">Food</option>
+                  <option value="Shopping">Shopping</option>
+                  <option value="Smart Home">Smart Home</option>
+                  <option value="AI">AI</option>
                   <option value="Services">Services</option>
-                  <option value="Health">Health & Fitness</option>
-                  <option value="Software">Software & Apps</option>
+                  <option value="Health">Health</option>
                   <option value="Other">Other</option>
                 </select>
               </div>
@@ -384,142 +417,143 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ expenses, isD
           <div className="divide-y" style={{
             borderColor: isDarkMode ? 'var(--border-color)' : undefined
           }}>
-            {subscriptions.map((subscription) => (
-              <div 
-                key={subscription.id}
-                className="p-4 transition-colors hover:bg-gray-50 dark:hover:bg-[var(--hover-background)]"
-                style={{
-                  backgroundColor: selectedSubscription?.id === subscription.id 
-                    ? isDarkMode ? 'var(--hover-background)' : '#f9fafb'
-                    : undefined
-                }}
-                onClick={() => setSelectedSubscription(
-                  selectedSubscription?.id === subscription.id ? null : subscription
-                )}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start">
-                    <div 
-                      className="p-2 rounded-lg mr-3 flex-shrink-0"
-                      style={{
-                        backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : '#EFF6FF'
-                      }}
-                    >
-                      <CreditCard 
-                        className="h-5 w-5"
+            {subscriptions.map((subscription) => {
+              // Get icon data for this subscription
+              const iconData = getSubscriptionIcon(subscription.name);
+              
+              return (
+                <div 
+                  key={subscription.id}
+                  className="p-4 transition-colors hover:bg-gray-50"
+                  style={{
+                    backgroundColor: selectedSubscription?.id === subscription.id 
+                      ? isDarkMode ? 'var(--hover-background)' : '#f9fafb'
+                      : isDarkMode ? 'var(--card-background)' : 'white',
+                  }}
+                  onClick={() => setSelectedSubscription(
+                    selectedSubscription?.id === subscription.id ? null : subscription
+                  )}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start">
+                      <div 
+                        className="p-2 rounded-lg mr-3 flex-shrink-0"
                         style={{
-                          color: isDarkMode ? 'var(--primary)' : '#3B82F6'
+                          backgroundColor: iconData.backgroundColor,
+                          color: iconData.color
                         }}
-                      />
+                      >
+                        {iconData.icon}
+                      </div>
+                      <div>
+                        <h3 className="font-medium" style={{
+                          color: isDarkMode ? 'var(--text-primary)' : 'inherit'
+                        }}>
+                          {subscription.name}
+                        </h3>
+                        <div className="flex items-center mt-1">
+                          <span 
+                            className="text-sm px-2 py-0.5 rounded"
+                            style={{
+                              backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : '#EFF6FF',
+                              color: isDarkMode ? 'var(--primary)' : '#3B82F6'
+                            }}
+                          >
+                            {subscription.category}
+                          </span>
+                          <span 
+                            className="text-sm text-gray-500 ml-2"
+                            style={{
+                              color: isDarkMode ? 'var(--text-secondary)' : undefined
+                            }}
+                          >
+                            {subscription.frequency}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-medium" style={{
+                    <div className="text-right">
+                      <div className="font-bold" style={{
                         color: isDarkMode ? 'var(--text-primary)' : 'inherit'
                       }}>
-                        {subscription.name}
-                      </h3>
-                      <div className="flex items-center mt-1">
-                        <span 
-                          className="text-sm px-2 py-0.5 rounded bg-blue-50 text-blue-700"
-                          style={{
-                            backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : undefined,
-                            color: isDarkMode ? 'var(--primary)' : undefined
-                          }}
-                        >
-                          {subscription.category}
-                        </span>
-                        <span 
-                          className="text-sm text-gray-500 ml-2"
-                          style={{
-                            color: isDarkMode ? 'var(--text-secondary)' : undefined
-                          }}
-                        >
-                          {subscription.frequency}
-                        </span>
+                        {formatCurrency(subscription.amount)}
+                      </div>
+                      <div 
+                        className="text-sm flex items-center justify-end mt-1"
+                        style={{
+                          color: isDateSoon(subscription.nextPayment) 
+                            ? '#EF4444' 
+                            : isDarkMode ? 'var(--text-secondary)' : '#6B7280'
+                        }}
+                      >
+                        {isDateSoon(subscription.nextPayment) && (
+                          <AlertCircle className="h-3 w-3 mr-1" />
+                        )}
+                        Due {formatRelativeDate(subscription.nextPayment)}
                       </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-bold" style={{
-                      color: isDarkMode ? 'var(--text-primary)' : 'inherit'
-                    }}>
-                      {formatCurrency(subscription.amount)}
-                    </div>
+                  
+                  {/* Extended details when selected */}
+                  {selectedSubscription?.id === subscription.id && (
                     <div 
-                      className="text-sm flex items-center justify-end mt-1"
+                      className="mt-4 pt-4 border-t"
                       style={{
-                        color: isDateSoon(subscription.nextPayment) 
-                          ? '#EF4444' 
-                          : isDarkMode ? 'var(--text-secondary)' : '#6B7280'
+                        borderColor: isDarkMode ? 'var(--border-color)' : undefined
                       }}
                     >
-                      {isDateSoon(subscription.nextPayment) && (
-                        <AlertCircle className="h-3 w-3 mr-1" />
-                      )}
-                      Due {formatRelativeDate(subscription.nextPayment)}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <h4 
+                            className="text-sm font-medium mb-1"
+                            style={{
+                              color: isDarkMode ? 'var(--text-secondary)' : '#6B7280'
+                            }}
+                          >
+                            Annual Cost
+                          </h4>
+                          <p className="font-medium" style={{
+                            color: isDarkMode ? 'var(--text-primary)' : 'inherit'
+                          }}>
+                            {formatCurrency(
+                              subscription.frequency === 'monthly' 
+                                ? subscription.amount * 12 
+                                : subscription.frequency === 'quarterly'
+                                  ? subscription.amount * 4
+                                  : subscription.amount
+                            )}
+                          </p>
+                        </div>
+                        <div>
+                          <h4 
+                            className="text-sm font-medium mb-1"
+                            style={{
+                              color: isDarkMode ? 'var(--text-secondary)' : '#6B7280'
+                            }}
+                          >
+                            Started On
+                          </h4>
+                          <p className="font-medium" style={{
+                            color: isDarkMode ? 'var(--text-primary)' : 'inherit'
+                          }}>
+                            {subscription.dateAdded.toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex justify-end">
+                        <button
+                          onClick={() => handleDeleteSubscription(subscription.id)}
+                          className="flex items-center text-sm text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Cancel Subscription
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
-                
-                {/* Extended details when selected */}
-                {selectedSubscription?.id === subscription.id && (
-                  <div 
-                    className="mt-4 pt-4 border-t"
-                    style={{
-                      borderColor: isDarkMode ? 'var(--border-color)' : undefined
-                    }}
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <h4 
-                          className="text-sm font-medium mb-1"
-                          style={{
-                            color: isDarkMode ? 'var(--text-secondary)' : '#6B7280'
-                          }}
-                        >
-                          Annual Cost
-                        </h4>
-                        <p className="font-medium" style={{
-                          color: isDarkMode ? 'var(--text-primary)' : 'inherit'
-                        }}>
-                          {formatCurrency(
-                            subscription.frequency === 'monthly' 
-                              ? subscription.amount * 12 
-                              : subscription.frequency === 'quarterly'
-                                ? subscription.amount * 4
-                                : subscription.amount
-                          )}
-                        </p>
-                      </div>
-                      <div>
-                        <h4 
-                          className="text-sm font-medium mb-1"
-                          style={{
-                            color: isDarkMode ? 'var(--text-secondary)' : '#6B7280'
-                          }}
-                        >
-                          Started On
-                        </h4>
-                        <p className="font-medium" style={{
-                          color: isDarkMode ? 'var(--text-primary)' : 'inherit'
-                        }}>
-                          {subscription.dateAdded.toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex justify-end">
-                      <button
-                        onClick={() => handleDeleteSubscription(subscription.id)}
-                        className="flex items-center text-sm text-red-600 hover:text-red-800"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Cancel Subscription
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
