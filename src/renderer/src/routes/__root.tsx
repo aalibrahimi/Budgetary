@@ -61,7 +61,7 @@ export const Route = createRootRoute({
           <div className="navbar-links">
             <Link to="/" className="nav-link" draggable={false}>Home</Link>
             <Link to="/about" className="nav-link" draggable={false}>Challenges</Link>
-            <Link to="/smart-assistant" className="nav-link" draggable={false}>SmartAssistant</Link>
+            <Link to="/smart-assistant" className="nav-link" draggable={false}>Subscriptions</Link>
             <SignedOut>
               <SignInButton>
                 <div className="auth-button">Login/Register</div>

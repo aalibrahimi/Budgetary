@@ -27,64 +27,6 @@ interface SubscriptionManagerProps {
   income: number;
 }
 
-// For demo purposes, this is a mock subscription detector
-// In a real app, this would use ML to analyze transaction patterns
-const detectSubscriptionsFromTransactions = (expenses: any[]): Subscription[] => {
-  // Group transactions by merchant and search for recurring patterns
-  const potentialSubscriptions: Record<string, any[]> = {};
-
-  // Simplified logic for demonstration - actual implementation would be more sophisticated
-  expenses.forEach(exp => {
-    if (!potentialSubscriptions[exp.category]) {
-      potentialSubscriptions[exp.category] = [];
-    }
-    potentialSubscriptions[exp.category].push({
-      date: new Date(exp.date),
-      amount: exp.amount
-    });
-  });
-
-  // Mock results
-  return [
-    {
-      id: '1',
-      name: 'Netflix',
-      amount: 15.99,
-      frequency: 'monthly',
-      nextPayment: new Date(new Date().setDate(new Date().getDate() + 12)),
-      category: 'Entertainment',
-      dateAdded: new Date(new Date().setMonth(new Date().getMonth() - 3))
-    },
-    {
-      id: '2',
-      name: 'Spotify',
-      amount: 9.99,
-      frequency: 'monthly',
-      nextPayment: new Date(new Date().setDate(new Date().getDate() + 5)),
-      category: 'Entertainment',
-      dateAdded: new Date(new Date().setMonth(new Date().getMonth() - 5))
-    },
-    {
-      id: '3',
-      name: 'Gym Membership',
-      amount: 49.99,
-      frequency: 'monthly',
-      nextPayment: new Date(new Date().setDate(new Date().getDate() + 18)),
-      category: 'Health',
-      dateAdded: new Date(new Date().setMonth(new Date().getMonth() - 8))
-    },
-    {
-      id: '4',
-      name: 'Cloud Storage',
-      amount: 2.99,
-      frequency: 'monthly',
-      nextPayment: new Date(new Date().setDate(new Date().getDate() + 21)),
-      category: 'Services',
-      dateAdded: new Date(new Date().setMonth(new Date().getMonth() - 2))
-    }
-  ];
-};
-
 const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ expenses, isDarkMode, income }) => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [isLoadingSubscriptions, setIsLoadingSubscriptions] = useState(true);
@@ -97,19 +39,41 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ expenses, isD
   const [showAddSubscription, setShowAddSubscription] = useState(false);
   const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
 
-  // Detect subscriptions on component mount
+  // Load subscriptions from localStorage
   useEffect(() => {
     const loadSubscriptions = async () => {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Simulate loading delay
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      const detected = detectSubscriptionsFromTransactions(expenses);
-      setSubscriptions(detected);
+      try {
+        const savedSubscriptions = localStorage.getItem('userSubscriptions');
+        const parsedSubscriptions = savedSubscriptions ? JSON.parse(savedSubscriptions) : [];
+        
+        // Convert string dates back to Date objects
+        const processedSubscriptions = parsedSubscriptions.map((sub: any) => ({
+          ...sub,
+          nextPayment: new Date(sub.nextPayment),
+          dateAdded: new Date(sub.dateAdded)
+        }));
+        
+        setSubscriptions(processedSubscriptions);
+      } catch (error) {
+        console.error('Failed to load subscriptions:', error);
+        setSubscriptions([]);
+      }
+      
       setIsLoadingSubscriptions(false);
     };
     
     loadSubscriptions();
-  }, [expenses]);
+  }, []);
+
+  // Save subscriptions to localStorage whenever they change
+  useEffect(() => {
+    if (!isLoadingSubscriptions) {
+      localStorage.setItem('userSubscriptions', JSON.stringify(subscriptions));
+    }
+  }, [subscriptions, isLoadingSubscriptions]);
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -146,6 +110,9 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ expenses, isD
   // Delete subscription
   const handleDeleteSubscription = (id: string) => {
     setSubscriptions(prev => prev.filter(sub => sub.id !== id));
+    if (selectedSubscription?.id === id) {
+      setSelectedSubscription(null);
+    }
   };
 
   // Calculate total monthly subscription cost
@@ -247,7 +214,7 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ expenses, isD
           <p className="text-sm text-gray-500 mt-2" style={{
             color: isDarkMode ? 'var(--text-secondary)' : undefined
           }}>
-            {(calculateAnnualSubscriptionCost() / income * 100).toFixed(1)}% of your annual income
+            {income > 0 ? `${(calculateAnnualSubscriptionCost() / income * 100).toFixed(1)}% of your annual income` : "Add income to see percentage"}
           </p>
         </div>
       </div>
@@ -405,7 +372,7 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ expenses, isD
             <div className="flex justify-center mb-4">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
             </div>
-            <p>Analyzing your transaction patterns to detect subscriptions...</p>
+            <p>Loading your subscriptions...</p>
           </div>
         ) : subscriptions.length === 0 ? (
           <div className="p-8 text-center text-gray-500" style={{
@@ -423,7 +390,7 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ expenses, isD
                 className="p-4 transition-colors hover:bg-gray-50 dark:hover:bg-[var(--hover-background)]"
                 style={{
                   backgroundColor: selectedSubscription?.id === subscription.id 
-                    ? isDarkMode ? 'var(--hover-background)' : '#333333'
+                    ? isDarkMode ? 'var(--hover-background)' : '#f9fafb'
                     : undefined
                 }}
                 onClick={() => setSelectedSubscription(
@@ -561,19 +528,19 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ expenses, isD
         className="bg-gradient-to-r from-blue-500 via-blue-700 to-blue-950 rounded-lg shadow-lg p-6 text-white"
       >
         <h3 className="text-xl font-bold mb-2">Subscription Optimization</h3>
-        <p className="mb-4">Based on your subscription patterns, here are some ways you could save:</p>
+        <p className="mb-4">Track and manage your subscriptions to avoid subscription creep and save money each month.</p>
         <div className="space-y-3">
           <div className="flex items-start">
             <CheckCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
-            <p>Consider the Entertainment bundle of Disney+, Hulu, and ESPN+ to save $7.99/month</p>
+            <p>Consider bundling services from the same provider to save on individual subscriptions</p>
           </div>
           <div className="flex items-start">
             <CheckCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
-            <p>You could save $59.99/year by switching to annual billing for your streaming services</p>
+            <p>You can save by switching to annual billing for services you use regularly</p>
           </div>
           <div className="flex items-start">
             <CheckCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
-            <p>Using a family plan for your music subscription could save you $7.99/month</p>
+            <p>Family or group plans often provide better value than individual subscriptions</p>
           </div>
         </div>
       </div>
