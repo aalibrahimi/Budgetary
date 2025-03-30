@@ -1,6 +1,21 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
+
+function getIconPathByType(type: string): string {
+  switch(type) {
+    case 'success':
+      return './assets/icons/success.png';
+    case 'warning':
+      return './assets/icons/warning.png';
+    case 'error':
+      return './assets/icons/error.png';
+    case 'info':
+    default:
+      return './assets/icons/info.png';
+  }
+}
+
 // Custom APIs for renderer
 const api = {
   minimize: () => ipcRenderer.invoke('minimize-window'),

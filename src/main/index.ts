@@ -59,33 +59,33 @@ function createWindow(): void {
   })
 }
 
-function showCustomNotification() {
-  const screen = require('electron').screen
-  const primaryDisplay = screen.getPrimaryDisplay()
-  const { width, height } = primaryDisplay.workAreaSize
+// Also update the showCustomNotification function to accept options
+function showCustomNotification(options = {}) {
+  const screen = require('electron').screen;
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width, height } = primaryDisplay.workAreaSize;
 
- // Update the showCustomNotification function to ensure it works well
-function showCustomNotification() {
-  const screen = require('electron').screen
-  const primaryDisplay = screen.getPrimaryDisplay()
-  const { width, height } = primaryDisplay.workAreaSize
-
+  // Create the notification window
   const notificationWindow = new BrowserWindow({
-    x: width - 320, // Position 20px from the right
-    y: height - 120, // Position 20px from the bottom
+    x: width - 320,
+    y: height - 120,
     width: 320,
     height: 120,
     frame: false,
     transparent: true,
     alwaysOnTop: true,
-    skipTaskbar: true, // Don't show in taskbar
+    skipTaskbar: true,
     webPreferences: {
       contextIsolation: false,
       nodeIntegration: true
     }
-  })
+  });
   
-  // Load the HTML for the notification
+  // Build HTML content with the dynamic message
+  const title = options.title || 'Notification';
+  const body = options.body || '';
+  
+  // Load the HTML for the notification with dynamic content
   notificationWindow.loadURL(
     `data:text/html;charset=utf-8,${encodeURIComponent(`
     <!DOCTYPE html>
@@ -94,7 +94,6 @@ function showCustomNotification() {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="stylesheet" href='../renderer/src/components/componentAssets/notificationButton.css'>
         <title>Notification</title>
         <style>
           body {
@@ -116,25 +115,24 @@ function showCustomNotification() {
               <span class="relative inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">!</span>
             </div>
           </div>
-          <div class="relative overflow-hidden rounded-xl bg-gradient-to-bl from-gray-900 via-gray-950 to-black p-[1px] shadow-2xl shadow-emerald-500/20">
+          <div class="relative overflow-hidden rounded-xl bg-gradient-to-bl from-gray-900 via-gray-950 to-black p-[1px] shadow-2xl shadow-red-500/20">
             <div class="relative flex items-center gap-4 rounded-xl bg-gray-950 px-6 py-3 transition-all duration-300 group-hover:bg-gray-950/50">
-              <div class="relative flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 transition-transform duration-300 group-hover:scale-110">
-                <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" class="h-5 w-5 text-white">
+              <div class="relative flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-red-400 to-red-600 transition-transform duration-300 group-hover:scale-110">
+                <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" class="h-5 w-5 text-black">
                   <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
                 </svg>
-                <div class="absolute inset-0 rounded-lg bg-emerald-500/50 blur-sm transition-all duration-300 group-hover:blur-md"></div>
+                <div class="absolute inset-0 rounded-lg bg-red-500/50 blur-sm transition-all duration-300 group-hover:blur-md"></div>
               </div>
               <div class="flex flex-col items-start">
-                <span class="text-sm font-semibold text-white">New Updates</span>
-                <span class="text-[10px] font-medium text-emerald-400/80">Budgetary Notification</span>
+                <span class="text-sm font-semibold text-white">${title}</span>
+                <span class="text-[10px] font-medium text-white">${body}</span>
               </div>
               <div class="ml-auto flex items-center gap-1">
-                <div class="h-1.5 w-1.5 rounded-full bg-emerald-500 transition-transform duration-300 group-hover:scale-150"></div>
-                <div class="h-1.5 w-1.5 rounded-full bg-emerald-500/50 transition-transform duration-300 group-hover:scale-150 group-hover:delay-100"></div>
-                <div class="h-1.5 w-1.5 rounded-full bg-emerald-500/30 transition-transform duration-300 group-hover:scale-150 group-hover:delay-200"></div>
+                <div class="h-1.5 w-1.5 rounded-full bg-red-500 transition-transform duration-300 group-hover:scale-150"></div>
+                <div class="h-1.5 w-1.5 rounded-full bg-red-500/50 transition-transform duration-300 group-hover:scale-150 group-hover:delay-100"></div>
+                <div class="h-1.5 w-1.5 rounded-full bg-red-500/30 transition-transform duration-300 group-hover:scale-150 group-hover:delay-200"></div>
               </div>
             </div>
-            <div class="absolute inset-0 rounded-xl bg-gradient-to-br from-emerald-400 via-emerald-500 to-emerald-600 opacity-20 transition-opacity duration-300 group-hover:opacity-40"></div>
           </div>
         </button>
         <audio id="notificationSound" autoplay>
@@ -154,38 +152,44 @@ function showCustomNotification() {
       </body>
     </html>
   `)}`
-  )
+  );
 
-   // Make sure the window is always on top
-   notificationWindow.setAlwaysOnTop(true, 'pop-up-menu');
-
+  // Make sure the window is always on top
+  notificationWindow.setAlwaysOnTop(true, 'pop-up-menu');
 
   // Auto-close the notification after 5 seconds
   setTimeout(() => {
-    notificationWindow.close()
-  }, 5000)
+    notificationWindow.close();
+  }, 5500);
 }
 
 const NOTIFY_TITLE = 'Hello from Electron'
 const NOTIFY_BODY = 'This is your notify'
-ipcMain.handle('notif', (_) => {
+// Update this part in your main.ts file
+
+// Handle notification requests from renderer
+ipcMain.handle('notif', (_, options) => {
+  // Default options if none provided
+  const notificationOptions = {
+    title: options?.title || NOTIFY_TITLE,
+    body: options?.body || NOTIFY_BODY,
+    icon: appIcon
+  };
+
   // Try to use both notification methods for reliability across platforms
   try {
     // First try the native Electron notification
-    new Notification({ 
-      title: NOTIFY_TITLE, 
-      body: NOTIFY_BODY, 
-      icon: appIcon 
-    }).show();
+    // new Notification(notificationOptions).show();
     
     // Also show our custom notification window
-    showCustomNotification();
+    showCustomNotification(notificationOptions);
   } catch (error) {
     console.error('Error showing notification:', error);
     // Fallback to just custom notification if native fails
-    showCustomNotification();
+    showCustomNotification(notificationOptions);
   }
-})
+});
+
 
 // Make these additional changes to src/main/index.ts
 
@@ -234,6 +238,21 @@ function ensureNotificationsCLickable(mainWindow: BrowserWindow) {
       app.quit()
     }
   })
+
+  // Handle notification requests from renderer
+  ipcMain.on('show-notification', (_, options) => {
+    // Check if notifications are supported
+    if (Notification.isSupported()) {
+      const notification = new Notification(options);
+      notification.show();
+      
+      // Optionally handle click events
+      notification.on('click', () => {
+        // Focus the window when notification is clicked
+        if (mainWindow) mainWindow.focus();
+      });
+    }
+  });
   
   // Make window visible when notification is clicked
   const showWindow = () => {
@@ -250,5 +269,6 @@ function ensureNotificationsCLickable(mainWindow: BrowserWindow) {
     return true
   }
 }
+
 
 
