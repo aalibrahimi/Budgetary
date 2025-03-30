@@ -32,7 +32,7 @@ const DashboardIndex = () => {
   const [notificationMessage, setNotificationMessage] = useState({category: "", msg: ""});
   
   // Get upcoming bills using our new hook
-  const upcomingBills = useUpcomingBills(14); // Show bills for next 14 days
+  const upcomingBills = useUpcomingBills(30); // Show bills for next 14 days
   
   // Layout state for grid items
   const [layouts, setLayouts] = useState(() => {
