@@ -245,7 +245,7 @@ const FinancialWellness = () => {
     >
       <header className="header">
         <div className="header-top">
-          <h1>Financial Wellness Center</h1>
+          <h1  className='p-5'>Financial Wellness Center</h1>
         </div>
 
         {/* Stats Cards Row */}

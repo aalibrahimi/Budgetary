@@ -242,7 +242,7 @@ const DashboardIndex = () => {
     <div className={`app-container ${isDarkMode ? 'dark-mode' : ''}`} id="darky">
       <header className="header">
         <div className="header-top">
-          <h1>Dashboard</h1>
+          <h1 className='p-5'>Dashboard</h1>
           <div className="header-actions">
             <button 
               className={`btn ${isEditMode ? 'btn-success' : 'btn-primary'}`} 
@@ -323,7 +323,7 @@ const DashboardIndex = () => {
           >
             {/* Recent Expenses Card */}
             <div key="recent-expenses" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"><Move size={16} className="mr-1" /> Drag</div>}
+              {isEditMode && <div className="drag-handle"> Drag</div>}
               <div className="dashboard-card-header">
                 <h2><Wallet className="dashboard-card-icon" /> Recent Expenses</h2>
                 <Link to="/expenses" className="dashboard-card-link">View All</Link>
@@ -346,7 +346,7 @@ const DashboardIndex = () => {
 
             {/* Upcoming Bills Card - Now using real data */}
             <div key="upcoming-bills" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"><Move size={16} className="mr-1" /> Drag</div>}
+              {isEditMode && <div className="drag-handle"> Drag</div>}
               <div className="dashboard-card-header">
                 <h2><Calendar className="dashboard-card-icon" /> Upcoming Bills</h2>
                 <Link to="/smart-assistant" className="dashboard-card-link">Manage</Link>
@@ -381,7 +381,7 @@ const DashboardIndex = () => {
 
             {/* Spending by Category Card */}
             <div key="spending-category" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"><Move size={16} className="mr-1" /> Drag</div>}
+              {isEditMode && <div className="drag-handle"> Drag</div>}
               <div className="dashboard-card-header">
                 <h2>Spending by Category</h2>
               </div>
@@ -415,7 +415,7 @@ const DashboardIndex = () => {
 
             {/* Savings Goals Card */}
             <div key="savings-goals" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"><Move size={16} className="mr-1" /> Drag</div>}
+              {isEditMode && <div className="drag-handle"> Drag</div>}
               <div className="dashboard-card-header">
                 <h2><PiggyBank className="dashboard-card-icon" /> Savings Goals</h2>
               </div>
@@ -447,7 +447,7 @@ const DashboardIndex = () => {
 
             {/* Budget Allocation Card */}
             <div key="budget-allocation" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"><Move size={16} className="mr-1" /> Drag</div>}
+              {isEditMode && <div className="drag-handle"> Drag</div>}
               <div className="dashboard-card-header">
                 <h2><DollarSign className="dashboard-card-icon" /> Budget Allocation</h2>
                 <Link to="/expenses?tab=budgetPlan" className="dashboard-card-link">Adjust Budget</Link>
@@ -487,7 +487,7 @@ const DashboardIndex = () => {
             
             {/* Financial Insights Card */}
             <div key="financial-insights" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"><Move size={16} className="mr-1" /> Drag</div>}
+              {isEditMode && <div className="drag-handle"> Drag</div>}
               <div className="dashboard-card-header">
                 <h2><Sparkles className="dashboard-card-icon" /> Financial Insights</h2>
               </div>
@@ -524,7 +524,7 @@ const DashboardIndex = () => {
             
             {/* Quick Entry Card - Enhanced to support recurring bill entry */}
             <div key="quick-entry" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"><Move size={16} className="mr-1" /> Drag</div>}
+              {isEditMode && <div className="drag-handle"> Drag</div>}
               <div className="dashboard-card-header">
                 <h2><Plus className="dashboard-card-icon" /> Quick Expense Entry</h2>
               </div>

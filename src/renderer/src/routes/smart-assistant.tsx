@@ -37,7 +37,7 @@ const SmartAssistant = () => {
     >
       <header className="header">
         <div className="header-top">
-          <h1>Subscription Manager</h1>
+          <h1 className='p-5'>Subscription Manager</h1>
         </div>
 
         {/* Stats Cards Row */}
