@@ -10,11 +10,14 @@ import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recha
 import { Calendar, DollarSign, PiggyBank, Wallet, Sparkles, Plus, Move, Bell } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import CashFlowForecast from '@renderer/components/CashFlowForecast';
-import NotifyButton from '@renderer/components/notifications/notificationButton';
+// Import the notification system instead of the button
+
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { useUpcomingBills } from '@renderer/lib/upcomingBill';
+import { useNotificationSystem, NotificationType } from '@renderer/components/NotificationSystem';
+
 // Create a responsive grid layout
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -28,11 +31,12 @@ const DashboardIndex = () => {
   const [quickEntryCategory, setQuickEntryCategory] = useState('');
   const [quickEntryAmount, setQuickEntryAmount] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
-  const [notificationVisible, setNotificationVisible] = useState(false);
-  const [notificationMessage, setNotificationMessage] = useState({category: "", msg: ""});
+  
+  // Replace old notification state with the new notification system
+  const { showNotification } = useNotificationSystem();
   
   // Get upcoming bills using our new hook
-  const upcomingBills = useUpcomingBills(30); // Show bills for next 14 days
+  const upcomingBills = useUpcomingBills(30); // Show bills for next 30 days
   
   // Layout state for grid items
   const [layouts, setLayouts] = useState(() => {
@@ -85,24 +89,18 @@ const DashboardIndex = () => {
     localStorage.setItem('dashboardLayouts', JSON.stringify(layouts));
   }, [layouts]);
 
-// Update the notification handling code
-const showNotification = (category: string, msg: string) => {
-  setNotificationMessage({category, msg});
-  // setNotificationVisible(true);
-  
-  // Also show desktop notification
-  window.api.notify();
-  
-  setTimeout(() => {
-    setNotificationVisible(false);
-  }, 5000);
-};
   // Handle quick entry form submission
   const handleQuickAddExpense = (e: React.FormEvent) => {
     e.preventDefault();
     const amount = parseFloat(quickEntryAmount);
+    
     if (!quickEntryCategory || isNaN(amount) || amount <= 0 || !quickEntryDate) {
-      showNotification('Error', 'Please fill all fields correctly!');
+      // Show error notification
+      showNotification(
+        "Error", 
+        "Please fill all fields correctly!",
+        NotificationType.ERROR
+      );
       return;
     }
 
@@ -125,9 +123,20 @@ const showNotification = (category: string, msg: string) => {
         amount: amount
       };
       addCashFlowTransaction(newTransaction);
-      showNotification('Success', `Added to your upcoming bills: ${quickEntryCategory}`);
+      
+      // Show success notification for recurring expense
+      showNotification(
+        "Success", 
+        `Added to your upcoming bills: ${quickEntryCategory}`,
+        NotificationType.SUCCESS
+      );
     } else {
-      showNotification('Success', `Added ${quickEntryCategory} expense of $${amount.toFixed(2)}`);
+      // Show success notification for one-time expense
+      showNotification(
+        "Success", 
+        `Added ${quickEntryCategory} expense of $${amount.toFixed(2)}`,
+        NotificationType.SUCCESS
+      );
     }
 
     // Reset form
@@ -241,6 +250,29 @@ const showNotification = (category: string, msg: string) => {
     if (diffDays < 0) return 'Overdue';
     return `In ${diffDays} days`;
   };
+
+  // LOGIN CHECK FOR INACTIVITY
+  useEffect(() => {
+    // Check last login date from localStorage
+    const lastLogin = localStorage.getItem('lastLoginDate');
+    
+    if (lastLogin) {
+      const twoWeeksAgo = new Date();
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      
+      if (new Date(lastLogin) < twoWeeksAgo) {
+        // Use new notification system with appropriate message and type
+        showNotification(
+          "Welcome Back", 
+          "It's been 2 weeks since your last visit. Don't forget to track your expenses!",
+          NotificationType.WARNING
+        );
+      }
+    }
+    
+    // Update last login date
+    localStorage.setItem('lastLoginDate', new Date().toISOString());
+  }, []);
 
   return (
     <div className={`app-container ${isDarkMode ? 'dark-mode' : ''}`} id="darky">
@@ -581,8 +613,7 @@ const showNotification = (category: string, msg: string) => {
                   </div>
                   
                   {/* Subtle checkbox for recurring expenses */}
-                  {/* work on this later */}
-                  {/* <div className="flex items-center mb-3 mt-1">
+                  <div className="flex items-center mb-3 mt-1">
                     <input
                       type="checkbox"
                       id="isRecurring"
@@ -594,14 +625,9 @@ const showNotification = (category: string, msg: string) => {
                       <Bell size={14} className="mr-1" />
                       This is a recurring bill (will appear in upcoming bills)
                     </label>
-                  </div> */}
+                  </div>
                   
                   <button type="submit" className="quick-entry-btn">Add Expense</button>
-                  <NotifyButton
-  category={notificationMessage.category}
-  msg={notificationMessage.msg}
-  isVisible={notificationVisible}
-/>
                 </form>
               </div>
             </div>

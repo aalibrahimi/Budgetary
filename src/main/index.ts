@@ -234,6 +234,21 @@ function ensureNotificationsCLickable(mainWindow: BrowserWindow) {
       app.quit()
     }
   })
+
+  // Handle notification requests from renderer
+  ipcMain.on('show-notification', (_, options) => {
+    // Check if notifications are supported
+    if (Notification.isSupported()) {
+      const notification = new Notification(options);
+      notification.show();
+      
+      // Optionally handle click events
+      notification.on('click', () => {
+        // Focus the window when notification is clicked
+        if (mainWindow) mainWindow.focus();
+      });
+    }
+  });
   
   // Make window visible when notification is clicked
   const showWindow = () => {
@@ -250,5 +265,6 @@ function ensureNotificationsCLickable(mainWindow: BrowserWindow) {
     return true
   }
 }
+
 
 
