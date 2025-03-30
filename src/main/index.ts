@@ -3,8 +3,8 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import appIcon from '../../resources/Budgetary_light.jpg?asset'
-// import { Notification } from 'electron/main'
-// import ali_icon from '../../resources/aliWolf.png?asset'
+import { Notification } from 'electron/main'
+import ali_icon from '../../resources/aliWolf.png?asset'
 
 function createWindow(): void {
   // Create the browser window.
@@ -41,6 +41,8 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 
+  ensureNotificationsCLickable(mainWindow)
+
   ipcMain.handle('minimize-window', (_) => {
     mainWindow.minimize()
   })
@@ -62,6 +64,12 @@ function showCustomNotification() {
   const primaryDisplay = screen.getPrimaryDisplay()
   const { width, height } = primaryDisplay.workAreaSize
 
+ // Update the showCustomNotification function to ensure it works well
+function showCustomNotification() {
+  const screen = require('electron').screen
+  const primaryDisplay = screen.getPrimaryDisplay()
+  const { width, height } = primaryDisplay.workAreaSize
+
   const notificationWindow = new BrowserWindow({
     x: width - 320, // Position 20px from the right
     y: height - 120, // Position 20px from the bottom
@@ -70,6 +78,7 @@ function showCustomNotification() {
     frame: false,
     transparent: true,
     alwaysOnTop: true,
+    skipTaskbar: true, // Don't show in taskbar
     webPreferences: {
       contextIsolation: false,
       nodeIntegration: true
@@ -87,13 +96,24 @@ function showCustomNotification() {
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="stylesheet" href='../renderer/src/components/componentAssets/notificationButton.css'>
         <title>Notification</title>
+        <style>
+          body {
+            overflow: hidden;
+            background: transparent;
+          }
+          #notif-trans {
+            position: relative;
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out;
+          }
+        </style>
       </head>
       <body class="flex items-center justify-center h-screen bg-transparent">
         <button class="group relative" id="notif-trans">
           <div class="absolute -right-2 -top-2 z-10">
             <div class="flex h-5 w-5 items-center justify-center">
               <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-              <span class="relative inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">3</span>
+              <span class="relative inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">!</span>
             </div>
           </div>
           <div class="relative overflow-hidden rounded-xl bg-gradient-to-bl from-gray-900 via-gray-950 to-black p-[1px] shadow-2xl shadow-emerald-500/20">
@@ -106,7 +126,7 @@ function showCustomNotification() {
               </div>
               <div class="flex flex-col items-start">
                 <span class="text-sm font-semibold text-white">New Updates</span>
-                <span class="text-[10px] font-medium text-emerald-400/80">Check your notifications</span>
+                <span class="text-[10px] font-medium text-emerald-400/80">Budgetary Notification</span>
               </div>
               <div class="ml-auto flex items-center gap-1">
                 <div class="h-1.5 w-1.5 rounded-full bg-emerald-500 transition-transform duration-300 group-hover:scale-150"></div>
@@ -117,13 +137,28 @@ function showCustomNotification() {
             <div class="absolute inset-0 rounded-xl bg-gradient-to-br from-emerald-400 via-emerald-500 to-emerald-600 opacity-20 transition-opacity duration-300 group-hover:opacity-40"></div>
           </div>
         </button>
+        <audio id="notificationSound" autoplay>
+          <source src="data:audio/wav;base64,UklGRrQJAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YZAJAACBhYqFbF1fdJGmrKaRf3R1gIiAcWRhZ3uNnamnmIh4cHF+iIV3aWRqeYeWoaGYj4B0cXiCioZ6bmhsd4GNl5uXjoF4cneBiYR6cG1weIGIj5KQioJ+eHl+hIJ+enp7e4CDhoiHhIB+fX+ChIN/fHx9f4KFhoWCgH5/gIOEgn98fH6ChYaFgoB+f4GDhIJ/fHx/gYSGhYKAfn+Bg4SCf3x8f4GEhoWCgH5/gYOEgn98fICChYaFgoB9f4GDhIJ/fHyAgoWGhYKAfX+Bg4SCf3x8gIKFhoWCgH1/gYOEgn97fICChYeFgoB9f4GDhIJ/e3yAgoWHhYKAfX+Bg4SCf3t8gIKGh4WBf31/gYSEgn97fICDhoeFgX99f4GEhIJ/e3yBg4aHhYF/fX+BhISCf3t8gYOGh4WBf31/gYSEgn97fIGDhoeEgX99f4GEhIJ+e3yBg4eHhIF+fX+BhISCfnt8gYSHh4SBfn1/gYSEgn57fIGEh4eEgX59f4GEhIJ+eXuAhIeHhYJ+fX+Bg4OCfnl7gISHiIWCfn1/gYODgn55e4CEiIiFgn19foGDg4J+eXqAhIiIhYJ9fX6Bg4OCfnl6gISIiIWCfX1+gYODgn55eoCEiYmGgn19foCCgoJ+eXqAhYmJhoJ9fX6AgoKCfXh6gIWJiYaCfH1+gIKCgn14eoCFioqHgnx8fYCCgoJ9eHmAhYqKh4J8fH2AgoKCfXh5gIWLioeCfHx9gIKBgn14eYCGi4qHgnx8fYCCgYF9d3mAhoyLiIN8e3x/gYGBfXd5gIeMi4iDfHt8f4GBgX13eICHjYyJg3t7e3+BgYF9d3iAh42MiYN7e3t/gICBfXZ4f4eOjImDe3p7f4CAgX12eH+HjoyKg3p6en+AgIF9dnh/h4+NioN6ent/gICAfXZ3f4ePjYqDeXp6f4CAgH12d3+HkI6Lg3l5en+AgIB8dnd/iJCOi4N5eXl+gIB/fHZ3f4iQj4uDeXl5foCAfnx2dn+IkY+Mg3h4eX6AgH58dnZ/iJGQjIN4eHh+gH9+fHV1foiRkIyDeHd4foB/fnx1dX6IkpGNg3d3d36Af358dXV+iJKSjYN3d3d9f39+fHV0foiSko2Ed3Z2fX9/fnx1dH6Ik5ONhHd2dn1/f358dHR+iJOTjoR2dnZ9f39+fHR0fomTlI6Ednl5foCAf3x1c32HkI+KgXh5eoGDgoB8dXR+h4+NiIF6e3yCg4KAfXZ1foaNi4WBe32AhISCf314douIgn57e4CFhoaDf3x7gIWCfXx9gIaIiIWBfn6BhIKAf4KEhYOAfn+ChoWDgYGDhIKAgoSFg4B+gIOFhIOBgYODgoGChIWCgH6Ag4WEg4GBgoOCgYKEhYKAfoCDhYSDgYCCg4KBgoSFgoB+gIOFhIKAgIKDgoGChIWCgH6Ag4WEgoCAgYOCgYKEhYKAfYCDhYSCgICBg4KBgoSGg4B9f4OFhIKAgIGDgoGChIaDgH1/g4WEgoB/gYOCgYKEhoOAfX+DhYSCgH+Bg4KBgoSGg4B9f4OFhYOAf4GCgoGChIaDgH1/g4WFg4B/gYKCgIKEhoOAfX+DhoWDgH+BgoKAgYOGg4B9f4OGhYOAf4GCgoCBg4aDgH1/g4aFg4B+gYKCgIGDhoSAfX6DhoWDgH6BgoKAgYOGhIB9foOGhoSAfoGCgYCBg4aEgH1+g4aGhIB+gIKBgIGDhoSAfX6DhoaEgH6AgYGAgIOGhIB9foOGhoSAfoCAf3l9gouFfoGDgIJ/fX2Ahnx9g4J6goR9f4F+g4V8fYGFfH+DgH2AhICAfH6EfYCEgIB+fn6DgH6Cg32BgoKBf36Ag4B/gYF/gYCBgYCAgIGAgICAgYCBgYCAgICBgICAgICBgICAgICAgICAgICAgICAgIGAgICAgICAgICAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" type="audio/wav">
+        </audio>
         <script>
-          document.getElementById('notificationSound').play();
+          // Auto-close after 5 seconds
+          setTimeout(() => {
+            const notification = document.getElementById('notif-trans');
+            notification.style.opacity = '0';
+            // Wait for opacity transition to finish, then close
+            setTimeout(() => {
+              window.close();
+            }, 500);
+          }, 5000);
         </script>
       </body>
     </html>
   `)}`
   )
+
+   // Make sure the window is always on top
+   notificationWindow.setAlwaysOnTop(true, 'pop-up-menu');
+
 
   // Auto-close the notification after 5 seconds
   setTimeout(() => {
@@ -131,16 +166,30 @@ function showCustomNotification() {
   }, 5000)
 }
 
-// const NOTIFY_TITLE = 'Hello from Electron'
-// const NOTIFY_BODY = 'This is your notify'
+const NOTIFY_TITLE = 'Hello from Electron'
+const NOTIFY_BODY = 'This is your notify'
 ipcMain.handle('notif', (_) => {
-  // new Notification({ title: NOTIFY_TITLE, body: NOTIFY_BODY, icon: ali_icon }).show()
-  showCustomNotification()
+  // Try to use both notification methods for reliability across platforms
+  try {
+    // First try the native Electron notification
+    new Notification({ 
+      title: NOTIFY_TITLE, 
+      body: NOTIFY_BODY, 
+      icon: appIcon 
+    }).show();
+    
+    // Also show our custom notification window
+    showCustomNotification();
+  } catch (error) {
+    console.error('Error showing notification:', error);
+    // Fallback to just custom notification if native fails
+    showCustomNotification();
+  }
 })
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
+// Make these additional changes to src/main/index.ts
+
+// Add this after the app.whenReady() call
 app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
@@ -154,21 +203,52 @@ app.whenReady().then(() => {
 
   createWindow()
 
+  // This is important for notifications on Windows
+  app.setAppUserModelId(process.execPath)
+
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
-})
-
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
+  
+  // Register for notification activation events
+  if (process.platform === 'win32') {
+    app.setAppUserModelId(app.getName())
   }
 })
 
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here.
+// Also add this function to ensure notifications can work even if the app is minimized
+// Add this near the createWindow function
+
+function ensureNotificationsCLickable(mainWindow: BrowserWindow) {
+  // Handle notification click events
+  app.on('activate', () => {
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.focus()
+  })
+  
+  // Ensure app doesn't exit when main window is closed (on macOS)
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+      app.quit()
+    }
+  })
+  
+  // Make window visible when notification is clicked
+  const showWindow = () => {
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    if (!mainWindow.isVisible()) mainWindow.show()
+    mainWindow.focus()
+  }
+  
+  ipcMain.on('show-window', showWindow)
+  
+  // Ensure we have permission to show notifications
+  if (Notification.isSupported()) {
+    // Notifications are automatically allowed in Electron if supported
+    return true
+  }
+}
+
+

@@ -24,5 +24,14 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Request notification permission when the app starts
+      document.addEventListener('DOMContentLoaded', () => {
+        if (Notification && Notification.permission !== 'granted') {
+          Notification.requestPermission();
+        }
+      });
+    </script>
+    
   </body>
 </html>

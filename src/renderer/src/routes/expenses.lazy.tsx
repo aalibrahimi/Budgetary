@@ -9,11 +9,12 @@ import Graphs from '@renderer/components/graphs'
 import { useDarkModeStore } from './__root'
 
 import { useExpenseStore } from '../stores/expenseStore'
-import NotifyButton2 from '@renderer/components/notifications/notificationButton2'
+import NotifyButton from '@renderer/components/notifications/notificationButton'
 
 const Expenses = () => {
-  const [notificationVisible, setNotificationVisible] = useState(false)
-  const [notificationMessage, setNotificationMessage] = useState({ category: '', msg: '' })
+// Inside the Expenses component function, update the notification handling
+const [notificationVisible, setNotificationVisible] = useState(false)
+const [notificationMessage, setNotificationMessage] = useState({ category: '', msg: '' })
 
   // New statae for selectedd month in month picker
    const [selectedMonth, setSelectedMonth] = useState<string>(() => {
@@ -35,15 +36,19 @@ const Expenses = () => {
 
 
   const showNotification = (category: string, msg: string) => {
+    // Show in-app notification
     setNotificationMessage({ category, msg })
     setNotificationVisible(true)
+    
 
-    // Hide the notification after 5 seconds
-    setTimeout(() => {
-      setNotificationVisible(false)
-    }, 5000)
-  }
+  // Also show desktop notification
+  window.api.notify()
 
+  // Hide the in-app notification after 5 seconds
+  setTimeout(() => {
+    setNotificationVisible(false)
+  }, 5000)
+}
   const { isDarkMode } = useDarkModeStore()
   const {
     monthlyTotal,
@@ -178,8 +183,8 @@ const Expenses = () => {
             <button type="button" onClick={() => testNotifDesk()}>
               Test Notif Desktop
             </button>
-            <input type="checkbox" name="testpop" id="test-pop" style={{ display: 'none' }} />
-            <NotifyButton category='Notification Category' msg='test notif' /> */}
+            <input type="checkbox" name="testpop" id="test-pop" style={{ display: 'none' }} /> */}
+            {/* <NotifyButton category='Notification Category' msg='test notif' /> */}
           </div>
           {/* new section {Monthly spending} */}
           <div className="stats-grid">
@@ -278,12 +283,11 @@ const Expenses = () => {
                     </button>
                   </div>
                 </form>
-                <NotifyButton2
-                  category={notificationMessage.category}
-                  msg={notificationMessage.msg}
-                  isVisible={notificationVisible}
-                  onClose={() => setNotificationVisible(false)}
-                />
+                {/* <NotifyButton
+  category={notificationMessage.category}
+  msg={notificationMessage.msg}
+  isVisible={notificationVisible}
+/> */}
 
                 {/* month selection */}
                 <section className="surrounding-month">

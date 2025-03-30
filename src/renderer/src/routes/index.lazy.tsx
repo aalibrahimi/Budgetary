@@ -10,7 +10,7 @@ import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recha
 import { Calendar, DollarSign, PiggyBank, Wallet, Sparkles, Plus, Move, Bell } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import CashFlowForecast from '@renderer/components/CashFlowForecast';
-import NotifyButton2 from '@renderer/components/notifications/notificationButton2';
+import NotifyButton from '@renderer/components/notifications/notificationButton';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -85,14 +85,18 @@ const DashboardIndex = () => {
     localStorage.setItem('dashboardLayouts', JSON.stringify(layouts));
   }, [layouts]);
 
-  const showNotification = (category: string, msg: string) => {
-    setNotificationMessage({category, msg});
-    setNotificationVisible(true);
-    setTimeout(() => {
-      setNotificationVisible(false);
-    }, 5000);
-  };
-
+// Update the notification handling code
+const showNotification = (category: string, msg: string) => {
+  setNotificationMessage({category, msg});
+  // setNotificationVisible(true);
+  
+  // Also show desktop notification
+  window.api.notify();
+  
+  setTimeout(() => {
+    setNotificationVisible(false);
+  }, 5000);
+};
   // Handle quick entry form submission
   const handleQuickAddExpense = (e: React.FormEvent) => {
     e.preventDefault();
@@ -593,12 +597,11 @@ const DashboardIndex = () => {
                   </div> */}
                   
                   <button type="submit" className="quick-entry-btn">Add Expense</button>
-                  <NotifyButton2 
-                    category={notificationMessage.category}
-                    msg={notificationMessage.msg}
-                    isVisible={notificationVisible}
-                    onClose={() => setNotificationVisible(false)}
-                  />
+                  <NotifyButton
+  category={notificationMessage.category}
+  msg={notificationMessage.msg}
+  isVisible={notificationVisible}
+/>
                 </form>
               </div>
             </div>
