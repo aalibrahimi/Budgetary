@@ -1,10 +1,11 @@
+// src/main/index.ts - update to include Plaid services
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import appIcon from '../../resources/Budgetary_light.jpg?asset'
-// import { Notification } from 'electron/main'
-// import ali_icon from '../../resources/aliWolf.png?asset'
+// Import the Plaid service
+import { initPlaidService } from './plaidService'
 
 function createWindow(): void {
   // Create the browser window.
@@ -131,10 +132,7 @@ function showCustomNotification() {
   }, 5000)
 }
 
-// const NOTIFY_TITLE = 'Hello from Electron'
-// const NOTIFY_BODY = 'This is your notify'
 ipcMain.handle('notif', (_) => {
-  // new Notification({ title: NOTIFY_TITLE, body: NOTIFY_BODY, icon: ali_icon }).show()
   showCustomNotification()
 })
 
@@ -151,6 +149,9 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
+
+  // Initialize Plaid services
+  initPlaidService()
 
   createWindow()
 
@@ -169,6 +170,3 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
-
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here.

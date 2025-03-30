@@ -1,9 +1,11 @@
+// Updated navigation section in src/renderer/src/routes/__root.tsx
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
 import { createRootRoute, Link, Outlet } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import DarkModeIcon from '../../../../resources/moon_icon.svg';
 import LightModeIcon from '../../../../resources/sun_icon.svg';
 import { create } from 'zustand';
+import { Wallet } from 'lucide-react';
 
 // Dark Mode Store
 interface darkModeState {
@@ -61,7 +63,7 @@ export const Route = createRootRoute({
           <div className="navbar-links">
             <Link to="/" className="nav-link" draggable={false}>Home</Link>
             <Link to="/about" className="nav-link" draggable={false}>Challenges</Link>
-            <Link to="/smart-assistant" className="nav-link" draggable={false}>SmartAssistant</Link>
+            <Link to="/smart-assistant" className="nav-link" draggable={false}>Subscriptions</Link>
             <SignedOut>
               <SignInButton>
                 <div className="auth-button">Login/Register</div>
@@ -69,6 +71,11 @@ export const Route = createRootRoute({
             </SignedOut>
             <SignedIn>
               <Link to="/expenses" className="nav-link" viewTransition={true} draggable={false}>Dashboard</Link>
+              <Link to="/plaid" className="nav-link" viewTransition={true} draggable={false}>
+                <div className="flex items-center">
+                  <Wallet className="h-4 w-4 mr-1" /> Banks
+                </div>
+              </Link>
               <UserButton showName={true} />
             </SignedIn>
 

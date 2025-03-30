@@ -17,11 +17,18 @@ import { Route as SmartAssistantImport } from './routes/smart-assistant'
 
 // Create Virtual Routes
 
+const PlaidLazyImport = createFileRoute('/plaid')()
 const ExpensesLazyImport = createFileRoute('/expenses')()
 const AboutLazyImport = createFileRoute('/about')()
 const IndexLazyImport = createFileRoute('/')()
 
 // Create/Update Routes
+
+const PlaidLazyRoute = PlaidLazyImport.update({
+  id: '/plaid',
+  path: '/plaid',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/plaid.lazy').then((d) => d.Route))
 
 const ExpensesLazyRoute = ExpensesLazyImport.update({
   id: '/expenses',
@@ -79,6 +86,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExpensesLazyImport
       parentRoute: typeof rootRoute
     }
+    '/plaid': {
+      id: '/plaid'
+      path: '/plaid'
+      fullPath: '/plaid'
+      preLoaderRoute: typeof PlaidLazyImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -89,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/smart-assistant': typeof SmartAssistantRoute
   '/about': typeof AboutLazyRoute
   '/expenses': typeof ExpensesLazyRoute
+  '/plaid': typeof PlaidLazyRoute
 }
 
 export interface FileRoutesByTo {
@@ -96,6 +111,7 @@ export interface FileRoutesByTo {
   '/smart-assistant': typeof SmartAssistantRoute
   '/about': typeof AboutLazyRoute
   '/expenses': typeof ExpensesLazyRoute
+  '/plaid': typeof PlaidLazyRoute
 }
 
 export interface FileRoutesById {
@@ -104,14 +120,15 @@ export interface FileRoutesById {
   '/smart-assistant': typeof SmartAssistantRoute
   '/about': typeof AboutLazyRoute
   '/expenses': typeof ExpensesLazyRoute
+  '/plaid': typeof PlaidLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/smart-assistant' | '/about' | '/expenses'
+  fullPaths: '/' | '/smart-assistant' | '/about' | '/expenses' | '/plaid'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/smart-assistant' | '/about' | '/expenses'
-  id: '__root__' | '/' | '/smart-assistant' | '/about' | '/expenses'
+  to: '/' | '/smart-assistant' | '/about' | '/expenses' | '/plaid'
+  id: '__root__' | '/' | '/smart-assistant' | '/about' | '/expenses' | '/plaid'
   fileRoutesById: FileRoutesById
 }
 
@@ -120,6 +137,7 @@ export interface RootRouteChildren {
   SmartAssistantRoute: typeof SmartAssistantRoute
   AboutLazyRoute: typeof AboutLazyRoute
   ExpensesLazyRoute: typeof ExpensesLazyRoute
+  PlaidLazyRoute: typeof PlaidLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -127,6 +145,7 @@ const rootRouteChildren: RootRouteChildren = {
   SmartAssistantRoute: SmartAssistantRoute,
   AboutLazyRoute: AboutLazyRoute,
   ExpensesLazyRoute: ExpensesLazyRoute,
+  PlaidLazyRoute: PlaidLazyRoute,
 }
 
 export const routeTree = rootRoute
@@ -142,7 +161,8 @@ export const routeTree = rootRoute
         "/",
         "/smart-assistant",
         "/about",
-        "/expenses"
+        "/expenses",
+        "/plaid"
       ]
     },
     "/": {
@@ -156,6 +176,9 @@ export const routeTree = rootRoute
     },
     "/expenses": {
       "filePath": "expenses.lazy.tsx"
+    },
+    "/plaid": {
+      "filePath": "plaid.lazy.tsx"
     }
   }
 }

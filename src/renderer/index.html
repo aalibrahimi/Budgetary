@@ -1,21 +1,23 @@
+// src/renderer/index.html (update the CSP section)
+
 <!doctype html>
 <html>
   <head>
     <meta charset="UTF-8" />
     <title>Budgetary</title>
-    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- Updated CSP to allow Plaid connect-src and script-src -->
     <meta
       http-equiv="Content-Security-Policy"
       content="
       default-src 'self' blob:;
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://relevant-sawfly-3.clerk.accounts.dev https://challenges.cloudflare.com;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.plaid.com https://relevant-sawfly-3.clerk.accounts.dev https://challenges.cloudflare.com;
       style-src 'self' 'unsafe-inline';
       font-src 'self';
       img-src 'self' https://img.clerk.com data:;
-      connect-src 'self' https://relevant-sawfly-3.clerk.accounts.dev blob:;
+      connect-src 'self' https://relevant-sawfly-3.clerk.accounts.dev blob: https://cdn.plaid.com https://*.plaid.com;
       worker-src 'self' blob:;
       object-src 'none';
-      frame-src https://challenges.cloudflare.com;
+      frame-src https://challenges.cloudflare.com https://*.plaid.com;
     "
     />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
