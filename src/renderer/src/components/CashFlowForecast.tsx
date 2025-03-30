@@ -1,4 +1,6 @@
-import React, { useState } from 'react'
+// Modifications for CashFlowForecast.tsx
+
+import React, { useState, useEffect } from 'react'
 import { AlertTriangle, Plus, X } from 'lucide-react'
 import '../assets/CashFlowwForecast.css'
 import { useExpenseStore } from '@renderer/stores/expenseStore'
@@ -13,8 +15,25 @@ const CashFlowForecast: React.FC = () => {
     type: 'expense' as 'expense' | 'income',
     category: '',
     description: '',
-    amount: 0
+    amount: 0,
+    isRecurring: false // New field for recurring transactions
   })
+
+  // Get subscriptions from localStorage to include them in the forecast
+  const [subscriptions, setSubscriptions] = useState<any[]>([])
+
+  // Load subscriptions
+  useEffect(() => {
+    try {
+      const savedSubscriptions = localStorage.getItem('userSubscriptions')
+      if (savedSubscriptions) {
+        const parsedSubscriptions = JSON.parse(savedSubscriptions)
+        setSubscriptions(parsedSubscriptions)
+      }
+    } catch (error) {
+      console.error('Failed to load subscriptions:', error)
+    }
+  }, [])
 
   // Format currency helper
   const formatCurrency = (amount: number) => {
@@ -29,6 +48,7 @@ const CashFlowForecast: React.FC = () => {
     income: ['Salary', 'Freelance', 'Investments', 'Other Income'],
     expense: [
       'Rent',
+      'Mortgage',
       'Utilities',
       'Insurance',
       'Groceries',
@@ -39,10 +59,16 @@ const CashFlowForecast: React.FC = () => {
     ]
   }
 
-  // Add a new transaction
+  // Add a new transaction, with option to mark as recurring
   const handleAddTransaction = () => {
+    // Create description that indicates if it's recurring
+    const description = newTransaction.isRecurring 
+      ? `Recurring ${newTransaction.category} ${newTransaction.description}`
+      : newTransaction.description
+
     addCashFlowTransaction({
       ...newTransaction,
+      description,
       date: newTransaction.date
     })
 
@@ -52,7 +78,8 @@ const CashFlowForecast: React.FC = () => {
       type: 'expense',
       category: '',
       description: '',
-      amount: 0
+      amount: 0,
+      isRecurring: false
     })
   }
 
@@ -70,20 +97,36 @@ const CashFlowForecast: React.FC = () => {
     return days
   }
 
-  // Get transactions for a specific day
+  // Get transactions for a specific day, including subscriptions
   const getTransactionsForDay = (date: Date) => {
-    const { cashFlowTransaction } = useExpenseStore()
-
     const dateString = date.toISOString().split('T')[0]
-    return cashFlowTransaction.filter((transaction) => {
-      const transationDateSTR = transaction.date.split('T')[0]
 
-      return transationDateSTR === dateString
+    // Get transactions from CashFlow
+    const transactions = cashFlowTransaction.filter((transaction) => {
+      const transactionDateStr = transaction.date.split('T')[0]
+      return transactionDateStr === dateString
     })
+
+    // Get subscriptions due on this day
+    const subscriptionPayments = subscriptions.filter((sub) => {
+      const nextPaymentDate = new Date(sub.nextPayment)
+      return nextPaymentDate.toISOString().split('T')[0] === dateString
+    }).map(sub => ({
+      id: `sub-${sub.id}`,
+      date: dateString,
+      type: 'expense' as 'expense' | 'income',
+      category: sub.name,
+      description: `Subscription payment: ${sub.name}`,
+      amount: sub.amount
+    }))
+
+    // Combine both sources
+    return [...transactions, ...subscriptionPayments]
   }
 
   // Calculate summary totals
   const calculateSummary = () => {
+    // Calculate income/expenses from cash flow transactions
     const income = cashFlowTransaction
       .filter((t) => t.type === 'income')
       .reduce((sum, t) => sum + t.amount, 0)
@@ -92,10 +135,25 @@ const CashFlowForecast: React.FC = () => {
       .filter((t) => t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0)
 
+    // Calculate upcoming subscription payments for the next 30 days
+    const today = new Date()
+    const thirtyDaysLater = new Date()
+    thirtyDaysLater.setDate(today.getDate() + 30)
+
+    const subscriptionExpenses = subscriptions
+      .filter(sub => {
+        const nextPayment = new Date(sub.nextPayment)
+        return nextPayment >= today && nextPayment <= thirtyDaysLater
+      })
+      .reduce((sum, sub) => sum + sub.amount, 0)
+
+    // Combine regular expenses with subscription expenses
+    const totalExpenses = expenses + subscriptionExpenses
+
     return {
       income,
-      expenses,
-      netCashFlow: income - expenses
+      expenses: totalExpenses,
+      netCashFlow: income - totalExpenses
     }
   }
 
@@ -278,6 +336,29 @@ const CashFlowForecast: React.FC = () => {
                   placeholder="0.00"
                 />
               </div>
+              
+              {/* Add recurring option with checkbox */}
+              {newTransaction.type === 'expense' && (
+                <div className="form-group">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="isRecurring"
+                      checked={newTransaction.isRecurring}
+                      onChange={(e) =>
+                        setNewTransaction({
+                          ...newTransaction,
+                          isRecurring: e.target.checked
+                        })
+                      }
+                      className="mr-2 h-4 w-4"
+                    />
+                    <label htmlFor="isRecurring" className="text-sm">
+                      This is a recurring expense (will appear in upcoming bills)
+                    </label>
+                  </div>
+                </div>
+              )}
 
               <div className="modal-actions">
                 <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>

@@ -416,11 +416,6 @@ const subscriptionIcons: Record<string, SubscriptionIconType> = {
   },
   
   // Shopping
-  'Amazon Prime': {
-    icon: <ShoppingBag />,
-    color: '#FF9900',
-    backgroundColor: 'rgba(255, 153, 0, 0.1)'
-  },
   'Walmart+': {
     icon: <ShoppingBag />,
     color: '#0071DC',

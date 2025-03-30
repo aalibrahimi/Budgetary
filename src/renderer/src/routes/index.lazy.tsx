@@ -7,14 +7,14 @@ import '@fortawesome/fontawesome-free/css/all.css';
 import { useDarkModeStore } from './__root';
 import { useExpenseStore } from '../stores/expenseStore';
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
-import { Calendar, DollarSign, PiggyBank, Wallet, Sparkles, Plus, Move } from 'lucide-react';
+import { Calendar, DollarSign, PiggyBank, Wallet, Sparkles, Plus, Move, Bell } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import CashFlowForecast from '@renderer/components/CashFlowForecast';
 import NotifyButton2 from '@renderer/components/notifications/notificationButton2';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
-
+import { useUpcomingBills } from '@renderer/lib/upcomingBill';
 // Create a responsive grid layout
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -23,12 +23,16 @@ const DashboardIndex = () => {
   const [activePeriod, setActivePeriod] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
   
   // For quick entry form
-  const { expenses, addExpense } = useExpenseStore(); // Get real expenses from store
+  const { expenses, addExpense, addCashFlowTransaction } = useExpenseStore();
   const [quickEntryDate, setQuickEntryDate] = useState(new Date().toISOString().split('T')[0]);
   const [quickEntryCategory, setQuickEntryCategory] = useState('');
   const [quickEntryAmount, setQuickEntryAmount] = useState('');
-  const [notificationVisible, setNotificaitonVisible] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [notificationVisible, setNotificationVisible] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState({category: "", msg: ""});
+  
+  // Get upcoming bills using our new hook
+  const upcomingBills = useUpcomingBills(14); // Show bills for next 14 days
   
   // Layout state for grid items
   const [layouts, setLayouts] = useState(() => {
@@ -83,33 +87,48 @@ const DashboardIndex = () => {
 
   const showNotification = (category: string, msg: string) => {
     setNotificationMessage({category, msg});
-    setNotificaitonVisible(true);
+    setNotificationVisible(true);
     setTimeout(() => {
-      setNotificaitonVisible(false);
+      setNotificationVisible(false);
     }, 5000);
   };
 
-  // Handle quick entry form submition
+  // Handle quick entry form submission
   const handleQuickAddExpense = (e: React.FormEvent) => {
     e.preventDefault();
     const amount = parseFloat(quickEntryAmount);
     if (!quickEntryCategory || isNaN(amount) || amount <= 0 || !quickEntryDate) {
-      showNotification('Error', 'Please fill all correctly!');
+      showNotification('Error', 'Please fill all fields correctly!');
       return;
     }
+
+    // Add to the regular expense tracking
     const newExpense = {
       date: quickEntryDate,
       category: quickEntryCategory,
       amount: amount
     };
-
     addExpense(newExpense);
+
+    // If it's marked as recurring, add as a cash flow transaction with special description
+    if (isRecurring) {
+      const newTransaction = {
+        date: quickEntryDate,
+        type: 'expense' as 'expense' | 'income',
+        category: quickEntryCategory,
+        // Mark as recurring so it will show up in upcoming bills
+        description: `Recurring ${quickEntryCategory} payment`,
+        amount: amount
+      };
+      addCashFlowTransaction(newTransaction);
+      showNotification('Success', `Added to your upcoming bills: ${quickEntryCategory}`);
+    } else {
+      showNotification('Success', `Added ${quickEntryCategory} expense of $${amount.toFixed(2)}`);
+    }
 
     // Reset form
     setQuickEntryAmount('');
     setQuickEntryCategory('');
-
-    showNotification('success', `Added ${quickEntryCategory} expense of $${amount.toFixed(2)}`);
   };
   
   // Format date from YYYY-MM-DD to Month DD, YYYY
@@ -152,12 +171,8 @@ const DashboardIndex = () => {
   }, [expenses]);
 
   // Sample data for sections that would be implemented later
+  // Only keeping savings goals since we replaced upcoming bills with real data
   const sampleData = {
-    upcomingBills: [
-      { name: 'Rent', amount: 1200, dueDate: '2025-04-01' },
-      { name: 'Internet', amount: 65, dueDate: '2025-04-05' },
-      { name: 'Electricity', amount: 120, dueDate: '2025-04-12' }
-    ],
     savingsGoals: [
       { name: 'Emergency Fund', target: 10000, current: 6500, color: '#FF6B6B' },
       { name: 'Vacation', target: 3000, current: 1200, color: '#4ECDC4' },
@@ -205,6 +220,22 @@ const DashboardIndex = () => {
   // Toggle edit mode
   const toggleEditMode = () => {
     setIsEditMode(!isEditMode);
+  };
+
+  // Calculate how many days until a bill is due
+  const getDaysUntil = (dateString: string) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(dateString);
+    dueDate.setHours(0, 0, 0, 0);
+    
+    const diffTime = dueDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Tomorrow';
+    if (diffDays < 0) return 'Overdue';
+    return `In ${diffDays} days`;
   };
 
   return (
@@ -292,7 +323,7 @@ const DashboardIndex = () => {
           >
             {/* Recent Expenses Card */}
             <div key="recent-expenses" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"> Drag</div>}
+              {isEditMode && <div className="drag-handle"><Move size={16} className="mr-1" /> Drag</div>}
               <div className="dashboard-card-header">
                 <h2><Wallet className="dashboard-card-icon" /> Recent Expenses</h2>
                 <Link to="/expenses" className="dashboard-card-link">View All</Link>
@@ -313,30 +344,44 @@ const DashboardIndex = () => {
               </div>
             </div>
 
-            {/* Upcoming Bills Card */}
+            {/* Upcoming Bills Card - Now using real data */}
             <div key="upcoming-bills" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"> Drag</div>}
+              {isEditMode && <div className="drag-handle"><Move size={16} className="mr-1" /> Drag</div>}
               <div className="dashboard-card-header">
                 <h2><Calendar className="dashboard-card-icon" /> Upcoming Bills</h2>
+                <Link to="/smart-assistant" className="dashboard-card-link">Manage</Link>
               </div>
               <div className="bills-list">
-                {sampleData.upcomingBills.map((bill, index) => (
-                  <div key={index} className="bill-item">
-                    <div className="bill-info">
-                      <span className="bill-name">{bill.name}</span>
-                      <span className="bill-amount">{formatCurrency(bill.amount)}</span>
-                    </div>
-                    <div className="bill-due-date">
-                      Due: {bill.dueDate}
-                    </div>
+                {upcomingBills.length === 0 ? (
+                  <div className="bill-item flex items-center justify-center p-4 text-gray-500">
+                    <p>No upcoming bills. Add subscriptions or recurring expenses to see them here.</p>
                   </div>
-                ))}
+                ) : (
+                  upcomingBills.map((bill) => (
+                    <div key={bill.id} className="bill-item">
+                      <div className="bill-info">
+                        <span className="bill-name">{bill.name}</span>
+                        <span className="bill-amount">{formatCurrency(bill.amount)}</span>
+                      </div>
+                      <div className="bill-due-date flex justify-between">
+                        <span>Due: {formatDate(bill.dueDate)}</span>
+                        <span className={`text-sm ${
+                          getDaysUntil(bill.dueDate) === 'Today' || getDaysUntil(bill.dueDate) === 'Tomorrow' 
+                            ? 'text-red-500' 
+                            : getDaysUntil(bill.dueDate) === 'Overdue' 
+                              ? 'text-red-600 font-bold' 
+                              : ''
+                        }`}>{getDaysUntil(bill.dueDate)}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
             {/* Spending by Category Card */}
             <div key="spending-category" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"> Drag</div>}
+              {isEditMode && <div className="drag-handle"><Move size={16} className="mr-1" /> Drag</div>}
               <div className="dashboard-card-header">
                 <h2>Spending by Category</h2>
               </div>
@@ -370,7 +415,7 @@ const DashboardIndex = () => {
 
             {/* Savings Goals Card */}
             <div key="savings-goals" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"> Drag</div>}
+              {isEditMode && <div className="drag-handle"><Move size={16} className="mr-1" /> Drag</div>}
               <div className="dashboard-card-header">
                 <h2><PiggyBank className="dashboard-card-icon" /> Savings Goals</h2>
               </div>
@@ -402,7 +447,7 @@ const DashboardIndex = () => {
 
             {/* Budget Allocation Card */}
             <div key="budget-allocation" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"> Drag</div>}
+              {isEditMode && <div className="drag-handle"><Move size={16} className="mr-1" /> Drag</div>}
               <div className="dashboard-card-header">
                 <h2><DollarSign className="dashboard-card-icon" /> Budget Allocation</h2>
                 <Link to="/expenses?tab=budgetPlan" className="dashboard-card-link">Adjust Budget</Link>
@@ -442,7 +487,7 @@ const DashboardIndex = () => {
             
             {/* Financial Insights Card */}
             <div key="financial-insights" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"> Drag</div>}
+              {isEditMode && <div className="drag-handle"><Move size={16} className="mr-1" /> Drag</div>}
               <div className="dashboard-card-header">
                 <h2><Sparkles className="dashboard-card-icon" /> Financial Insights</h2>
               </div>
@@ -477,9 +522,9 @@ const DashboardIndex = () => {
               </div>
             </div>
             
-            {/* Quick Entry Card */}
+            {/* Quick Entry Card - Enhanced to support recurring bill entry */}
             <div key="quick-entry" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"> Drag</div>}
+              {isEditMode && <div className="drag-handle"><Move size={16} className="mr-1" /> Drag</div>}
               <div className="dashboard-card-header">
                 <h2><Plus className="dashboard-card-icon" /> Quick Expense Entry</h2>
               </div>
@@ -488,15 +533,28 @@ const DashboardIndex = () => {
                   <div className="quick-entry-inputs">
                     <div className="quick-entry-field">
                       <label>Date</label>
-                      <input type="date" value={quickEntryDate} onChange={(e) => setQuickEntryDate(e.target.value)} className="quick-entry-input" />
+                      <input 
+                        type="date" 
+                        value={quickEntryDate} 
+                        onChange={(e) => setQuickEntryDate(e.target.value)} 
+                        className="quick-entry-input" 
+                      />
                     </div>
                     <div className="quick-entry-field">
                       <label>Category</label>
-                      <select className="quick-entry-input" value={quickEntryCategory} onChange={(e) => setQuickEntryCategory(e.target.value)}>
+                      <select 
+                        className="quick-entry-input" 
+                        value={quickEntryCategory} 
+                        onChange={(e) => setQuickEntryCategory(e.target.value)}
+                      >
                         <option value="">Select Category</option>
-                        <option value="Groceries">Groceries</option>
                         <option value="Rent">Rent</option>
+                        <option value="Mortgage">Mortgage</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Internet">Internet</option>
                         <option value="Insurance">Insurance</option>
+                        <option value="Phone">Phone</option>
+                        <option value="Groceries">Groceries</option>
                         <option value="Dining Out">Dining Out</option>
                         <option value="Entertainment">Entertainment</option>
                         <option value="Clothes">Clothes</option>
@@ -506,16 +564,41 @@ const DashboardIndex = () => {
                     </div>
                     <div className="quick-entry-field">
                       <label>Amount</label>
-                      <input type="number" placeholder="0.00" className="quick-entry-input" value={quickEntryAmount} step="0.01" min="0.01" onChange={(e) => setQuickEntryAmount(e.target.value)} />
+                      <input 
+                        type="number" 
+                        placeholder="0.00" 
+                        className="quick-entry-input" 
+                        value={quickEntryAmount} 
+                        step="0.01" 
+                        min="0.01" 
+                        onChange={(e) => setQuickEntryAmount(e.target.value)} 
+                      />
                     </div>
                   </div>
+                  
+                  {/* Subtle checkbox for recurring expenses */}
+                  {/* work on this later */}
+                  {/* <div className="flex items-center mb-3 mt-1">
+                    <input
+                      type="checkbox"
+                      id="isRecurring"
+                      checked={isRecurring}
+                      onChange={(e) => setIsRecurring(e.target.checked)}
+                      className="mr-2 h-4 w-4"
+                    />
+                    <label htmlFor="isRecurring" className="text-sm flex items-center">
+                      <Bell size={14} className="mr-1" />
+                      This is a recurring bill (will appear in upcoming bills)
+                    </label>
+                  </div> */}
+                  
                   <button type="submit" className="quick-entry-btn">Add Expense</button>
                   <NotifyButton2 
                     category={notificationMessage.category}
                     msg={notificationMessage.msg}
                     isVisible={notificationVisible}
-                    onClose={() => setNotificaitonVisible(false)}
-                    />
+                    onClose={() => setNotificationVisible(false)}
+                  />
                 </form>
               </div>
             </div>
