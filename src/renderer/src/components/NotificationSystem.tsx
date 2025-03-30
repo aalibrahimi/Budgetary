@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { X, CheckCircle, AlertTriangle, XCircle, Info } from 'lucide-react';
+import { useDarkModeStore } from '../routes/__root';
 
 // Define notification types for consistent styling
 export enum NotificationType {
@@ -19,6 +20,31 @@ export interface NotificationProps {
   onClose?: () => void;
 }
 
+// Create notification context to be used across components
+const NotificationContext = React.createContext<{
+  notification: {
+    show: boolean;
+    type: NotificationType;
+    category: string;
+    message: string;
+  };
+  showNotification: (
+    category: string, 
+    message: string, 
+    type?: NotificationType
+  ) => void;
+  handleCloseNotification: () => void;
+}>({
+  notification: {
+    show: false,
+    type: NotificationType.INFO,
+    category: '',
+    message: ''
+  },
+  showNotification: () => {},
+  handleCloseNotification: () => {}
+});
+
 /**
  * InAppNotification - Renders a notification within the application UI
  * This component adapts to light/dark mode based on system preferences
@@ -32,6 +58,7 @@ export const InAppNotification: React.FC<NotificationProps> = ({
   onClose = () => {}
 }) => {
   const [isShown, setIsShown] = useState(isVisible);
+  const { isDarkMode } = useDarkModeStore();
 
   // Handle showing and auto-hiding of notification
   useEffect(() => {
@@ -60,23 +87,31 @@ export const InAppNotification: React.FC<NotificationProps> = ({
   const configs = {
     [NotificationType.SUCCESS]: {
       icon: <CheckCircle size={20} />,
-      baseClasses: "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100 border-green-200 dark:border-green-700",
-      iconClasses: "text-green-500 dark:text-green-300"
+      baseClasses: isDarkMode 
+        ? "bg-green-800 text-green-100 border-green-700" 
+        : "bg-green-100 text-green-800 border-green-200",
+      iconClasses: isDarkMode ? "text-green-300" : "text-green-500"
     },
     [NotificationType.WARNING]: {
       icon: <AlertTriangle size={20} />,
-      baseClasses: "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100 border-yellow-200 dark:border-yellow-700",
-      iconClasses: "text-yellow-500 dark:text-yellow-300"
+      baseClasses: isDarkMode 
+        ? "bg-yellow-800 text-yellow-100 border-yellow-700" 
+        : "bg-yellow-100 text-yellow-800 border-yellow-200",
+      iconClasses: isDarkMode ? "text-yellow-300" : "text-yellow-500"
     },
     [NotificationType.ERROR]: {
       icon: <XCircle size={20} />,
-      baseClasses: "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100 border-red-200 dark:border-red-700",
-      iconClasses: "text-red-500 dark:text-red-300"
+      baseClasses: isDarkMode 
+        ? "bg-red-800 text-red-100 border-red-700" 
+        : "bg-red-100 text-red-800 border-red-200",
+      iconClasses: isDarkMode ? "text-red-300" : "text-red-500"
     },
     [NotificationType.INFO]: {
       icon: <Info size={20} />,
-      baseClasses: "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100 border-blue-200 dark:border-blue-700",
-      iconClasses: "text-blue-500 dark:text-blue-300"
+      baseClasses: isDarkMode 
+        ? "bg-blue-800 text-blue-100 border-blue-700" 
+        : "bg-blue-100 text-blue-800 border-blue-200",
+      iconClasses: isDarkMode ? "text-blue-300" : "text-blue-500"
     }
   };
 
@@ -108,6 +143,18 @@ export const InAppNotification: React.FC<NotificationProps> = ({
  * This centralizes notification logic for the application
  */
 export const useNotificationSystem = () => {
+  const context = useContext(NotificationContext);
+  if (!context) {
+    throw new Error("useNotificationSystem must be used within a NotificationProvider");
+  }
+  return context;
+};
+
+/**
+ * NotificationProvider - Component to be used at the app root level
+ * This handles rendering the in-app notification based on the notification state
+ */
+export const NotificationProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [notification, setNotification] = useState<{
     show: boolean;
     type: NotificationType;
@@ -181,22 +228,14 @@ export const useNotificationSystem = () => {
     }));
   };
 
-  return {
+  const contextValue = {
     notification,
     showNotification,
     handleCloseNotification,
   };
-};
 
-/**
- * NotificationProvider - Component to be used at the app root level
- * This handles rendering the in-app notification based on the notification state
- */
-export const NotificationProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
-  const { notification, handleCloseNotification } = useNotificationSystem();
-  
   return (
-    <>
+    <NotificationContext.Provider value={contextValue}>
       {children}
       <InAppNotification
         isVisible={notification.show}
@@ -205,7 +244,7 @@ export const NotificationProvider: React.FC<{children: React.ReactNode}> = ({ ch
         message={notification.message}
         onClose={handleCloseNotification}
       />
-    </>
+    </NotificationContext.Provider>
   );
 };
 

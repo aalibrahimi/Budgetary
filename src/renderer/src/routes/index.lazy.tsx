@@ -10,13 +10,12 @@ import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recha
 import { Calendar, DollarSign, PiggyBank, Wallet, Sparkles, Plus, Move, Bell } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import CashFlowForecast from '@renderer/components/CashFlowForecast';
-// Import the notification system instead of the button
-
+// Import the notification system
+import { NotificationType, useNotificationSystem } from '@renderer/components/NotificationSystem';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { useUpcomingBills } from '@renderer/lib/upcomingBill';
-import { useNotificationSystem, NotificationType } from '@renderer/components/NotificationSystem';
 
 // Create a responsive grid layout
 const ResponsiveGridLayout = WidthProvider(Responsive);
@@ -32,7 +31,7 @@ const DashboardIndex = () => {
   const [quickEntryAmount, setQuickEntryAmount] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
   
-  // Replace old notification state with the new notification system
+  // Use the notification system
   const { showNotification } = useNotificationSystem();
   
   // Get upcoming bills using our new hook
@@ -612,7 +611,7 @@ const DashboardIndex = () => {
                     </div>
                   </div>
                   
-                  {/* Subtle checkbox for recurring expenses */}
+                  {/* Recurring expense checkbox */}
                   <div className="flex items-center mb-3 mt-1">
                     <input
                       type="checkbox"

@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import DarkModeIcon from '../../../../resources/moon_icon.svg';
 import LightModeIcon from '../../../../resources/sun_icon.svg';
 import { create } from 'zustand';
+import { NotificationProvider } from '@renderer/components/NotificationSystem';
 
 // Dark Mode Store
 interface darkModeState {
@@ -51,6 +52,7 @@ export const Route = createRootRoute({
     
 
     return (
+      <NotificationProvider>
       <div className={isDarkMode ? 'dark-mode' : ''}>
         <nav className="navbar">
           <Link to="/" className="navbar-brand">
@@ -88,6 +90,7 @@ export const Route = createRootRoute({
           <Outlet />
         </section>
       </div>
+      </NotificationProvider>
     );
   },
 });

@@ -1,7 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
-
 function getIconPathByType(type: string): string {
   switch(type) {
     case 'success':
@@ -22,7 +21,9 @@ const api = {
   maximize: () => ipcRenderer.invoke('maximize-window'),
   restore: () => ipcRenderer.invoke('restore-window'),
   close: () => ipcRenderer.invoke('close-window'),
-  notify: () => ipcRenderer.invoke('notif'),
+  
+  // Updated notify function that accepts parameters
+  notify: (options = {}) => ipcRenderer.invoke('notif', options),
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
