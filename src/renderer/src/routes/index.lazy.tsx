@@ -108,13 +108,13 @@ const DashboardIndex = () => {
     };
   });
 
-  // Custom label rendering function to prevent overlap
+  // Custom label rendering function with adjusted connector lines
 const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name, index }) => {
   // Only show labels for categories with more than 5% of total
   if (percent < 0.05) return null;
   
   const RADIAN = Math.PI / 180;
-  const radius = outerRadius * 1.1;
+  const radius = outerRadius * 1.15;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
   
@@ -122,12 +122,11 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
     <text
       x={x}
       y={y}
-      fill={isDarkMode ? "white" : "black"}
+      fill="white"
       textAnchor={x > cx ? 'start' : 'end'}
       dominantBaseline="central"
       fontSize="12"
       fontWeight="500"
-      className="chart-label"
     >
       {`${name}: ${(percent * 100).toFixed(0)}%`}
     </text>
@@ -414,7 +413,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
             <div key="recent-expenses" className="dashboard-card">
               {isEditMode && <div className="drag-handle"> Drag</div>}
               <div className="dashboard-card-header">
-                <h2><Wallet className="dashboard-card-icon" /> Recent Expenses</h2>
+                <h2  style={{ color: isDarkMode ? "white" : "black"}}><Wallet className="dashboard-card-icon" /> Recent Expenses</h2>
                 <Link to="/expenses" className="dashboard-card-link">View All</Link>
               </div>
               <div className="expense-list-container" style={{ boxShadow: 'none' }}>
@@ -437,7 +436,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
             <div key="upcoming-bills" className="dashboard-card">
               {isEditMode && <div className="drag-handle"> Drag</div>}
               <div className="dashboard-card-header">
-                <h2><Calendar className="dashboard-card-icon" /> Upcoming Bills</h2>
+                <h2 style={{ color: isDarkMode ? "white" : "black"}}><Calendar className="dashboard-card-icon" /> Upcoming Bills</h2>
                 <Link to="/smart-assistant" className="dashboard-card-link">Manage</Link>
               </div>
               <div className="bills-list">
@@ -448,13 +447,13 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
                 ) : (
                   upcomingBills.map((bill) => (
                     <div key={bill.id} className="bill-item">
-                      <div className="bill-info">
-                        <span className="bill-name">{bill.name}</span>
+                      <div className="bill-info" >
+                        <span className="bill-name"  style={{ color: isDarkMode ? "white" : "black"}}>{bill.name}</span>
                         <span className="bill-amount">{formatCurrency(bill.amount)}</span>
                       </div>
                       <div className="bill-due-date flex justify-between">
-                        <span>Due: {formatDate(bill.dueDate)}</span>
-                        <span className={`text-sm ${
+                        <span >Due: {formatDate(bill.dueDate)}</span>
+                        <span  className={`text-sm ${
                           getDaysUntil(bill.dueDate) === 'Today' || getDaysUntil(bill.dueDate) === 'Tomorrow' 
                             ? 'text-red-500' 
                             : getDaysUntil(bill.dueDate) === 'Overdue' 
@@ -467,77 +466,105 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
                 )}
               </div>
             </div>
-
-        {/* Spending by Category Card - Improved */}
+{/* Spending by Category Card - Fixed Legend */}
 <div key="spending-category" className="dashboard-card">
   {isEditMode && <div className="drag-handle"> Drag</div>}
   <div className="dashboard-card-header">
-    <h2>Spending by Category</h2>
+    <h2 style={{ color: isDarkMode ? "white" : "black"}} >Spending by Category</h2>
   </div>
-  <div className="chart-container">
+  <div className="chart-container " style={{ height: "auto", overflow: "visible", display: "flex", flexDirection: "column" }}>
     {categoryData.length > 0 ? (
-      <ResponsiveContainer width="100%" height={320}>
-        <PieChart>
-          <Pie
-            data={getCombinedCategoryData(categoryData, 5)} // Custom function to group small categories
-            cx="50%"
-            cy="50%"
-            labelLine={true}
-            outerRadius={90}
-            innerRadius={45} // Added inner radius to create a donut chart
-            fill="#8884d8"
-            dataKey="value"
-            paddingAngle={2} // Add space between segments
-            label={renderCustomizedLabel} // Custom label function
-          >
+      <>
+        {/* Reduced chart height to make room for legend */}
+        <ResponsiveContainer width="100%" height={220}>
+          <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+            <Pie
+              data={getCombinedCategoryData(categoryData, 5)}
+              cx="50%"
+              cy="50%"
+              labelLine={false} // Removed connector lines to clean up chart
+              outerRadius={80}
+              innerRadius={35}
+              fill="#8884d8"
+              dataKey="value"
+              paddingAngle={2}
+            >
+              {getCombinedCategoryData(categoryData, 5).map((entry, index) => (
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={COLORS[index % COLORS.length]} 
+                  stroke="rgba(0,0,0,0.2)"
+                  strokeWidth={1}
+                />
+              ))}
+            </Pie>
+            <Tooltip 
+              formatter={(value) => formatCurrency(Number(value))} 
+              contentStyle={{ 
+                backgroundColor: isDarkMode ? "#2A2A2A" : "#fff",
+                border: "none",
+                borderRadius: "4px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.2)" 
+              }}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+        
+        {/* Fixed Legend with improved visibility */}
+        <div className="mt-2 mb-4 px-4 w-full">
+          <div style={{ 
+            display: "flex", 
+            flexWrap: "wrap", 
+            justifyContent: "center", 
+            gap: "16px",
+            marginTop: "8px"
+          }}>
             {getCombinedCategoryData(categoryData, 5).map((entry, index) => (
-              <Cell 
-                key={`cell-${index}`} 
-                fill={COLORS[index % COLORS.length]} 
-                stroke="rgba(0,0,0,0.2)"
-                strokeWidth={1}
-              />
+              <div key={`legend-${index}`} style={{ 
+                display: "flex", 
+                alignItems: "center",
+                marginBottom: "8px" 
+              }}>
+                <div style={{ 
+                  width: "12px", 
+                  height: "12px", 
+                  borderRadius: "50%", 
+                  backgroundColor: COLORS[index % COLORS.length],
+                  marginRight: "6px",
+                  border: "1px solid rgba(255,255,255,0.2)" 
+                }} />
+                <span style={{ 
+                  fontSize: "14px",
+                  color: isDarkMode ? "white" : "black",
+                  fontWeight: "500"
+                }}>
+                  {entry.name}: {Math.round((entry.value / 
+                    getCombinedCategoryData(categoryData, 5).reduce((sum, item) => sum + item.value, 0)
+                  ) * 100)}%
+                </span>
+              </div>
             ))}
-          </Pie>
-          <Tooltip 
-            formatter={(value) => formatCurrency(Number(value))} 
-            contentStyle={{ 
-              backgroundColor: isDarkMode ? "#2A2A2A" : "#fff",
-              border: "none",
-              borderRadius: "4px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.2)" 
-            }}
-          />
-          <Legend 
-            layout="horizontal" 
-            verticalAlign="bottom" 
-            align="center"
-            iconType="circle"
-            iconSize={10}
-            wrapperStyle={{ paddingTop: 20 }}
-          />
-        </PieChart>
-      </ResponsiveContainer>
+          </div>
+        </div>
+      </>
     ) : (
       <div className="empty-chart-message">No expense data to display</div>
     )}
   </div>
 </div>
-
-
             {/* Savings Goals Card */}
             <div key="savings-goals" className="dashboard-card">
               {isEditMode && <div className="drag-handle"> Drag</div>}
               <div className="dashboard-card-header">
-                <h2><PiggyBank className="dashboard-card-icon" /> Savings Goals</h2>
+                <h2 style={{ color: isDarkMode ? "white" : "black"}} ><PiggyBank className="dashboard-card-icon" /> Savings Goals</h2>
               </div>
-              <div className="savings-goals">
+              <div className="savings-goals" >
                 {sampleData.savingsGoals.map((goal, index) => {
                   const progress = (goal.current / goal.target) * 100;
                   return (
-                    <div key={index} className="savings-goal">
+                    <div key={index} className="savings-goal"  >
                       <div className="savings-goal-header">
-                        <span className="savings-goal-name">{goal.name}</span>
+                        <span className="savings-goal-name" style={{ color: isDarkMode ? "white" : "black"}}>{goal.name}</span>
                         <span className="savings-goal-amount">
                           {formatCurrency(goal.current)} / {formatCurrency(goal.target)}
                         </span>
@@ -561,7 +588,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
             <div key="budget-allocation" className="dashboard-card">
               {isEditMode && <div className="drag-handle"> Drag</div>}
               <div className="dashboard-card-header">
-                <h2><DollarSign className="dashboard-card-icon" /> Budget Allocation</h2>
+                <h2 style={{ color: isDarkMode ? "white" : "black"}}><DollarSign className="dashboard-card-icon" /> Budget Allocation</h2>
                 <Link to="/expenses?tab=budgetPlan" className="dashboard-card-link">Adjust Budget</Link>
               </div>
               <div className="budget-allocation-container">
@@ -570,11 +597,11 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
                     <div key={index} className="budget-allocation-item">
                       <div className="budget-allocation-header">
                         <span className="category-icon" style={{ backgroundColor: COLORS[index % COLORS.length] }}>
-                          <i className={`fas fa-${getCategoryIcon(category.name)}`}></i>
+                          <i className={`fas fa-${getCategoryIcon(category.name)}`} > </i>
                         </span>
-                        <div className="category-details">
-                          <span className="category-name">{category.name}</span>
-                          <span className="category-amount">{formatCurrency(category.value)}</span>
+                        <div className="category-details" >
+                          <span className="category-name"  style={{ color: isDarkMode ? "white" : "black"}}>{category.name}</span>
+                          <span className="category-amount" style={{ color: isDarkMode ? "white" : "black"}}>{formatCurrency(category.value)}</span>
                         </div>
                         <span className="category-percentage">
                           {Math.round((category.value / budgetOverview.income) * 100)}%
@@ -601,24 +628,24 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
             <div key="financial-insights" className="dashboard-card">
               {isEditMode && <div className="drag-handle"> Drag</div>}
               <div className="dashboard-card-header">
-                <h2><Sparkles className="dashboard-card-icon" /> Financial Insights</h2>
+                <h2 style={{ color: isDarkMode ? "white" : "black"}}><Sparkles className="dashboard-card-icon" /> Financial Insights</h2>
               </div>
-              <div className="insights-container">
+              <div className="insights-container" >
                 <div className="insight-item">
                   <div className="insight-icon" style={{ backgroundColor: COLORS[0] }}>
                     <i className="fas fa-arrow-trend-up"></i>
                   </div>
-                  <div className="insight-content">
-                    <h3>Spending Trend</h3>
+                  <div className="insight-content" >
+                    <h3 style={{ color: isDarkMode ? "white" : "black"}}>Spending Trend</h3>
                     <p>Your spending on Dining Out is 15% higher than last month. Consider setting a stricter budget.</p>
                   </div>
                 </div>
-                <div className="insight-item">
-                  <div className="insight-icon" style={{ backgroundColor: COLORS[1] }}>
+                <div className="insight-item" >
+                  <div className="insight-icon" style={{ backgroundColor: COLORS[1] }} >
                     <i className="fas fa-piggy-bank"></i>
                   </div>
                   <div className="insight-content">
-                    <h3>Savings Opportunity</h3>
+                    <h3 style={{ color: isDarkMode ? "white" : "black"}}>Savings Opportunity</h3>
                     <p>You could save an extra $120/month by reducing your Entertainment expenses by 20%.</p>
                   </div>
                 </div>
@@ -627,7 +654,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
                     <i className="fas fa-chart-line"></i>
                   </div>
                   <div className="insight-content">
-                    <h3>Income Allocation</h3>
+                    <h3 style={{ color: isDarkMode ? "white" : "black"}}>Income Allocation</h3>
                     <p>You're currently saving 8% of your income. Financial experts recommend 15-20%.</p>
                   </div>
                 </div>
@@ -637,30 +664,32 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
         {/* Quick Entry Card - Optimized layout with fixed button spacing */}
 <div key="quick-entry" className="dashboard-card p-5">
   {isEditMode && <div className="drag-handle">Drag</div>}
-  <div className="dashboard-card-header mb-3">
-    <h2 className="flex items-center text-lg font-medium">
+  <div className="dashboard-card-header mb-3" >
+    <h2 className="flex items-center text-lg font-medium" style={{ color: isDarkMode ? "white" : "black"}}>
       <Plus className="dashboard-card-icon mr-2" size={18} /> 
       Quick Expense Entry
     </h2>
   </div>
   
-  <form className="quick-entry-form" onSubmit={handleQuickAddExpense}>
+  <form className="quick-entry-form" onSubmit={handleQuickAddExpense} >
     <div className="grid grid-cols-3 gap-3 mb-3">
-      <div className="quick-entry-field">
-        <label className="block text-sm mb-1">Date</label>
+      <div className="quick-entry-field" >
+        <label className="block text-sm mb-1" >Date</label>
         <input 
           type="date" 
           value={quickEntryDate} 
+          style={{ color: isDarkMode ? "white" : "black"}}
           onChange={(e) => setQuickEntryDate(e.target.value)} 
           className="quick-entry-input w-full p-2 rounded border" 
         />
       </div>
       
-      <div className="quick-entry-field">
-        <label className="block text-sm mb-1">Category</label>
+      <div className="quick-entry-field" >
+        <label className="block text-sm mb-1" >Category</label>
         <select 
           className="quick-entry-input w-full p-2 rounded border" 
           value={quickEntryCategory} 
+          style={{ color: isDarkMode ? "white" : "black"}}
           onChange={(e) => setQuickEntryCategory(e.target.value)}
         >
           <option value="">Select Category</option>
@@ -679,8 +708,8 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
         </select>
       </div>
       
-      <div className="quick-entry-field">
-        <label className="block text-sm mb-1">Amount</label>
+      <div className="quick-entry-field" >
+        <label className="block text-sm mb-1"  >Amount</label>
         <input 
           type="number" 
           placeholder="0.00" 
@@ -699,10 +728,11 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
         type="checkbox"
         id="isRecurring"
         checked={isRecurring}
+        
         onChange={(e) => setIsRecurring(e.target.checked)}
         className="mr-2 h-4 w-4"
       />
-      <label htmlFor="isRecurring" className="text-sm flex items-center text-white">
+      <label htmlFor="isRecurring" className="text-sm flex items-center text-white" style={{ color: isDarkMode ? "white" : "black"}}>
         <Bell size={14} className="mr-1" />
         Recurring bill
       </label>
