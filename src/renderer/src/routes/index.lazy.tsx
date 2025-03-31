@@ -6,22 +6,23 @@ import { useDarkModeStore } from './__root';
 import { useUpcomingBills } from '@renderer/lib/upcomingBill';
 import { useNotificationSystem, NotificationType } from '@renderer/components/NotificationSystem';
 
-// Dashboard component
+// Cyberpunk-inspired dashboard component
 const DashboardIndex = () => {
   const { expenses, addExpense, addCashFlowTransaction } = useExpenseStore();
   const { isDarkMode } = useDarkModeStore();
   const { showNotification } = useNotificationSystem();
   const upcomingBills = useUpcomingBills(30);
   
-  // Form state for quick expense entry
+  // Form state for expense entry
   const [quickEntryDate, setQuickEntryDate] = useState(new Date().toISOString().split('T')[0]);
   const [quickEntryCategory, setQuickEntryCategory] = useState('');
   const [quickEntryAmount, setQuickEntryAmount] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
   
-  // Active section tracking
-  const [activeSection, setActiveSection] = useState('dashboard');
-  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  // UI state
+  const [showExpenseModal, setShowExpenseModal] = useState(false);
+  const [animateHeader, setAnimateHeader] = useState(true);
+  const [highlightedSection, setHighlightedSection] = useState('overview');
   
   // Format currency helper
   const formatCurrency = (amount) => {
@@ -38,6 +39,12 @@ const DashboardIndex = () => {
       month: 'short', 
       day: 'numeric'
     });
+  };
+  
+  // Format percentage helper
+  const formatPercentage = (value, total) => {
+    if (total === 0) return "0%";
+    return Math.round((value / total) * 100) + "%";
   };
   
   // Calculate budget overview
@@ -72,18 +79,6 @@ const DashboardIndex = () => {
       .sort((a, b) => b.value - a.value);
   }, [expenses]);
   
-  // Get upcoming bills due in the next 7 days
-  const urgentBills = useMemo(() => {
-    const today = new Date();
-    const nextWeek = new Date();
-    nextWeek.setDate(today.getDate() + 7);
-    
-    return upcomingBills.filter(bill => {
-      const dueDate = new Date(bill.dueDate);
-      return dueDate <= nextWeek;
-    }).slice(0, 3);
-  }, [upcomingBills]);
-  
   // Handle expense form submission
   const handleAddExpense = (e) => {
     e.preventDefault();
@@ -91,7 +86,7 @@ const DashboardIndex = () => {
     
     if (!quickEntryCategory || isNaN(amount) || amount <= 0 || !quickEntryDate) {
       showNotification(
-        "Error", 
+        "ERROR", 
         "Please fill all fields correctly!",
         NotificationType.ERROR
       );
@@ -118,22 +113,22 @@ const DashboardIndex = () => {
       addCashFlowTransaction(newTransaction);
       
       showNotification(
-        "Success", 
+        "SUCCESS", 
         `Added recurring ${quickEntryCategory} expense`,
         NotificationType.SUCCESS
       );
     } else {
       showNotification(
-        "Success", 
+        "SUCCESS", 
         `Added ${quickEntryCategory} expense`,
         NotificationType.SUCCESS
       );
     }
 
-    // Reset form
+    // Reset form and close modal
     setQuickEntryAmount('');
     setQuickEntryCategory('');
-    setShowQuickAdd(false);
+    setShowExpenseModal(false);
   };
   
   // Categories for expense form
@@ -159,128 +154,147 @@ const DashboardIndex = () => {
     return `${diffDays} days`;
   };
   
+  // Get urgent bills
+  const urgentBills = useMemo(() => {
+    const today = new Date();
+    const nextWeek = new Date();
+    nextWeek.setDate(today.getDate() + 7);
+    
+    return upcomingBills
+      .filter(bill => {
+        const dueDate = new Date(bill.dueDate);
+        return dueDate <= nextWeek;
+      })
+      .slice(0, 3);
+  }, [upcomingBills]);
+  
   // Get current month and year
   const currentDate = new Date();
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
   const currentMonth = monthNames[currentDate.getMonth()];
   const currentYear = currentDate.getFullYear();
-
-  // Chart data for spending trend (sample data)
-  const getDailyData = () => {
+  const currentDay = currentDate.getDate();
+  
+  // Spending chart data (simplified)
+  const generateSpendingData = () => {
     const data = [];
-    for (let i = 0; i < 30; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - (30 - i - 1));
-      data.push({
-        date: date.toISOString().split('T')[0],
-        amount: Math.floor(Math.random() * 50) + 10
-      });
+    for (let i = 0; i < 12; i++) {
+      const value = Math.floor(Math.random() * 80) + 20;
+      data.push(value);
     }
     return data;
   };
   
-  const spendingTrendData = getDailyData();
-  const maxAmount = Math.max(...spendingTrendData.map(d => d.amount));
+  const spendingData = generateSpendingData();
+  const maxValue = Math.max(...spendingData);
   
+  // Disable header animation after a delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnimateHeader(false);
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden relative">
-      {/* Decorative gradient elements */}
-      <div className="absolute -top-48 -right-48 w-96 h-96 bg-red-600/20 rounded-full blur-3xl"></div>
-      <div className="absolute -bottom-48 -left-48 w-96 h-96 bg-red-900/20 rounded-full blur-3xl"></div>
-      
-      {/* Quick add expense form - fixed position */}
-      {showQuickAdd && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/70">
-          <div className="w-full max-w-md bg-[#111]/90 backdrop-blur-md rounded-xl border border-red-900/50 overflow-hidden">
-            <div className="px-5 py-4 border-b border-red-900/50 flex justify-between items-center">
-              <h2 className="text-lg font-semibold">Add Expense</h2>
-              <button 
-                onClick={() => setShowQuickAdd(false)}
-                className="text-gray-400 hover:text-white"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
+    <div className="min-h-screen bg-black text-white font-mono overflow-hidden">
+      {/* Background effects */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute top-0 -right-32 w-96 h-96 rounded-full bg-red-600/20 mix-blend-screen blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-0 -left-32 w-96 h-96 rounded-full bg-red-800/10 mix-blend-screen blur-[100px] animate-pulse" style={{ animationDelay: "1s" }}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vh] bg-gradient-to-br from-black via-red-950/10 to-black rounded-full mix-blend-screen filter blur-[80px]"></div>
+        
+        {/* Grid overlay */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsIDAsIDAsIDAuMDUpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30"></div>
+      </div>
+
+      {/* Expense Form Modal */}
+      {showExpenseModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+          <div className="relative z-10 bg-black/70 backdrop-blur-md border border-red-500/80 rounded-lg w-full max-w-md overflow-hidden">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-red-600/20 to-transparent"></div>
+              <div className="relative p-5 flex justify-between items-center">
+                <h2 className="text-xl font-bold tracking-widest">// ADD EXPENSE</h2>
+                <button 
+                  onClick={() => setShowExpenseModal(false)}
+                  className="text-red-500 hover:text-red-400 focus:outline-none glitch-effect"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
             </div>
             
-            <form onSubmit={handleAddExpense} className="p-5">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Date</label>
+            <form onSubmit={handleAddExpense} className="p-5 space-y-4">
+              <div>
+                <label className="block text-xs text-red-500 mb-1">DATE</label>
+                <input 
+                  type="date" 
+                  value={quickEntryDate} 
+                  onChange={(e) => setQuickEntryDate(e.target.value)} 
+                  className="w-full bg-black/50 border border-red-500/50 rounded-sm px-3 py-2 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none transition-colors"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs text-red-500 mb-1">CATEGORY</label>
+                <select 
+                  value={quickEntryCategory} 
+                  onChange={(e) => setQuickEntryCategory(e.target.value)} 
+                  className="w-full bg-black/50 border border-red-500/50 rounded-sm px-3 py-2 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none transition-colors"
+                  required
+                >
+                  <option value="">SELECT CATEGORY</option>
+                  {categories.map((category) => (
+                    <option key={category} value={category}>{category.toUpperCase()}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-xs text-red-500 mb-1">AMOUNT</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <span className="text-gray-500">$</span>
+                  </div>
                   <input 
-                    type="date" 
-                    value={quickEntryDate} 
-                    onChange={(e) => setQuickEntryDate(e.target.value)} 
-                    className="w-full bg-black/50 border border-red-900/30 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-red-700/50 focus:border-red-700"
+                    type="number" 
+                    value={quickEntryAmount} 
+                    onChange={(e) => setQuickEntryAmount(e.target.value)} 
+                    placeholder="0.00" 
+                    step="0.01" 
+                    min="0.01" 
+                    className="w-full bg-black/50 border border-red-500/50 rounded-sm pl-8 pr-3 py-2 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none transition-colors"
                     required
                   />
                 </div>
-                
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Category</label>
-                  <select 
-                    value={quickEntryCategory} 
-                    onChange={(e) => setQuickEntryCategory(e.target.value)} 
-                    className="w-full bg-black/50 border border-red-900/30 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-red-700/50 focus:border-red-700"
-                    required
-                  >
-                    <option value="">Select Category</option>
-                    {categories.map((category) => (
-                      <option key={category} value={category}>{category}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Amount</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">$</span>
-                    <input 
-                      type="number" 
-                      value={quickEntryAmount} 
-                      onChange={(e) => setQuickEntryAmount(e.target.value)} 
-                      placeholder="0.00" 
-                      step="0.01" 
-                      min="0.01" 
-                      className="w-full bg-black/50 border border-red-900/30 rounded-lg px-4 py-2 pl-8 text-white focus:ring-2 focus:ring-red-700/50 focus:border-red-700"
-                      required
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex items-center">
-                  <label className="flex items-center cursor-pointer">
-                    <div className="relative">
-                      <input 
-                        type="checkbox" 
-                        checked={isRecurring} 
-                        onChange={(e) => setIsRecurring(e.target.checked)} 
-                        className="sr-only" 
-                      />
-                      <div className="w-10 h-5 bg-gray-700 rounded-full shadow-inner"></div>
-                      <div className={`absolute left-0 top-0 w-5 h-5 bg-white rounded-full transform transition ${
-                        isRecurring ? 'translate-x-5 bg-red-500' : 'translate-x-0'
-                      }`}></div>
-                    </div>
-                    <span className="ml-3 text-sm text-gray-300">Recurring expense</span>
-                  </label>
-                </div>
               </div>
               
-              <div className="mt-5 flex justify-end">
-                <button 
-                  type="button" 
-                  onClick={() => setShowQuickAdd(false)}
-                  className="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 mr-2"
-                >
-                  Cancel
-                </button>
+              <div className="flex items-center">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={isRecurring} 
+                    onChange={(e) => setIsRecurring(e.target.checked)} 
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-black/70 border border-red-500/50 rounded-sm peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-red-500 after:border-red-300 after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-red-900/30"></div>
+                  <span className="ml-3 text-xs">RECURRING</span>
+                </label>
+              </div>
+              
+              <div className="pt-4">
                 <button 
                   type="submit" 
-                  className="px-4 py-2 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-lg hover:from-red-800 hover:to-red-950"
+                  className="w-full bg-red-700 hover:bg-red-600 text-white py-2 px-4 rounded-sm relative overflow-hidden group"
                 >
-                  Add Expense
+                  <span className="absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-red-500/20 to-transparent transform -skew-x-12 group-hover:animate-shimmer"></span>
+                  SAVE EXPENSE
                 </button>
               </div>
             </form>
@@ -288,405 +302,551 @@ const DashboardIndex = () => {
         </div>
       )}
       
-      <div className="max-w-screen-2xl mx-auto p-4">
-        {/* Header with menu and quick actions */}
-        <header className="flex justify-between items-center py-4 mb-6">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-red-700">
-              BUDGETARY
-            </h1>
-            <p className="text-gray-500 text-sm">
-              {currentMonth} {currentYear}
-            </p>
+      <div className="relative z-10 max-w-screen-2xl mx-auto p-4">
+        {/* Header with glitch animation */}
+        <header className={`mb-8 ${animateHeader ? 'animate-glitch' : ''}`}>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
+            <div className="relative">
+              <h1 className="text-4xl font-black text-red-500 tracking-tighter glitch-text">
+                BUDGETARY
+                <span className="absolute top-0 left-0 w-full h-full text-red-500/20 animate-glitch-2">BUDGETARY</span>
+                <span className="absolute top-0 left-0 w-full h-full text-red-500/20 animate-glitch-3">BUDGETARY</span>
+              </h1>
+              <div className="flex items-center space-x-2 mt-1">
+                <div className="h-[1px] w-2 bg-red-500"></div>
+                <div className="text-xs text-gray-500">{currentMonth} {currentDay}, {currentYear}</div>
+              </div>
+            </div>
+            
+            <div className="flex space-x-2">
+              <button 
+                onClick={() => setShowExpenseModal(true)}
+                className="bg-transparent border border-red-500 text-red-500 hover:bg-red-500 hover:text-black px-3 py-1 text-sm transition-colors flex items-center space-x-1 group"
+              >
+                <span className="group-hover:animate-pulse">+</span>
+                <span>ADD EXPENSE</span>
+              </button>
+              
+              <Link to="/expenses" className="bg-black/30 backdrop-blur-sm text-white border border-white/10 hover:border-white/30 px-3 py-1 text-sm transition-colors">
+                ALL EXPENSES
+              </Link>
+            </div>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <button 
-              onClick={() => setShowQuickAdd(true)}
-              className="flex items-center px-3 py-1.5 bg-red-900 hover:bg-red-800 rounded-lg text-sm font-medium transition"
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0 0H6m6 0h6"></path>
-              </svg>
-              Add Expense
-            </button>
-            
-            <div className="relative">
-              <button className="w-9 h-9 bg-gradient-to-br from-red-700 to-red-900 rounded-full flex items-center justify-center hover:shadow-lg hover:shadow-red-900/30 transition-shadow">
-                <span className="text-xs font-bold">JS</span>
-              </button>
-            </div>
+          {/* Navigation links */}
+          <div className="mt-6 border-t border-red-900/30 pt-4">
+            <nav className="flex flex-wrap gap-1">
+              {['overview', 'analytics', 'budgets', 'subscriptions', 'settings'].map((section) => (
+                <button
+                  key={section}
+                  onClick={() => setHighlightedSection(section)}
+                  className={`px-4 py-1.5 text-sm transition-colors relative ${
+                    highlightedSection === section 
+                      ? 'text-red-500' 
+                      : 'text-gray-500 hover:text-gray-300'
+                  }`}
+                >
+                  {section.toUpperCase()}
+                  {highlightedSection === section && (
+                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-red-500"></span>
+                  )}
+                </button>
+              ))}
+            </nav>
           </div>
         </header>
         
-        {/* Main navigation */}
-        <nav className="mb-6">
-          <div className="flex space-x-1 md:space-x-2 overflow-x-auto hide-scrollbar p-1">
-            <button 
-              onClick={() => setActiveSection('dashboard')} 
-              className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm font-medium ${
-                activeSection === 'dashboard' 
-                  ? 'bg-red-900/60 text-white' 
-                  : 'text-gray-400 hover:bg-red-900/30 hover:text-white'
-              } transition-colors`}
-            >
-              Dashboard
-            </button>
-            <button 
-              onClick={() => setActiveSection('expenses')} 
-              className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm font-medium ${
-                activeSection === 'expenses' 
-                  ? 'bg-red-900/60 text-white' 
-                  : 'text-gray-400 hover:bg-red-900/30 hover:text-white'
-              } transition-colors`}
-            >
-              Expenses
-            </button>
-            <button 
-              onClick={() => setActiveSection('bills')} 
-              className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm font-medium ${
-                activeSection === 'bills' 
-                  ? 'bg-red-900/60 text-white' 
-                  : 'text-gray-400 hover:bg-red-900/30 hover:text-white'
-              } transition-colors`}
-            >
-              Bills & Subscriptions
-            </button>
-            <button 
-              onClick={() => setActiveSection('analytics')} 
-              className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm font-medium ${
-                activeSection === 'analytics' 
-                  ? 'bg-red-900/60 text-white' 
-                  : 'text-gray-400 hover:bg-red-900/30 hover:text-white'
-              } transition-colors`}
-            >
-              Analytics
-            </button>
-            <button 
-              onClick={() => setActiveSection('settings')} 
-              className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm font-medium ${
-                activeSection === 'settings' 
-                  ? 'bg-red-900/60 text-white' 
-                  : 'text-gray-400 hover:bg-red-900/30 hover:text-white'
-              } transition-colors`}
-            >
-              Settings
-            </button>
-          </div>
-        </nav>
-        
-        {/* Dashboard Section */}
-        {activeSection === 'dashboard' && (
-          <>
-            {/* Financial Overview Tiles */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              {/* Income Card */}
-              <div className="bg-[#111]/60 backdrop-blur-sm border border-red-900/50 rounded-xl overflow-hidden">
-                <div className="relative p-5">
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-red-600/20 to-red-900/30 rounded-bl-full"></div>
-                  <h3 className="text-sm uppercase tracking-wider text-gray-500 mb-2">Monthly Income</h3>
-                  <div className="text-3xl font-bold">{formatCurrency(budgetOverview.income)}</div>
-                  <div className="mt-2 text-xs text-green-500 flex items-center">
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                    </svg>
-                    +2.5% from last month
-                  </div>
+        {/* Main Dashboard Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Left sidebar - Financial Summary */}
+          <div className="lg:col-span-1">
+            {/* Income Card */}
+            <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg mb-6 group hover:border-red-500/60 transition-colors">
+              <div className="p-4 border-b border-red-900/20">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xs text-red-500 tracking-widest">INCOME</h2>
+                  <div className="text-xs text-green-500 animate-pulse-slow">ACTIVE</div>
                 </div>
               </div>
-              
-              {/* Expenses Card */}
-              <div className="bg-[#111]/60 backdrop-blur-sm border border-red-900/50 rounded-xl overflow-hidden">
-                <div className="relative p-5">
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-red-600/20 to-red-900/30 rounded-bl-full"></div>
-                  <h3 className="text-sm uppercase tracking-wider text-gray-500 mb-2">Monthly Spent</h3>
-                  <div className="text-3xl font-bold">{formatCurrency(budgetOverview.spent)}</div>
-                  <div className="w-full bg-gray-900/50 rounded-full h-1 mt-3">
-                    <div 
-                      className="bg-gradient-to-r from-red-600 to-red-700 h-1 rounded-full" 
-                      style={{ width: `${budgetOverview.percentage}%` }}
-                    />
+              <div className="p-4">
+                <div className="text-2xl font-bold mb-1 group-hover:text-red-500 transition-colors">{formatCurrency(budgetOverview.income)}</div>
+                <div className="text-xs text-gray-500">100% AVAILABLE</div>
+                
+                <div className="grid grid-cols-2 gap-4 mt-3">
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">SPENT</div>
+                    <div className="font-bold text-red-500">{formatCurrency(budgetOverview.spent)}</div>
                   </div>
-                  <div className="mt-1 text-xs text-gray-500 flex items-center justify-between">
-                    <span>{budgetOverview.percentage}% of income</span>
-                    <span className="text-red-500">{budgetOverview.percentage > 80 ? 'Warning: High spending' : ''}</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Remaining Card */}
-              <div className="bg-[#111]/60 backdrop-blur-sm border border-red-900/50 rounded-xl overflow-hidden">
-                <div className="relative p-5">
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-red-600/20 to-red-900/30 rounded-bl-full"></div>
-                  <h3 className="text-sm uppercase tracking-wider text-gray-500 mb-2">Remaining Budget</h3>
-                  <div className="text-3xl font-bold">{formatCurrency(budgetOverview.remaining)}</div>
-                  <div className="w-full bg-gray-900/50 rounded-full h-1 mt-3">
-                    <div 
-                      className="bg-gradient-to-r from-green-500 to-green-600 h-1 rounded-full" 
-                      style={{ width: `${100 - budgetOverview.percentage}%` }}
-                    />
-                  </div>
-                  <div className="mt-1 text-xs text-gray-500">
-                    {100 - budgetOverview.percentage}% of income remaining
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">REMAINING</div>
+                    <div className="font-bold text-green-500">{formatCurrency(budgetOverview.remaining)}</div>
                   </div>
                 </div>
               </div>
             </div>
             
-            {/* Main Content Grid */}
-            <div className="grid grid-cols-12 gap-6">
-              {/* Recent Expenses - 7 columns */}
-              <div className="col-span-12 lg:col-span-7 bg-[#111]/60 backdrop-blur-sm border border-red-900/50 rounded-xl overflow-hidden">
-                <div className="p-5 border-b border-red-900/30 flex justify-between items-center">
-                  <h2 className="text-lg font-semibold">Recent Expenses</h2>
-                  <Link 
-                    to="/expenses" 
-                    className="text-xs text-red-500 hover:text-red-400 flex items-center"
-                  >
-                    View All
-                    <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                  </Link>
-                </div>
-                <div className="divide-y divide-gray-800/50">
-                  {recentExpenses.length > 0 ? (
-                    recentExpenses.map((expense, index) => (
-                      <div key={index} className="p-4 hover:bg-black/20 transition">
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center">
-                            <div className="w-10 h-10 rounded-full bg-red-900/20 border border-red-900/30 flex items-center justify-center mr-3">
-                              <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                              </svg>
-                            </div>
-                            <div>
-                              <div className="font-medium">{expense.category}</div>
-                              <div className="text-xs text-gray-500">{formatDate(expense.date)}</div>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-medium text-red-500">{formatCurrency(expense.amount)}</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-8 text-center text-gray-500">
-                      No recent expenses found
-                    </div>
-                  )}
+            {/* Progress Card */}
+            <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg mb-6 overflow-hidden">
+              <div className="p-4 border-b border-red-900/20">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xs text-red-500 tracking-widest">PROGRESS</h2>
+                  <div className="text-xs text-gray-500">{budgetOverview.percentage}%</div>
                 </div>
               </div>
               
-              {/* Right Column - 5 columns */}
-              <div className="col-span-12 lg:col-span-5 grid grid-cols-1 gap-6">
-                {/* Upcoming Bills Card */}
-                <div className="bg-[#111]/60 backdrop-blur-sm border border-red-900/50 rounded-xl overflow-hidden">
-                  <div className="p-5 border-b border-red-900/30 flex justify-between items-center">
-                    <h2 className="text-lg font-semibold">Upcoming Bills</h2>
-                    <Link 
-                      to="/smart-assistant" 
-                      className="text-xs text-red-500 hover:text-red-400 flex items-center"
+              <div className="h-2 w-full bg-black">
+                <div 
+                  className="h-full bg-gradient-to-r from-red-500 to-red-700"
+                  style={{ width: `${budgetOverview.percentage}%` }}
+                ></div>
+              </div>
+              
+              <div className="p-4">
+                <div className="grid grid-cols-3 gap-1">
+                  {[25, 50, 75].map((mark) => (
+                    <div 
+                      key={mark} 
+                      className={`text-xs ${
+                        budgetOverview.percentage >= mark 
+                          ? 'text-red-500' 
+                          : 'text-gray-700'
+                      }`}
                     >
-                      Manage
-                      <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                      </svg>
-                    </Link>
+                      {mark}%
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            {/* Quick Stats */}
+            <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg">
+              <div className="p-4 border-b border-red-900/20">
+                <h2 className="text-xs text-red-500 tracking-widest">QUICK STATS</h2>
+              </div>
+              <div className="p-4 space-y-4">
+                <div>
+                  <div className="text-xs text-gray-500 mb-1">BIGGEST EXPENSE</div>
+                  <div className="text-lg font-bold">
+                    {categoryData.length > 0 ? categoryData[0].name : "N/A"}
                   </div>
-                  
-                  <div className="divide-y divide-gray-800/50">
-                    {urgentBills.length > 0 ? (
-                      urgentBills.map((bill, index) => (
-                        <div key={index} className="p-4 hover:bg-black/20 transition">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <div className="font-medium flex items-center">
-                                {bill.name}
-                                {(getDaysUntil(bill.dueDate) === 'Today' || getDaysUntil(bill.dueDate) === 'Tomorrow' || getDaysUntil(bill.dueDate) === 'Overdue') && (
-                                  <span className="ml-2 px-2 py-0.5 bg-red-900/30 text-red-500 text-xs rounded-full">
-                                    {getDaysUntil(bill.dueDate)}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="text-xs text-gray-500">Due {formatDate(bill.dueDate)}</div>
-                            </div>
-                            <div className="text-right">
-                              <div className="font-medium">{formatCurrency(bill.amount)}</div>
-                              <button className="text-xs text-red-500 hover:text-red-400">
-                                Pay Now
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="p-8 text-center text-gray-500">
-                        No upcoming bills
-                      </div>
-                    )}
+                  <div className="text-sm text-red-500">
+                    {categoryData.length > 0 ? formatCurrency(categoryData[0].value) : "-"}
                   </div>
                 </div>
                 
-                {/* Monthly Distribution Card */}
-                <div className="bg-[#111]/60 backdrop-blur-sm border border-red-900/50 rounded-xl overflow-hidden">
-                  <div className="p-5 border-b border-red-900/30">
-                    <h2 className="text-lg font-semibold">Spending Distribution</h2>
+                <div>
+                  <div className="text-xs text-gray-500 mb-1">THIS MONTH</div>
+                  <div className="text-lg font-bold">
+                    {recentExpenses.length} Expenses
                   </div>
-                  <div className="p-4">
-                    {categoryData.length > 0 ? (
-                      <div className="space-y-3">
-                        {categoryData.slice(0, 5).map((category, index) => {
-                          const percentage = Math.round((category.value / budgetOverview.spent) * 100);
-                          return (
-                            <div key={index}>
-                              <div className="flex justify-between items-center mb-1">
-                                <div className="font-medium text-sm">{category.name}</div>
-                                <div className="text-xs font-semibold">{percentage}%</div>
-                              </div>
-                              <div className="w-full h-2 bg-gray-900/50 rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full"
-                                  style={{ 
-                                    width: `${percentage}%`, 
-                                    background: index === 0 
-                                      ? 'linear-gradient(to right, #d00, #900)' 
-                                      : `linear-gradient(to right, rgba(220, 38, 38, ${0.9 - index * 0.15}), rgba(127, 29, 29, ${0.9 - index * 0.15}))` 
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="p-4 text-center text-gray-500">
-                        No expense data found
-                      </div>
-                    )}
+                  <div className="text-sm text-red-500">
+                    {formatCurrency(budgetOverview.spent)}
+                  </div>
+                </div>
+                
+                {/* Status indicator */}
+                <div className="pt-2">
+                  <div className="inline-flex items-center space-x-1 bg-black rounded-full px-2 py-0.5">
+                    <span className="flex h-2 w-2 relative">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                    </span>
+                    <span className="text-xs text-gray-500">MONITORING</span>
                   </div>
                 </div>
               </div>
-              
-              {/* Daily Spending Trend - Full width */}
-              <div className="col-span-12 bg-[#111]/60 backdrop-blur-sm border border-red-900/50 rounded-xl overflow-hidden">
-                <div className="p-5 border-b border-red-900/30">
-                  <h2 className="text-lg font-semibold">Daily Spending Trend</h2>
+            </div>
+          </div>
+          
+          {/* Main content - Expenses & Chart */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Recent Expenses */}
+            <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg">
+              <div className="p-4 border-b border-red-900/20">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xs text-red-500 tracking-widest">RECENT EXPENSES</h2>
+                  <Link to="/expenses" className="text-xs text-gray-500 hover:text-white">VIEW ALL →</Link>
                 </div>
-                <div className="p-5">
-                  <div className="w-full h-60 flex items-end">
-                    {spendingTrendData.slice(-14).map((day, i) => {
-                      const height = (day.amount / maxAmount) * 100;
+              </div>
+              
+              <div className="divide-y divide-red-900/10">
+                {recentExpenses.length > 0 ? (
+                  recentExpenses.map((expense, index) => (
+                    <div 
+                      key={index} 
+                      className="p-4 hover:bg-red-500/5 transition-colors"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-start space-x-3">
+                          <div className="h-6 w-1 bg-red-500/70"></div>
+                          <div>
+                            <div className="font-medium">{expense.category}</div>
+                            <div className="text-xs text-gray-500">{formatDate(expense.date)}</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-red-500">{formatCurrency(expense.amount)}</div>
+                          <div className="text-xs text-gray-500">
+                            {formatPercentage(expense.amount, budgetOverview.spent)} of spending
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-8 text-center text-gray-500">
+                    NO EXPENSE DATA FOUND
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Spending Chart */}
+            <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg">
+              <div className="p-4 border-b border-red-900/20">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xs text-red-500 tracking-widest">SPENDING TREND</h2>
+                  <div className="text-xs text-gray-500">LAST 12 DAYS</div>
+                </div>
+              </div>
+              
+              <div className="p-4">
+                <div className="h-40 flex items-end space-x-1">
+                  {spendingData.map((value, index) => {
+                    const height = (value / maxValue) * 100;
+                    return (
+                      <div 
+                        key={index} 
+                        className="flex-1 flex flex-col items-center group"
+                        title={`$${value}`}
+                      >
+                        <div 
+                          className="w-full bg-red-800/50 group-hover:bg-red-500/70 relative transition-colors"
+                          style={{ height: `${height}%` }}
+                        >
+                          {/* Value tooltip on hover */}
+                          <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 bg-black border border-red-500/50 px-1.5 py-0.5 text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                            ${value}
+                          </div>
+                          
+                          {/* Top glow effect */}
+                          <div className="absolute top-0 left-0 right-0 h-[1px] bg-red-400/50"></div>
+                        </div>
+                        <div className="text-xs text-gray-700 mt-1 group-hover:text-gray-500 transition-colors">
+                          {index + 1}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            
+            {/* Category Distribution */}
+            <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg">
+              <div className="p-4 border-b border-red-900/20">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xs text-red-500 tracking-widest">CATEGORIES</h2>
+                  <div className="text-xs text-gray-500">{categoryData.length} TOTAL</div>
+                </div>
+              </div>
+              
+              <div className="p-4">
+                {categoryData.length > 0 ? (
+                  <div className="space-y-4">
+                    {categoryData.slice(0, 4).map((category, index) => {
+                      const percentage = Math.round((category.value / budgetOverview.spent) * 100);
                       return (
-                        <div key={i} className="flex-1 flex flex-col items-center">
-                          <div 
-                            className="w-full max-w-[20px] bg-gradient-to-t from-red-900 to-red-700 hover:from-red-800 hover:to-red-600 rounded-sm transition-all cursor-pointer group relative"
-                            style={{ height: `${height}%` }}
-                          >
-                            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black border border-red-900/50 rounded px-2 py-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                              {formatCurrency(day.amount)}
-                            </div>
+                        <div key={index}>
+                          <div className="flex justify-between mb-1">
+                            <div className="text-sm">{category.name}</div>
+                            <div className="text-sm">{formatCurrency(category.value)}</div>
                           </div>
-                          <div className="text-xs text-gray-500 mt-2">
-                            {formatDate(day.date).split(' ')[0]}
+                          <div className="h-1.5 w-full bg-black/50 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full rounded-full bg-gradient-to-r from-red-600/70 to-red-500/70"
+                              style={{ width: `${percentage}%` }}
+                            ></div>
                           </div>
+                          <div className="text-xs text-gray-500 mt-0.5">{percentage}%</div>
                         </div>
                       );
                     })}
                   </div>
+                ) : (
+                  <div className="text-center py-6 text-gray-500">
+                    NO CATEGORY DATA FOUND
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Right sidebar - Bills & Budget */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Upcoming Bills */}
+            <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg">
+              <div className="p-4 border-b border-red-900/20">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xs text-red-500 tracking-widest">UPCOMING BILLS</h2>
+                  <Link to="/smart-assistant" className="text-xs text-gray-500 hover:text-white">MANAGE →</Link>
+                </div>
+              </div>
+              
+              <div className="divide-y divide-red-900/10">
+                {urgentBills.length > 0 ? (
+                  urgentBills.map((bill, index) => (
+                    <div key={index} className="p-4 hover:bg-red-500/5 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-medium">{bill.name}</div>
+                          <div className="text-xs text-gray-500">Due {formatDate(bill.dueDate)}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-red-500">{formatCurrency(bill.amount)}</div>
+                          <div 
+                            className={`text-xs ${
+                              getDaysUntil(bill.dueDate) === 'Today' || getDaysUntil(bill.dueDate) === 'Tomorrow' || getDaysUntil(bill.dueDate) === 'Overdue'
+                                ? 'text-red-500 font-medium'
+                                : 'text-gray-500'
+                            }`}
+                          >
+                            {getDaysUntil(bill.dueDate)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-8 text-center text-gray-500">
+                    NO UPCOMING BILLS
+                  </div>
+                )}
+              </div>
+              
+              {urgentBills.length > 0 && (
+                <div className="p-4 border-t border-red-900/10">
+                  <button className="w-full bg-black/50 hover:bg-red-900/20 text-xs text-gray-300 py-2 border border-red-900/30 transition-colors">
+                    PAY ALL DUE BILLS
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {/* Budget Allocations */}
+            <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg">
+              <div className="p-4 border-b border-red-900/20">
+                <h2 className="text-xs text-red-500 tracking-widest">BUDGET ALLOCATIONS</h2>
+              </div>
+              <div className="p-4">
+                <div className="space-y-3">
+                  {['Housing', 'Food', 'Transportation', 'Utilities', 'Entertainment'].map((category, index) => {
+                    const percentage = [30, 20, 15, 10, 5][index];
+                    return (
+                      <div key={category} className="group">
+                        <div className="flex justify-between text-xs mb-1">
+                          <div>{category.toUpperCase()}</div>
+                          <div className="text-gray-500">{percentage}%</div>
+                        </div>
+                        <div className="h-1 w-full bg-black/50 overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-red-900/70 via-red-800/70 to-red-700/70 group-hover:from-red-600/70 group-hover:to-red-500/70 transition-colors"
+                            style={{ width: `${percentage * 3}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                <div className="mt-4 pt-4 border-t border-red-900/10">
+                  <button className="w-full bg-red-900/20 hover:bg-red-900/30 text-xs text-red-500 py-2 border border-red-900/30 transition-colors">
+                    ADJUST BUDGET
+                  </button>
                 </div>
               </div>
             </div>
-          </>
-        )}
-        
-        {/* Expenses Section */}
-        {activeSection === 'expenses' && (
-          <div className="bg-[#111]/60 backdrop-blur-sm border border-red-900/50 rounded-xl p-5">
-            <h2 className="text-lg font-semibold mb-5">Expense Management (Coming soon)</h2>
-            <div className="min-h-60 flex items-center justify-center">
-              <p className="text-gray-500">This feature is under development.</p>
+            
+            {/* System Status */}
+            <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg overflow-hidden">
+              <div className="relative p-4 border-b border-red-900/20">
+                <div className="absolute top-0 right-0 h-full w-16 bg-gradient-to-l from-red-500/5 to-transparent"></div>
+                <h2 className="text-xs text-red-500 tracking-widest">SYSTEM</h2>
+              </div>
+              <div className="p-4">
+                <div className="space-y-3 text-xs">
+                  <div className="flex justify-between items-center">
+                    <div className="text-gray-500">STATUS</div>
+                    <div className="text-green-500">ONLINE</div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="text-gray-500">LAST UPDATE</div>
+                    <div className="text-white">1 MIN AGO</div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="text-gray-500">NEXT SCAN</div>
+                    <div className="text-white countdown" data-value="59">59</div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Animated scanner effect */}
+              <div className="relative h-1 w-full bg-black overflow-hidden">
+                <div className="absolute top-0 left-0 h-full w-20 bg-gradient-to-r from-transparent via-red-500/70 to-transparent animate-scanner"></div>
+              </div>
             </div>
           </div>
-        )}
+        </div>
         
-        {/* Bills Section */}
-        {activeSection === 'bills' && (
-          <div className="bg-[#111]/60 backdrop-blur-sm border border-red-900/50 rounded-xl p-5">
-            <h2 className="text-lg font-semibold mb-5">Bills & Subscriptions (Coming soon)</h2>
-            <div className="min-h-60 flex items-center justify-center">
-              <p className="text-gray-500">This feature is under development.</p>
-            </div>
-          </div>
-        )}
-        
-        {/* Analytics Section */}
-        {activeSection === 'analytics' && (
-          <div className="bg-[#111]/60 backdrop-blur-sm border border-red-900/50 rounded-xl p-5">
-            <h2 className="text-lg font-semibold mb-5">Analytics (Coming soon)</h2>
-            <div className="min-h-60 flex items-center justify-center">
-              <p className="text-gray-500">This feature is under development.</p>
-            </div>
-          </div>
-        )}
-        
-        {/* Settings Section */}
-        {activeSection === 'settings' && (
-          <div className="bg-[#111]/60 backdrop-blur-sm border border-red-900/50 rounded-xl p-5">
-            <h2 className="text-lg font-semibold mb-5">Settings (Coming soon)</h2>
-            <div className="min-h-60 flex items-center justify-center">
-              <p className="text-gray-500">This feature is under development.</p>
-            </div>
-          </div>
-        )}
+        {/* Bottom status bar */}
+        <footer className="mt-8 border-t border-red-900/30 pt-3 flex justify-between items-center text-xs text-gray-600">
+          <div>BUDGETARY SYSTEM v1.0.4</div>
+          <div className="text-right">&copy; 2025 ALL RIGHTS RESERVED</div>
+        </footer>
       </div>
       
-      {/* Footer */}
-      <footer className="mt-12 py-6 text-center text-sm text-gray-600">
-        &copy; 2025 Budgetary Tracker. All rights reserved.
-      </footer>
-      
-      {/* Custom CSS for glass effects and animations */}
+      {/* Custom CSS for animations and effects */}
       <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .hide-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        
-        /* Glowing effect for header */
-        h1 {
-          filter: drop-shadow(0 0 15px rgba(220, 38, 38, 0.5));
-        }
-        
-        /* Glass card hover effect */
-        .backdrop-blur-sm {
-          transition: all 0.3s ease;
-        }
-        
-        .backdrop-blur-sm:hover {
-          box-shadow: 0 0 15px 0 rgba(220, 38, 38, 0.2);
-        }
-        
-        /* Animated gradient background */
-        @keyframes gradient-shift {
+        /* Glitch animation */
+        @keyframes glitch {
           0% {
-            background-position: 0% 50%;
+            transform: translate(0);
           }
-          50% {
-            background-position: 100% 50%;
+          20% {
+            transform: translate(-2px, 2px);
+          }
+          40% {
+            transform: translate(-2px, -2px);
+          }
+          60% {
+            transform: translate(2px, 2px);
+          }
+          80% {
+            transform: translate(2px, -2px);
           }
           100% {
-            background-position: 0% 50%;
+            transform: translate(0);
           }
         }
         
-        .bg-gradient-animate {
-          background-size: 200% 200%;
-          animation: gradient-shift 5s ease infinite;
+        .animate-glitch {
+          animation: glitch 1s cubic-bezier(.25, .46, .45, .94) both infinite;
+        }
+        
+        @keyframes glitch-animation-1 {
+          0% {
+            opacity: 1;
+            transform: translate(0);
+          }
+          10% {
+            transform: translate(-2px, -2px);
+          }
+          20% {
+            transform: translate(2px, 2px);
+          }
+          30% {
+            transform: translate(-2px, 2px);
+          }
+          40% {
+            transform: translate(2px, -2px);
+          }
+          50% {
+            transform: translate(-1px, 2px);
+            opacity: 0.8;
+          }
+          60% {
+            transform: translate(1px, 1px);
+          }
+          70% {
+            transform: translate(-1px, -1px);
+            opacity: 0.6;
+          }
+          80% {
+            transform: translate(1px, -1px);
+          }
+          90% {
+            transform: translate(-1px, 1px);
+          }
+          100% {
+            opacity: 1;
+            transform: translate(0);
+          }
+        }
+        
+        .animate-glitch-2 {
+          animation: glitch-animation-1 3s infinite linear alternate-reverse;
+        }
+        
+        .animate-glitch-3 {
+          animation: glitch-animation-1 2.7s infinite linear alternate-reverse;
+        }
+        
+        /* Scanner animation */
+        @keyframes scanner {
+          0% {
+            left: -20%;
+          }
+          100% {
+            left: 120%;
+          }
+        }
+        
+        .animate-scanner {
+          animation: scanner 3s ease-in-out infinite;
+        }
+        
+        /* Slow pulse animation */
+        @keyframes pulse-slow {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.6;
+          }
+        }
+        
+        .animate-pulse-slow {
+          animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        /* Shimmer animation */
+        @keyframes shimmer {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(100%);
+          }
+        }
+        
+        .animate-shimmer {
+          animation: shimmer 2s infinite;
+        }
+        
+        /* Countdown animation */
+        .countdown::after {
+          content: attr(data-value);
+          animation: countdown 60s linear infinite;
+        }
+        
+        @keyframes countdown {
+          0% {
+            content: "60";
+          }
+          1.66% {
+            content: "59";
+          }
+          3.33% {
+            content: "58";
+          }
+          /* ... and so on for each second ... */
+          98.33% {
+            content: "1";
+          }
+          100% {
+            content: "0";
+          }
         }
       `}</style>
     </div>
