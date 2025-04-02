@@ -5,8 +5,8 @@ import DarkModeIcon from '../../../../resources/moon_icon.svg';
 import LightModeIcon from '../../../../resources/sun_icon.svg';
 import { create } from 'zustand';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
-import ThemeSwitcher from '../components/ThemeSwitcher';
-import CyberpunkEffects from '../components/CyberpunkEffects';
+import EnhancedThemeSwitcher from '../components/EnhancedThemeSwitcher';
+import CyberpunkDashboard from '../components/CyberpunkDashboard';
 
 // Dark Mode Store
 interface darkModeState {
@@ -41,50 +41,57 @@ const RootComponent = () => {
       document.getElementById('darky')?.classList.remove('dark-mode');
     }
   }, [isDarkMode]);
+  
+  // If cyberpunk theme is active and we're on the dashboard route,
+  // render the cyberpunk dashboard instead
+  const isCyberpunkDashboard = theme === 'cyberpunk' && window.location.pathname === '/';
+  
+  if (isCyberpunkDashboard) {
+    return <CyberpunkDashboard />;
+  }
 
   return (
     <div className={`${isDarkMode ? 'dark-mode' : ''} theme-${theme}`}>
-      {/* Add the CyberpunkEffects component */}
-      <CyberpunkEffects />
-      
-      <nav className="navbar">
-        <Link to="/" className="navbar-brand">
-          <i className="fas fa-chart-line"></i>
-          <span>Budgetary</span>
-        </Link>
+      {theme !== 'cyberpunk' && (
+        <nav className="navbar">
+          <Link to="/" className="navbar-brand">
+            <i className="fas fa-chart-line"></i>
+            <span>Budgetary</span>
+          </Link>
 
-        <div className="navbar-links">
-          <Link to="/" className="nav-link" draggable={false}>Home</Link>
-          <Link to="/about" className="nav-link" draggable={false}>Challenges</Link>
-          <Link to="/smart-assistant" className="nav-link" draggable={false}>Subscriptions</Link>
-          <SignedOut>
-            <SignInButton>
-              <div className="auth-button">Login/Register</div>
-            </SignInButton>
-          </SignedOut>
-          <SignedIn>
-            <Link to="/expenses" className="nav-link" viewTransition={true} draggable={false}>Dashboard</Link>
-            <UserButton showName={true} />
-          </SignedIn>
+          <div className="navbar-links">
+            <Link to="/" className="nav-link" draggable={false}>Home</Link>
+            <Link to="/about" className="nav-link" draggable={false}>Challenges</Link>
+            <Link to="/smart-assistant" className="nav-link" draggable={false}>Subscriptions</Link>
+            <SignedOut>
+              <SignInButton>
+                <div className="auth-button">Login/Register</div>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <Link to="/expenses" className="nav-link" viewTransition={true} draggable={false}>Dashboard</Link>
+              <UserButton showName={true} />
+            </SignedIn>
+            
+            {/* Add Theme Switcher here */}
+            <EnhancedThemeSwitcher />
 
-          <div className="settings-dropdown">
-            <button className="settings-button" onClick={toggleDarkMode}>
-              {isDarkMode ? (
-                <img src={DarkModeIcon} alt="dark mode" id="darkmode-icon" />
-              ) : (
-                <img src={LightModeIcon} alt="light mode" id="lightmode-icon" />
-              )}
-            </button>
+            <div className="settings-dropdown">
+              <button className="settings-button" onClick={toggleDarkMode}>
+                {isDarkMode ? (
+                  <img src={DarkModeIcon} alt="dark mode" id="darkmode-icon" />
+                ) : (
+                  <img src={LightModeIcon} alt="light mode" id="lightmode-icon" />
+                )}
+              </button>
+            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
+      )}
 
       <section className="content-body">
         <Outlet />
       </section>
-      
-      {/* Theme Switcher Button */}
-      <ThemeSwitcher />
     </div>
   );
 };

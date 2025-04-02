@@ -7,6 +7,8 @@ import DatePicker from '@renderer/components/DatePicker'
 // import { useState } from 'react'
 import Graphs from '@renderer/components/graphs'
 import { useDarkModeStore } from './__root'
+import { useTheme } from '../context/ThemeContext'
+import EnhancedThemeSwitcher from '../components/EnhancedThemeSwitcher'
 
 import { useExpenseStore } from '../stores/expenseStore'
 import NotifyButton from '@renderer/components/notifications/notificationButton'
@@ -15,6 +17,7 @@ const Expenses = () => {
 // Inside the Expenses component function, update the notification handling
 const [notificationVisible, setNotificationVisible] = useState(false)
 const [notificationMessage, setNotificationMessage] = useState({ category: '', msg: '' })
+const { theme } = useTheme();
 
   // New statae for selectedd month in month picker
    const [selectedMonth, setSelectedMonth] = useState<string>(() => {
@@ -157,34 +160,22 @@ const [notificationMessage, setNotificationMessage] = useState({ category: '', m
     setSelectedDate(null)
   }
 
-  // const testNotif = async () => {
-  //   document.getElementById('test-pop')!.click()
-  //   await new Promise((r) => setTimeout(r, 3000))
-  //   document.getElementById('test-pop')!.click()
-  // }
-
-  // const testNotifDesk = async () => {
-  //   await window.api.notify()
-  // }
-
   return (
     <>
-      <div className={`app-container ${isDarkMode ? 'dark-mode ' : ''}`} id="darky">
+      <div className={`app-container ${isDarkMode ? 'dark-mode ' : ''} ${theme === 'cyberpunk' ? 'theme-cyberpunk' : ''}`} id="darky">
         <header className="header">
           <div className="header-top">
             <h1>Budgetary</h1>
-            {/* logout feature right here */}
-            <Link to="/" className="btn btn-secondary" viewTransition={true}>
-              Home
-            </Link>
-            {/* <button type="button" onClick={() => testNotif()}>
-              Test Notif
-            </button>
-            <button type="button" onClick={() => testNotifDesk()}>
-              Test Notif Desktop
-            </button>
-            <input type="checkbox" name="testpop" id="test-pop" style={{ display: 'none' }} /> */}
-            {/* <NotifyButton category='Notification Category' msg='test notif' /> */}
+            {/* Theme and Navigation Controls */}
+            <div className="flex items-center gap-4">
+              {/* Theme Switcher */}
+              <EnhancedThemeSwitcher />
+              
+              {/* Home Link */}
+              <Link to="/" className="btn btn-secondary" viewTransition={true}>
+                Home
+              </Link>
+            </div>
           </div>
           {/* new section {Monthly spending} */}
           <div className="stats-grid">
@@ -231,19 +222,6 @@ const [notificationMessage, setNotificationMessage] = useState({ category: '', m
               >
                 Graphs
               </button>
-
-              {/* <button
-                className={`tab-button ${activeTab === 'Categories' ? 'active' : ''}`}
-                onClick={() => handleTabClick('Categories')}
-              >
-                Categories
-              </button>
-              <button
-                className={`tab-button ${activeTab === 'budgetPlan' ? 'active' : ''}`}
-                onClick={() => handleTabClick('budgetPlan')}
-              >
-                Budget Plan
-              </button> */}
             </nav>
           </section>
 
@@ -283,11 +261,6 @@ const [notificationMessage, setNotificationMessage] = useState({ category: '', m
                     </button>
                   </div>
                 </form>
-                {/* <NotifyButton
-  category={notificationMessage.category}
-  msg={notificationMessage.msg}
-  isVisible={notificationVisible}
-/> */}
 
                 {/* month selection */}
                 <section className="surrounding-month">
@@ -324,19 +297,6 @@ const [notificationMessage, setNotificationMessage] = useState({ category: '', m
             )}
 
             {activeTab === 'graphs' && <Graphs />}
-
-            {/* Categories Tab Content */}
-            {/* {activeTab === 'Categories' && (
-              <div id="categories" className="tab-content">
-                <CategoryInsights />
-              </div>
-            )} */}
-            {/*  */}
-            {/* {activeTab === 'budgetPlan' && (
-              <div id="budgetPlan" className="tab-content budget-plan">
-                <BudgetPlanner expenses={expenses} />
-              </div>
-            )} */}
           </main>
         </div>
       </div>
