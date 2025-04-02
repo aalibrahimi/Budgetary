@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './assets/main.css'
+import './assets/cyberpunk-theme.css' // Import the cyberpunk theme
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
 // import TitleBar from './components/Titlebar'
