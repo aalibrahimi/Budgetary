@@ -326,68 +326,7 @@ const CyberpunkDashboard = () => {
       )}
 
       <div className="relative z-10 max-w-screen-2xl mx-auto p-4">
-        {/* Header with top navbar */}
-        <header className="mb-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
-            <div className="relative">
-              <h1 className="text-4xl font-black text-red-500 tracking-tighter relative">
-                BUDGETARY
-              </h1>
-              <div className="flex items-center space-x-2 mt-1">
-                <div className="h-[1px] w-2 bg-red-500"></div>
-                <div className="text-xs text-gray-500">
-                  — {currentMonth} {currentDay}, {currentYear}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex space-x-2">
-              <button
-                onClick={switchToDefaultTheme}
-                className="bg-black border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-black px-3 py-1 text-sm transition-colors"
-              >
-                DEFAULT MODE
-              </button>
-
-              <button
-                onClick={() => setShowExpenseModal(true)}
-                className="bg-transparent border border-red-500 text-red-500 hover:bg-red-500 hover:text-black px-3 py-1 text-sm transition-colors flex items-center space-x-1 group"
-              >
-                <span className="group-hover:animate-pulse">+</span>
-                <span>ADD EXPENSE</span>
-              </button>
-
-              <Link
-                to="/expenses"
-                className="bg-black/30 backdrop-blur-sm text-white border border-white/10 hover:border-white/30 px-3 py-1 text-sm transition-colors"
-              >
-                ALL EXPENSES
-              </Link>
-            </div>
-          </div>
-
-          {/* Navigation links */}
-          <div className="mt-6 border-t border-red-900/30 pt-4">
-            <nav className="flex flex-wrap gap-1">
-              {['HOME', 'CHALLENGES', 'SUBSCRIPTIONS', 'DASHBOARD'].map((section) => (
-                <button
-                  key={section}
-                  onClick={() => setHighlightedSection(section.toLowerCase())}
-                  className={`px-4 py-1.5 text-sm transition-colors relative ${
-                    highlightedSection === section.toLowerCase()
-                      ? 'text-red-500'
-                      : 'text-gray-500 hover:text-gray-300'
-                  }`}
-                >
-                  {section}
-                  {highlightedSection === section.toLowerCase() && (
-                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-red-500"></span>
-                  )}
-                </button>
-              ))}
-            </nav>
-          </div>
-        </header>
+        
 
         {/* Main Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

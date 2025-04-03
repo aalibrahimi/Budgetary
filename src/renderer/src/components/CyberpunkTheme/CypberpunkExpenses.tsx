@@ -236,74 +236,7 @@ const CyberpunkExpenses: React.FC = () => {
       )}
 
       <div className="relative z-10 max-w-7xl mx-auto p-4">
-        {/* Header with top navbar */}
-        <header className="mb-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
-            <div className="relative">
-              <h1 className="text-4xl font-black text-red-500 tracking-tighter relative">
-                EXPENSES
-              </h1>
-              <div className="flex items-center space-x-2 mt-1">
-                <div className="h-[1px] w-2 bg-red-500"></div>
-                <div className="text-xs text-gray-500">
-                  — {currentMonth} {currentDay}, {currentYear}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex space-x-2">
-              <Link
-                to="/"
-                className="bg-black/30 backdrop-blur-sm text-white border border-white/10 hover:border-white/30 px-3 py-1 text-sm transition-colors"
-              >
-                DASHBOARD
-              </Link>
-              
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="bg-transparent border border-red-500 text-red-500 hover:bg-red-500 hover:text-black px-3 py-1 text-sm transition-colors flex items-center space-x-1 group"
-              >
-                <span className="group-hover:animate-pulse">+</span>
-                <span>ADD EXPENSE</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Stats Cards - Cyberpunk style */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-            <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg group hover:border-red-500/60 transition-colors p-4">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xs text-red-500 tracking-widest">MONTHLY TOTAL</h2>
-                <div className="text-xs text-gray-500">{selectedMonth.split('-')[0]}/{selectedMonth.split('-')[1]}</div>
-              </div>
-              <div className="text-2xl font-bold mt-2 group-hover:text-red-500 transition-colors">
-                {formatCurrency(expenseSummary.total)}
-              </div>
-            </div>
-            
-            <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg group hover:border-red-500/60 transition-colors p-4">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xs text-red-500 tracking-widest">TOP CATEGORY</h2>
-                <div className="text-xs text-gray-500 animate-[pulse-slow_4s_cubic-bezier(0.4,0,0.6,1)_infinite]">
-                  ANALYSIS
-                </div>
-              </div>
-              <div className="text-2xl font-bold mt-2 group-hover:text-red-500 transition-colors">
-                {expenseSummary.topCategory}
-              </div>
-            </div>
-            
-            <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg group hover:border-red-500/60 transition-colors p-4">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xs text-red-500 tracking-widest">EXPENSE COUNT</h2>
-                <div className="text-xs text-red-500">{expenseSummary.count} ENTRIES</div>
-              </div>
-              <div className="text-2xl font-bold mt-2 group-hover:text-red-500 transition-colors">
-                {expenseSummary.count}
-              </div>
-            </div>
-          </div>
-        </header>
+       
 
         {/* Filters and Month Selection */}
         <div className="mb-6 flex flex-wrap justify-between items-center border-b border-red-900/30 pb-4">
