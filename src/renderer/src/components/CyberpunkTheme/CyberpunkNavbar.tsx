@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTheme } from '../../context/ThemeContext'
-import { Link } from '@tanstack/react-router'
+import { Link, useRouter } from '@tanstack/react-router'
 import EnhancedThemeSwitcher from '../EnhancedThemeSwitcher'
 
 interface NavItem {
@@ -11,22 +11,41 @@ interface NavItem {
 
 const CyberpunkNavbar: React.FC = () => {
   const { theme } = useTheme()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState('overview')
 
   // Only render when cyberpunk theme is active
   if (theme !== 'cyberpunk') return null
+  
+  // Update active tab based on current route
+  useEffect(() => {
+    const currentPath = router.state.location.pathname
+    
+    // Set activeTab based on current path
+    if (currentPath === '/') {
+      setActiveTab('overview')
+    } else if (currentPath === '/analytics') {
+      setActiveTab('analytics')
+    } else if (currentPath === '/budgets') {
+      setActiveTab('budgets')
+    } else if (currentPath === '/smart-assistant') {
+      setActiveTab('subscriptions')
+    } else if (currentPath === '/settings') {
+      setActiveTab('settings')
+    } else if (currentPath === '/expenses') {
+      setActiveTab('expenses')
+    } else if (currentPath === '/about') {
+      setActiveTab('challenges')
+    }
+  }, [router.state.location.pathname])
 
   const navItems: NavItem[] = [
     { label: 'Overview', to: '/', active: activeTab === 'overview' },
-    { label: 'Analytics', to: '/analytics', active: activeTab === 'analytics' },
-    { label: 'Budgets', to: '/budgets', active: activeTab === 'budgets' },
+    { label: 'Expenses', to: '/expenses', active: activeTab === 'expenses' },
+    { label: 'Challenges', to: '/about', active: activeTab === 'challenges' },
     { label: 'Subscriptions', to: '/smart-assistant', active: activeTab === 'subscriptions' },
     { label: 'Settings', to: '/settings', active: activeTab === 'settings' }
   ]
-
-  const handleTabClick = (label: string) => {
-    setActiveTab(label.toLowerCase())
-  }
 
   // Get current date for the header
   const currentDate = new Date()
@@ -44,7 +63,10 @@ const CyberpunkNavbar: React.FC = () => {
         {/* Action buttons - Now includes Theme Switcher */}
         <div className="flex gap-4 items-center">
           <EnhancedThemeSwitcher />
-          <button className="text-red-500 px-2 py-1 text-xs border border-red-500/30 hover:bg-red-500/10">
+          <button 
+            onClick={() => router.navigate({ to: '/expenses', search: { showAddModal: 'true' } })}
+            className="text-red-500 px-2 py-1 text-xs border border-red-500/30 hover:bg-red-500/10"
+          >
             + ADD EXPENSE
           </button>
           <Link
@@ -63,7 +85,6 @@ const CyberpunkNavbar: React.FC = () => {
             <li
               key={item.label}
               className={`cyber-nav-item ${item.active ? 'active' : ''}`}
-              onClick={() => handleTabClick(item.label)}
             >
               <Link to={item.to}>{item.label}</Link>
             </li>
