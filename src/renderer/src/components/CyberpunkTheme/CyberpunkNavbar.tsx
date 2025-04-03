@@ -19,25 +19,23 @@ const CyberpunkNavbar: React.FC = () => {
   
   // Update active tab based on current route
   useEffect(() => {
-    const currentPath = router.state.location.pathname
+    if (theme !== 'cyberpunk') return;
+    
+    const currentPath = router.state.location.pathname;
     
     // Set activeTab based on current path
     if (currentPath === '/') {
-      setActiveTab('overview')
-    } else if (currentPath === '/analytics') {
-      setActiveTab('analytics')
-    } else if (currentPath === '/budgets') {
-      setActiveTab('budgets')
-    } else if (currentPath === '/smart-assistant') {
-      setActiveTab('subscriptions')
-    } else if (currentPath === '/settings') {
-      setActiveTab('settings')
+      setActiveTab('overview');
     } else if (currentPath === '/expenses') {
-      setActiveTab('expenses')
+      setActiveTab('expenses');
     } else if (currentPath === '/about') {
-      setActiveTab('challenges')
+      setActiveTab('challenges');
+    } else if (currentPath === '/smart-assistant') {
+      setActiveTab('subscriptions');
+    } else if (currentPath === '/settings') {
+      setActiveTab('settings');
     }
-  }, [router.state.location.pathname])
+  }, [router.state.location.pathname, theme]);
 
   const navItems: NavItem[] = [
     { label: 'Overview', to: '/', active: activeTab === 'overview' },
@@ -78,15 +76,22 @@ const CyberpunkNavbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Navigation tabs */}
-      <nav className="cyber-navbar">
-        <ul className="cyber-nav-tabs">
+     {/* Add explicit styling for navigation */}
+     <nav className="border-t border-red-900/30 pt-4">
+        <ul className="flex flex-wrap gap-1">
           {navItems.map((item) => (
-            <li
-              key={item.label}
-              className={`cyber-nav-item ${item.active ? 'active' : ''}`}
-            >
-              <Link to={item.to}>{item.label}</Link>
+            <li key={item.label} className="px-4 py-1.5 relative">
+              <Link 
+                to={item.to}
+                className={`text-sm transition-colors ${
+                  item.active ? 'text-red-500' : 'text-gray-500 hover:text-gray-300'
+                }`}
+              >
+                {item.label.toUpperCase()}
+              </Link>
+              {item.active && (
+                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-red-500"></span>
+              )}
             </li>
           ))}
         </ul>

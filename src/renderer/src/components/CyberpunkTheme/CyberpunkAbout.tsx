@@ -368,7 +368,7 @@ const CyberpunkAbout: React.FC = () => {
 
       <div className="relative z-10 max-w-7xl mx-auto p-4">
         {/* Header with top navbar */}
-        <header className="mb-8">
+        {/* <header className="mb-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
             <div className="relative">
               <h1 className="text-4xl font-black text-red-500 tracking-tighter relative">
@@ -392,7 +392,7 @@ const CyberpunkAbout: React.FC = () => {
             </div>
           </div>
 
-          {/* Stats Cards - Cyberpunk style */}
+          Stats Cards - Cyberpunk style
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
             <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg group hover:border-red-500/60 transition-colors p-4">
               <div className="flex justify-between items-center">
@@ -435,7 +435,7 @@ const CyberpunkAbout: React.FC = () => {
               </div>
             </div>
           </div>
-        </header>
+        </header> */}
 
         {/* Tab Navigation */}
         <div className="mb-6 border-b border-red-900/30 pb-4">
