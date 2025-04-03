@@ -1,5 +1,5 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react'
-import { createRootRoute, Link, Outlet } from '@tanstack/react-router'
+import { createRootRoute, Link, Outlet, useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import DarkModeIcon from '../../../../resources/moon_icon.svg'
 import LightModeIcon from '../../../../resources/sun_icon.svg'
@@ -7,6 +7,9 @@ import { create } from 'zustand'
 import { ThemeProvider, useTheme } from '../context/ThemeContext'
 import EnhancedThemeSwitcher from '../components/EnhancedThemeSwitcher'
 import CyberpunkDashboard from '../components/CyberpunkTheme/CyberpunkDashboard'
+import CyberpunkExpenses from '@renderer/components/CyberpunkTheme/CypberpunkExpenses'
+import CyberpunkSmartAssistant from '@renderer/components/CyberpunkTheme/CyberpunkSmartAssistant'
+import CyberpunkAbout from '@renderer/components/CyberpunkTheme/CyberpunkAbout'
 
 // Dark Mode Store
 interface darkModeState {
@@ -22,11 +25,12 @@ export const useDarkModeStore = create<darkModeState>()((set) => ({
   }
 }))
 
+
 // Root Route Component
 const RootComponent = () => {
   const { isDarkMode, setIsDarkMode } = useDarkModeStore()
   const { theme } = useTheme()
-
+  const location = useRouter().state.location.pathname
   // Toggle Dark Mode
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode) // Update Zustand store
@@ -47,7 +51,21 @@ const RootComponent = () => {
   const isCyberpunkDashboard = theme === 'cyberpunk' && window.location.pathname === '/'
 
   if (isCyberpunkDashboard) {
-    return <CyberpunkDashboard />
+
+    switch ( location ) {
+      case '/':
+        return <CyberpunkDashboard />
+      case '/expenses':
+        return <CyberpunkExpenses />
+      case '/smart-assitant':
+        return <CyberpunkSmartAssistant />
+      case '/about' :
+        return <CyberpunkAbout />
+      default : 
+        return <CyberpunkDashboard />
+    }
+
+    
   }
 
   return (
