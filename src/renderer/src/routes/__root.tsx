@@ -7,6 +7,7 @@ import { create } from 'zustand'
 import { ThemeProvider, useTheme } from '../context/ThemeContext'
 import EnhancedThemeSwitcher from '../components/EnhancedThemeSwitcher'
 import CyberpunkRouter from '../components/CyberpunkTheme/CyberpunkRouter'
+import '../assets/cyberpunk-nav.css' // Import the new CSS
 
 // Dark Mode Store
 interface darkModeState {
@@ -43,9 +44,13 @@ const RootComponent = () => {
     }
   }, [isDarkMode])
 
-  // If cyberpunk theme is active, ONLY render the cyberpunk router
+  // If cyberpunk theme is active, render the cyberpunk router wrapped in the routing context
   if (theme === 'cyberpunk') {
-    return <CyberpunkRouter />
+    return (
+      <>
+        <CyberpunkRouter />
+      </>
+    );
   }
 
   // Otherwise render the default theme

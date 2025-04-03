@@ -37,6 +37,12 @@ const CyberpunkNavbar: React.FC = () => {
     }
   }, [router.state.location.pathname, theme]);
 
+  // Handle manual navigation with debugging
+  const handleNavigation = (path: string) => {
+    console.log(`Navigating to: ${path}`);
+    router.navigate({ to: path });
+  };
+
   const navItems: NavItem[] = [
     { label: 'Overview', to: '/', active: activeTab === 'overview' },
     { label: 'Expenses', to: '/expenses', active: activeTab === 'expenses' },
@@ -50,7 +56,7 @@ const CyberpunkNavbar: React.FC = () => {
   const formattedDate = `${currentDate.toLocaleString('default', { month: 'long' }).toUpperCase()} ${currentDate.getDate()}, ${currentDate.getFullYear()}`
 
   return (
-    <div className="cyberpunk-header">
+    <div className="cyberpunk-header border-b border-red-900/30 mb-4">
       {/* Logo and date */}
       <div className="flex justify-between items-center px-5 py-3">
         <div>
@@ -62,33 +68,38 @@ const CyberpunkNavbar: React.FC = () => {
         <div className="flex gap-4 items-center">
           <EnhancedThemeSwitcher />
           <button 
-            onClick={() => router.navigate({ to: '/expenses', search: { showAddModal: 'true' } })}
-            className="text-red-500 px-2 py-1 text-xs border border-red-500/30 hover:bg-red-500/10"
+            onClick={() => handleNavigation('/expenses')}
+            className="text-red-500 px-2 py-1 text-xs border border-red-500/30 hover:bg-red-500/10 transition-all duration-200"
           >
             + ADD EXPENSE
           </button>
-          <Link
-            to="/expenses"
-            className="text-white px-2 py-1 text-xs border border-white/10 hover:border-white/30"
+          <button
+            onClick={() => handleNavigation('/expenses')}
+            className="text-white px-2 py-1 text-xs border border-white/10 hover:border-white/30 hover:bg-white/5 transition-all duration-200"
           >
             ALL EXPENSES
-          </Link>
+          </button>
         </div>
       </div>
 
      {/* Add explicit styling for navigation */}
-     <nav className="border-t border-red-900/30 pt-4">
+     <nav className="border-t border-red-900/30 pt-4 px-5">
         <ul className="flex flex-wrap gap-1">
           {navItems.map((item) => (
-            <li key={item.label} className="px-4 py-1.5 relative">
-              <Link 
-                to={item.to}
-                className={`text-sm transition-colors ${
-                  item.active ? 'text-red-500' : 'text-gray-500 hover:text-gray-300'
+            <li key={item.label} className="px-4 py-1.5 relative group">
+              <button
+                onClick={() => handleNavigation(item.to)} 
+                className={`text-sm transition-all duration-200 ${
+                  item.active 
+                    ? 'text-red-500' 
+                    : 'text-gray-500 group-hover:text-gray-300'
                 }`}
               >
                 {item.label.toUpperCase()}
-              </Link>
+              </button>
+              {/* Hover indicator */}
+              <span className="absolute bottom-0 left-0 w-full h-[1px] bg-red-500/0 group-hover:bg-red-500/50 transition-all duration-200"></span>
+              {/* Active indicator */}
               {item.active && (
                 <span className="absolute bottom-0 left-0 w-full h-[1px] bg-red-500"></span>
               )}

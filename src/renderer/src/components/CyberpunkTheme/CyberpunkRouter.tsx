@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useRouter } from '@tanstack/react-router'
 import CyberpunkAbout from './CyberpunkAbout'
 import CyberpunkDashboard from './CyberpunkDashboard'
