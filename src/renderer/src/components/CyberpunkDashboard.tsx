@@ -335,7 +335,7 @@ const CyberpunkDashboard = () => {
           {/* Navigation links */}
           <div className="mt-6 border-t border-red-900/30 pt-4">
             <nav className="flex flex-wrap gap-1">
-              {['OVERVIEW', 'ANALYTICS', 'BUDGETS', 'SUBSCRIPTIONS', 'SETTINGS'].map((section) => (
+              {['HOME', 'CHALLENGES', 'SUBSCRIPTIONS', 'DASHBOARD'].map((section) => (
                 <button
                   key={section}
                   onClick={() => setHighlightedSection(section.toLowerCase())}
@@ -380,40 +380,6 @@ const CyberpunkDashboard = () => {
                     <div className="text-xs text-gray-500 mb-1">REMAINING</div>
                     <div className="font-bold text-green-500">{formatCurrency(budgetOverview.remaining)}</div>
                   </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Progress Card */}
-            <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg mb-6 overflow-hidden">
-              <div className="p-4 border-b border-red-900/20">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xs text-red-500 tracking-widest">PROGRESS</h2>
-                  <div className="text-xs text-gray-500">{budgetOverview.percentage}%</div>
-                </div>
-              </div>
-              
-              <div className="h-2 w-full bg-black">
-                <div 
-                  className="h-full bg-gradient-to-r from-red-500 to-red-700"
-                  style={{ width: `${budgetOverview.percentage}%` }}
-                ></div>
-              </div>
-              
-              <div className="p-4">
-                <div className="grid grid-cols-3 gap-1">
-                  {[25, 50, 75].map((mark) => (
-                    <div 
-                      key={mark} 
-                      className={`text-xs ${
-                        budgetOverview.percentage >= mark 
-                          ? 'text-red-500' 
-                          : 'text-gray-700'
-                      }`}
-                    >
-                      {mark}%
-                    </div>
-                  ))}
                 </div>
               </div>
             </div>
