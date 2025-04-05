@@ -6,6 +6,7 @@ import '@fortawesome/fontawesome-free/css/all.css' // Import Font Awesome icons
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
 import { ClerkProvider } from '@clerk/clerk-react'
+import { useTheme, ThemeProvider } from 'styled-components'
 
 // Create memory history for routing
 const memoryHistory = createMemoryHistory({
@@ -21,6 +22,16 @@ declare module '@tanstack/react-router' {
     router: typeof router
   }
 }
+// Create a wrapper that provides both context and styled-components theme
+const ThemedApp = ({ children }) => {
+  const { theme } = useTheme();
+  
+  return (
+    <StyledThemeProvider theme={theme}>
+      {children}
+    </StyledThemeProvider>
+  );
+};
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
@@ -41,8 +52,10 @@ loadFonts();
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+    <ThemeProvider>
+      <ThemedApp>
         <RouterProvider router={router} />
-      </ClerkProvider>
+      </ThemedApp>
+    </ThemeProvider>
   </React.StrictMode>
-)
+);
