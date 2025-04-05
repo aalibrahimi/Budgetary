@@ -1,6 +1,6 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
-import { useDarkModeStore } from './__root'
+import { useDarkModeStore } from '@renderer/stores/themeStore'
 import { useExpenseStore } from '../stores/expenseStore'
 import {
   Brain,
