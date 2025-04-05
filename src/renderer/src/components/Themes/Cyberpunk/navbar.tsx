@@ -1,16 +1,11 @@
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react'
-import { Link, Outlet } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
-import DarkModeIcon from '../../../../../../resources/moon_icon.svg'
-import LightModeIcon from '../../../../../../resources/sun_icon.svg'
-import { create } from 'zustand'
-import { useDarkModeStore, useThemeStore } from '@renderer/stores/themeStore'
-import ThemeSwitcher from '@renderer/components/themeSwitcher'
+import { Outlet } from '@tanstack/react-router'
+import { useState } from 'react'
+import { useThemeStore } from '@renderer/stores/themeStore'
+import ThemeSwitch from '@renderer/components/themeSwitch'
 
 interface NavItem {
   label: string
   to: string
-  func?: any
   active: boolean
 }
 
@@ -50,9 +45,7 @@ export const CyberpunkNav = () => {
 
   // --------------------------------------------------------------------------------------------
 
-
   const [activeTab, setActiveTab] = useState('overview')
-  
 
   const navItems: NavItem[] = [
     { label: 'Overview', to: '/', active: activeTab === 'overview' },
@@ -60,7 +53,6 @@ export const CyberpunkNav = () => {
     { label: 'Challenges', to: '/about', active: activeTab === 'challenges' },
     { label: 'Subscriptions', to: '/smart-assistant', active: activeTab === 'subscriptions' },
     { label: 'Settings', to: '/settings', active: activeTab === 'settings' },
-    { label: 'Default Theme', to: '/', func: handleTheme, active: activeTab === 'default theme' }
   ]
 
   // Get current date for the header
@@ -81,8 +73,7 @@ export const CyberpunkNav = () => {
 
         {/* Action buttons - Now includes Theme Switcher */}
         <div className="flex gap-4 items-center" style={{ position: 'relative', zIndex: 60 }}>
-          
-          <ThemeSwitcher switchTo='default' label='Default Theme' />
+          <ThemeSwitch switchTo="default" label="Default Theme" />
 
           <button
             // onClick={() => forcedNavigation('/expenses')}
@@ -115,7 +106,6 @@ export const CyberpunkNav = () => {
             >
               <button
                 // onClick={() => forcedNavigation(item.to)}
-                onClick={item.func}
                 className={`text-sm transition-colors ${
                   item.active ? 'text-red-500' : 'text-gray-500 hover:text-gray-300'
                 }`}

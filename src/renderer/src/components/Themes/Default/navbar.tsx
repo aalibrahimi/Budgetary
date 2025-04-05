@@ -3,14 +3,12 @@ import { Link, Outlet } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import DarkModeIcon from '../../../../../../resources/moon_icon.svg'
 import LightModeIcon from '../../../../../../resources/sun_icon.svg'
-import { create } from 'zustand'
-import { useDarkModeStore, useThemeStore } from '@renderer/stores/themeStore'
-import ThemeSwitcher from '@renderer/components/themeSwitcher'
+import { useDarkModeStore } from '@renderer/stores/themeStore'
+import ThemeSwitch from '@renderer/components/themeSwitch'
 
 // Root Route Component
 export const DefaultNav = () => {
   const { isDarkMode, setIsDarkMode } = useDarkModeStore();
-  const { setActiveTheme } = useThemeStore();
 
   // Toggle Dark Mode
   const toggleDarkMode = () => {
@@ -67,7 +65,7 @@ export const DefaultNav = () => {
           </SignedIn>
 
           <span className="navbar-links">
-            <ThemeSwitcher switchTo='cyberpunk' label='Cyberpunk Theme' />
+            <ThemeSwitch switchTo='cyberpunk' label='Cyberpunk Theme' />
           </span>
 
           <div className="settings-dropdown">

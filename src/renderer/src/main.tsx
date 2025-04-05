@@ -6,7 +6,6 @@ import '@fortawesome/fontawesome-free/css/all.css'
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
 import { ClerkProvider } from '@clerk/clerk-react'
-import { ThemeProvider } from './context/ThemeContext'
 
 // Create memory history for routing
 const memoryHistory = createMemoryHistory({
@@ -72,9 +71,7 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 root.render(
   <React.StrictMode>
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-      <ThemeProvider>
-        <RouterProvider router={router} />
-      </ThemeProvider>
+      <RouterProvider router={router} />
     </ClerkProvider>
   </React.StrictMode>
 );
