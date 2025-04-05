@@ -26,8 +26,8 @@ export const useDarkModeStore = create<darkModeState>()((set) => ({
 // Root Route Component
 const RootComponent = () => {
   const { isDarkMode, setIsDarkMode } = useDarkModeStore()
-  const { theme, themeType } = useTheme()
-  const router = useRouter()
+  const { theme } = useTheme()
+
 
   // Toggle Dark Mode
   const toggleDarkMode = () => {
@@ -48,7 +48,6 @@ const RootComponent = () => {
   if (theme.name === 'cyberpunk') {
     return (
       <>
-        <CyberpunkRouter />
         <div className="fixed top-4 right-4 z-50">
           <EnhancedThemeSwitcher />
         </div>
