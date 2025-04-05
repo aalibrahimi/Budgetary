@@ -13,6 +13,7 @@ export interface ThemeColors {
   }
   
   export interface ThemeConfig {
+    name: string;
     colors: ThemeColors;
     borderRadius: string;
     fontFamily: string;

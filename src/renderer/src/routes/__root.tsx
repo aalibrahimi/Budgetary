@@ -45,7 +45,7 @@ const RootComponent = () => {
   }, [isDarkMode])
 
   // If cyberpunk theme is active, render the cyberpunk router wrapped in the routing context
-  if (theme === 'cyberpunk') {
+  if (theme.name === 'cyberpunk') {
     return (
       <>
         <CyberpunkRouter />

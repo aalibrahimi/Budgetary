@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useDarkModeStore } from '../routes/__root';
 import { ThemeConfig, themes } from '@renderer/theme/theme';
 
+
 // Define theme types
 export type ThemeType = keyof typeof themes;
 

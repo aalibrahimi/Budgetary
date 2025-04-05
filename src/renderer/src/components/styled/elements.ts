@@ -1,5 +1,6 @@
 // src/renderer/src/components/styled/elements.ts
-import styled from 'styled-components';
+import { DetailedHTMLProps, HTMLAttributes } from 'react';
+import styled, { FastOmit, Interpolation } from 'styled-components';
 import 'styled-components';
 
 declare module 'styled-components' {
