@@ -6,7 +6,7 @@ import LightModeIcon from '../../../../resources/sun_icon.svg'
 import { create } from 'zustand'
 import { ThemeProvider, useTheme } from '../context/ThemeContext'
 import EnhancedThemeSwitcher from '../components/EnhancedThemeSwitcher'
-import CyberpunkRouter from '../components/CyberpunkTheme/CyberpunkRouter'
+
 import '../assets/cyberpunk-nav.css' // Import the new CSS
 
 // Dark Mode Store
@@ -26,7 +26,7 @@ export const useDarkModeStore = create<darkModeState>()((set) => ({
 // Root Route Component
 const RootComponent = () => {
   const { isDarkMode, setIsDarkMode } = useDarkModeStore()
-  const { theme } = useTheme()
+  const { theme, themeType } = useTheme()
   const router = useRouter()
 
   // Toggle Dark Mode
@@ -49,10 +49,12 @@ const RootComponent = () => {
     return (
       <>
         <CyberpunkRouter />
+        <div className="fixed top-4 right-4 z-50">
+          <EnhancedThemeSwitcher />
+        </div>
       </>
     );
   }
-
   // Otherwise render the default theme
   return (
     <div className={`${isDarkMode ? 'dark-mode' : ''} theme-${theme}`}>

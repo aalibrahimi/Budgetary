@@ -23,6 +23,7 @@ export interface ThemeColors {
   
   export const themes: Record<string, ThemeConfig> = {
     default: {
+      name: 'default',
       colors: {
         primary: '#40E0D0',
         secondary: '#2F4F4F',
@@ -40,6 +41,7 @@ export interface ThemeColors {
     },
     
     cyberpunk: {
+      name: 'cyberpunk',
       colors: {
         primary: '#ff3b3b',
         secondary: '#40E0D0',
@@ -54,7 +56,7 @@ export interface ThemeColors {
       borderRadius: '2px',
       fontFamily: '"Rajdhani", "Courier New", monospace',
       boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)'
-    },
-    
-    // Add more themes here
-  }
+    }
+
+    // Add more themes as needed
+  };

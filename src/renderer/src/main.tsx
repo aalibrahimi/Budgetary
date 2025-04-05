@@ -1,13 +1,12 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './assets/main.css'
-import './assets/cyberpunk-theme.css' // Import the cyberpunk theme
-import '@fortawesome/fontawesome-free/css/all.css' // Import Font Awesome icons
+import './assets/cyberpunk-theme.css'
+import '@fortawesome/fontawesome-free/css/all.css'
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
 import { ClerkProvider } from '@clerk/clerk-react'
-import { ThemeProvider as StyledThemeProvider } from 'styled-components'
-import { ThemeProvider, useTheme } from './context/ThemeContext'
+import { ThemeProvider } from './context/ThemeContext'
 
 // Create memory history for routing
 const memoryHistory = createMemoryHistory({
@@ -30,36 +29,52 @@ if (!PUBLISHABLE_KEY) {
   throw new Error('Missing Publishable Key')
 }
 
-// Create a wrapper that provides both context and styled-components theme
-const ThemedApp: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { theme } = useTheme();
-  
-  return (
-    <StyledThemeProvider theme={theme}>
-      {children}
-    </StyledThemeProvider>
-  );
-};
-
-// Add Rajdhani font for cyberpunk theme
-const loadFonts = () => {
-  const link = document.createElement('link');
-  link.href = 'https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap';
-  link.rel = 'stylesheet';
-  document.head.appendChild(link);
+// Load fonts locally instead of from Google
+const loadLocalFonts = () => {
+  // Create a style element for local fonts instead of loading from Google
+  const style = document.createElement('style');
+  style.textContent = `
+    @font-face {
+      font-family: 'Rajdhani';
+      font-style: normal;
+      font-weight: 400;
+      src: local('Rajdhani Regular'), local('Rajdhani-Regular');
+    }
+    @font-face {
+      font-family: 'Rajdhani';
+      font-style: normal;
+      font-weight: 500;
+      src: local('Rajdhani Medium'), local('Rajdhani-Medium');
+    }
+    @font-face {
+      font-family: 'Rajdhani';
+      font-style: normal;
+      font-weight: 600;
+      src: local('Rajdhani SemiBold'), local('Rajdhani-SemiBold');
+    }
+    @font-face {
+      font-family: 'Rajdhani';
+      font-style: normal;
+      font-weight: 700;
+      src: local('Rajdhani Bold'), local('Rajdhani-Bold');
+    }
+  `;
+  document.head.appendChild(style);
 };
 
 // Load fonts
-loadFonts();
+loadLocalFonts();
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+// Create root only once
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
+
+// Render with proper nesting order
+root.render(
   <React.StrictMode>
-    <ThemeProvider>
-      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-        <ThemedApp>
-          <RouterProvider router={router} />
-        </ThemedApp>
-      </ClerkProvider>
-    </ThemeProvider>
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+      <ThemeProvider>
+        <RouterProvider router={router} />
+      </ThemeProvider>
+    </ClerkProvider>
   </React.StrictMode>
 );
