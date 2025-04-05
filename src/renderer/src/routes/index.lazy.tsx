@@ -11,7 +11,7 @@ import { Calendar, DollarSign, PiggyBank, Wallet, Sparkles, Plus, Move, Bell } f
 import { Link } from '@tanstack/react-router'
 import CashFlowForecast from '@renderer/components/CashFlowForecast'
 // Import the notification system instead of the button
-
+import { useTheme } from '../context/ThemeContext'
 import { Responsive, WidthProvider } from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
@@ -48,7 +48,7 @@ const getCombinedCategoryData = (data, maxCategories) => {
 const DashboardIndex = () => {
   const { isDarkMode } = useDarkModeStore()
   const [activePeriod, setActivePeriod] = useState<'daily' | 'weekly' | 'monthly'>('monthly')
-
+  const { themeType } = useTheme()
   // For quick entry form
   const { expenses, addExpense, addCashFlowTransaction } = useExpenseStore()
   const [quickEntryDate, setQuickEntryDate] = useState(new Date().toISOString().split('T')[0])
@@ -329,7 +329,7 @@ const DashboardIndex = () => {
   }, [])
 
   return (
-    <div className={`app-container ${isDarkMode ? 'dark-mode' : ''}`} id="darky">
+<div className={`app-container ${isDarkMode ? 'dark-mode ' : ''} ${themeType === 'cyberpunk' ? 'theme-cyberpunk' : ''}`} id="darky">
       <header className="header">
         <div className="header-top">
           <h1 className="p-5">Dashboard</h1>
