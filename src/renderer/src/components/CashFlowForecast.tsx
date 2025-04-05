@@ -1,4 +1,4 @@
-// Modifications for CashFlowForecast.tsx
+// src/renderer/src/components/CashFlowForecast.tsx
 
 import React, { useState, useEffect } from 'react'
 import { AlertTriangle, Plus, X } from 'lucide-react'

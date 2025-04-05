@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { useTheme } from '../../context/ThemeContext'
 import { useRouter } from '@tanstack/react-router'
+import { useTheme } from '../../context/ThemeContext'
 import EnhancedThemeSwitcher from '../EnhancedThemeSwitcher'
+import CyberpunkRouter from './CyberpunkRouter'
+
 
 interface NavItem {
   label: string
@@ -13,13 +15,18 @@ const CyberpunkNavbar: React.FC = () => {
   const { theme } = useTheme()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('overview')
-
-  // Only render when cyberpunk theme is active
-  if (theme !== 'cyberpunk') return null
   
+/// Simply check if the theme name is 'cyberpunk'
+if (theme === 'cyberpunk') {
+  return (
+    <>
+      <CyberpunkRouter />
+    </>
+  );
+}
   // Update active tab based on current route
   useEffect(() => {
-    if (theme !== 'cyberpunk') return;
+  
     
     const currentPath = router.state.location.pathname;
     console.log("Current path in useEffect:", currentPath);
