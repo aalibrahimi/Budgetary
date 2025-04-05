@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useDarkModeStore } from './__root'
 import { useExpenseStore } from '../stores/expenseStore'
 import SubscriptionManager from '../components/SubscriptionManager'
+import { useDarkModeStore } from '@renderer/stores/themeStore'
 
 const SmartAssistant = () => {
   const { isDarkMode } = useDarkModeStore()

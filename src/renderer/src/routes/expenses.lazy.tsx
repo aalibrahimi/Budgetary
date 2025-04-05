@@ -6,10 +6,10 @@ import React, { useEffect, useState } from 'react'
 import DatePicker from '@renderer/components/DatePicker'
 // import { useState } from 'react'
 import Graphs from '@renderer/components/graphs'
-import { useDarkModeStore } from './__root'
 
 import { useExpenseStore } from '../stores/expenseStore'
 import NotifyButton from '@renderer/components/notifications/notificationButton'
+import { useDarkModeStore } from '@renderer/stores/themeStore'
 
 const Expenses = () => {
 // Inside the Expenses component function, update the notification handling
