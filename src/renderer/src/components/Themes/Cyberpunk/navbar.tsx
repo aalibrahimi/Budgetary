@@ -52,7 +52,7 @@ export const CyberpunkNav = () => {
     { label: 'Expenses', to: '/expenses', active: activeTab === 'expenses' },
     { label: 'Challenges', to: '/about', active: activeTab === 'challenges' },
     { label: 'Subscriptions', to: '/smart-assistant', active: activeTab === 'subscriptions' },
-    { label: 'Settings', to: '/settings', active: activeTab === 'settings' },
+    { label: 'Settings', to: '/settings', active: activeTab === 'settings' }
   ]
 
   // Get current date for the header
@@ -60,7 +60,7 @@ export const CyberpunkNav = () => {
   const formattedDate = `${currentDate.toLocaleString('default', { month: 'long' }).toUpperCase()} ${currentDate.getDate()}, ${currentDate.getFullYear()}`
 
   return (
-    <div className="relative z-50" style={{ pointerEvents: 'auto' }}>
+    <div className="relative z-50 bg-black" style={{ pointerEvents: 'auto' }}>
       {/* Logo and date */}
       <div
         className="flex justify-between items-center px-5 py-3 z-50"
@@ -133,10 +133,11 @@ export const CyberpunkNav = () => {
   )
 }
 
-// 
+//
 
-
- {/* Header with glitch animation */}
+{
+  /* Header with glitch animation */
+}
 //  <header className={`mb-8 ${animateHeader ? 'animate-glitch' : ''}`}>
 //  <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
 //    <div className="relative">
@@ -150,22 +151,22 @@ export const CyberpunkNav = () => {
 //        <div className="text-xs text-gray-500">{currentMonth} {currentDay}, {currentYear}</div>
 //      </div>
 //    </div>
-   
+
 //    <div className="flex space-x-2">
-//      <button 
+//      <button
 //        onClick={() => setShowExpenseModal(true)}
 //        className="bg-transparent border border-red-500 text-red-500 hover:bg-red-500 hover:text-black px-3 py-1 text-sm transition-colors flex items-center space-x-1 group"
 //      >
 //        <span className="group-hover:animate-pulse">+</span>
 //        <span>ADD EXPENSE</span>
 //      </button>
-     
+
 //      <Link to="/expenses" className="bg-black/30 backdrop-blur-sm text-white border border-white/10 hover:border-white/30 px-3 py-1 text-sm transition-colors">
 //        ALL EXPENSES
 //      </Link>
 //    </div>
 //  </div>
- 
+
 //  {/* Navigation links */}
 //  <div className="mt-6 border-t border-red-900/30 pt-4">
 //    <nav className="flex flex-wrap gap-1">
@@ -174,8 +175,8 @@ export const CyberpunkNav = () => {
 //          key={section}
 //          onClick={() => setHighlightedSection(section)}
 //          className={`px-4 py-1.5 text-sm transition-colors relative ${
-//            highlightedSection === section 
-//              ? 'text-red-500' 
+//            highlightedSection === section
+//              ? 'text-red-500'
 //              : 'text-gray-500 hover:text-gray-300'
 //          }`}
 //        >
