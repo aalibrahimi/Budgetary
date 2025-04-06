@@ -119,7 +119,7 @@ export const CyberpunkNav = () => {
                 {item.label}
               </button>
               {item.active && (
-                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-red-500"></span>
+                <span className=" absolute bottom-0 left-0 w-full h-[1px] bg-red-500 "></span>
               )}
             </li>
           ))}
@@ -132,3 +132,59 @@ export const CyberpunkNav = () => {
     </div>
   )
 }
+
+// 
+
+
+ {/* Header with glitch animation */}
+//  <header className={`mb-8 ${animateHeader ? 'animate-glitch' : ''}`}>
+//  <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
+//    <div className="relative">
+//      <h1 className="text-4xl font-black text-red-500 tracking-tighter glitch-text">
+//        BUDGETARY
+//        <span className="absolute top-0 left-0 w-full h-full text-red-500/20 animate-glitch-2">BUDGETARY</span>
+//        <span className="absolute top-0 left-0 w-full h-full text-red-500/20 animate-glitch-3">BUDGETARY</span>
+//      </h1>
+//      <div className="flex items-center space-x-2 mt-1">
+//        <div className="h-[1px] w-2 bg-red-500"></div>
+//        <div className="text-xs text-gray-500">{currentMonth} {currentDay}, {currentYear}</div>
+//      </div>
+//    </div>
+   
+//    <div className="flex space-x-2">
+//      <button 
+//        onClick={() => setShowExpenseModal(true)}
+//        className="bg-transparent border border-red-500 text-red-500 hover:bg-red-500 hover:text-black px-3 py-1 text-sm transition-colors flex items-center space-x-1 group"
+//      >
+//        <span className="group-hover:animate-pulse">+</span>
+//        <span>ADD EXPENSE</span>
+//      </button>
+     
+//      <Link to="/expenses" className="bg-black/30 backdrop-blur-sm text-white border border-white/10 hover:border-white/30 px-3 py-1 text-sm transition-colors">
+//        ALL EXPENSES
+//      </Link>
+//    </div>
+//  </div>
+ 
+//  {/* Navigation links */}
+//  <div className="mt-6 border-t border-red-900/30 pt-4">
+//    <nav className="flex flex-wrap gap-1">
+//      {['overview', 'analytics', 'budgets', 'subscriptions', 'settings'].map((section) => (
+//        <button
+//          key={section}
+//          onClick={() => setHighlightedSection(section)}
+//          className={`px-4 py-1.5 text-sm transition-colors relative ${
+//            highlightedSection === section 
+//              ? 'text-red-500' 
+//              : 'text-gray-500 hover:text-gray-300'
+//          }`}
+//        >
+//          {section.toUpperCase()}
+//          {highlightedSection === section && (
+//            <span className="absolute bottom-0 left-0 w-full h-[1px] bg-red-500"></span>
+//          )}
+//        </button>
+//      ))}
+//    </nav>
+//  </div>
+// </header>

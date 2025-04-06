@@ -45,802 +45,795 @@ const getCombinedCategoryData = (data, maxCategories) => {
 }
 
 export const CyberpunkIndex = () => {
-  const { isDarkMode } = useDarkModeStore()
-  const [activePeriod, setActivePeriod] = useState<'daily' | 'weekly' | 'monthly'>('monthly')
+  const { expenses, addExpense, addCashFlowTransaction } = useExpenseStore();
+  const { isDarkMode } = useDarkModeStore();
+  const { showNotification } = useNotificationSystem();
+  const upcomingBills = useUpcomingBills(30);
+  
+  // Form state for expense entry
+  const [quickEntryDate, setQuickEntryDate] = useState(new Date().toISOString().split('T')[0]);
+  const [quickEntryCategory, setQuickEntryCategory] = useState('');
+  const [quickEntryAmount, setQuickEntryAmount] = useState('');
+  const [isRecurring, setIsRecurring] = useState(false);
+  
+  // UI state
+  const [showExpenseModal, setShowExpenseModal] = useState(false);
+  const [animateHeader, setAnimateHeader] = useState(true);
+  const [highlightedSection, setHighlightedSection] = useState('overview');
+  
+  // Format currency helper
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
 
-  // For quick entry form
-  const { expenses, addExpense, addCashFlowTransaction } = useExpenseStore()
-  const [quickEntryDate, setQuickEntryDate] = useState(new Date().toISOString().split('T')[0])
-  const [quickEntryCategory, setQuickEntryCategory] = useState('')
-  const [quickEntryAmount, setQuickEntryAmount] = useState('')
-  const [isRecurring, setIsRecurring] = useState(false)
-
-  // Replace old notification state with the new notification system
-  const { showNotification } = useNotificationSystem()
-
-  // Get upcoming bills using our new hook
-  const upcomingBills = useUpcomingBills(30) // Show bills for next 30 days
-
-  // Layout state for grid items
-  const [layouts, setLayouts] = useState(() => {
-    // Try to load saved layout from localStorage
-    const savedLayouts = localStorage.getItem('dashboardLayouts')
-    if (savedLayouts) {
-      return JSON.parse(savedLayouts)
-    }
-
-    // Default layout configuration
+  // Format date helper
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric'
+    });
+  };
+  
+  // Format percentage helper
+  const formatPercentage = (value, total) => {
+    if (total === 0) return "0%";
+    return Math.round((value / total) * 100) + "%";
+  };
+  
+  // Calculate budget overview
+  const budgetOverview = useMemo(() => {
+    const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const estimatedIncome = 3500; // This would come from income in a real app
     return {
-      lg: [
-        { i: 'stats', x: 0, y: 0, w: 12, h: 1, static: true },
-        { i: 'recent-expenses', x: 0, y: 1, w: 6, h: 4 },
-        { i: 'upcoming-bills', x: 0, y: 5, w: 6, h: 4 },
-        { i: 'spending-category', x: 6, y: 1, w: 6, h: 4 },
-        { i: 'savings-goals', x: 6, y: 5, w: 6, h: 4 },
-        { i: 'budget-allocation', x: 0, y: 9, w: 12, h: 4 },
-        { i: 'financial-insights', x: 0, y: 13, w: 12, h: 3 },
-        { i: 'quick-entry', x: 0, y: 16, w: 12, h: 3 }
-      ],
-      md: [
-        { i: 'stats', x: 0, y: 0, w: 10, h: 1, static: true },
-        { i: 'recent-expenses', x: 0, y: 1, w: 5, h: 4 },
-        { i: 'upcoming-bills', x: 0, y: 5, w: 5, h: 4 },
-        { i: 'spending-category', x: 5, y: 1, w: 5, h: 4 },
-        { i: 'savings-goals', x: 5, y: 5, w: 5, h: 4 },
-        { i: 'budget-allocation', x: 0, y: 9, w: 10, h: 4 },
-        { i: 'financial-insights', x: 0, y: 13, w: 10, h: 3 },
-        { i: 'quick-entry', x: 0, y: 16, w: 10, h: 3 }
-      ],
-      sm: [
-        { i: 'stats', x: 0, y: 0, w: 6, h: 1, static: true },
-        { i: 'recent-expenses', x: 0, y: 1, w: 6, h: 4 },
-        { i: 'upcoming-bills', x: 0, y: 5, w: 6, h: 4 },
-        { i: 'spending-category', x: 0, y: 9, w: 6, h: 4 },
-        { i: 'savings-goals', x: 0, y: 13, w: 6, h: 4 },
-        { i: 'budget-allocation', x: 0, y: 17, w: 6, h: 4 },
-        { i: 'financial-insights', x: 0, y: 21, w: 6, h: 3 },
-        { i: 'quick-entry', x: 0, y: 24, w: 6, h: 3 }
-      ]
-    }
-  })
-
-  // Custom label rendering function with adjusted connector lines
-  const renderCustomizedLabel = ({
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    percent,
-    name,
-    index
-  }) => {
-    // Only show labels for categories with more than 5% of total
-    if (percent < 0.05) return null
-
-    const RADIAN = Math.PI / 180
-    const radius = outerRadius * 1.15
-    const x = cx + radius * Math.cos(-midAngle * RADIAN)
-    const y = cy + radius * Math.sin(-midAngle * RADIAN)
-
-    return (
-      <text
-        x={x}
-        y={y}
-        fill="white"
-        textAnchor={x > cx ? 'start' : 'end'}
-        dominantBaseline="central"
-        fontSize="12"
-        fontWeight="500"
-      >
-        {`${name}: ${(percent * 100).toFixed(0)}%`}
-      </text>
-    )
-  }
-
-  // State to toggle edit mode
-  const [isEditMode, setIsEditMode] = useState(false)
-
-  // Save layouts to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem('dashboardLayouts', JSON.stringify(layouts))
-  }, [layouts])
-
-  // Handle quick entry form submission
-  const handleQuickAddExpense = (e: React.FormEvent) => {
-    e.preventDefault()
-    const amount = parseFloat(quickEntryAmount)
-
+      income: estimatedIncome,
+      spent: totalSpent,
+      remaining: estimatedIncome - totalSpent,
+      percentage: Math.round((totalSpent / estimatedIncome) * 100)
+    };
+  }, [expenses]);
+  
+  // Get recent expenses
+  const recentExpenses = useMemo(() => {
+    return [...expenses]
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 5);
+  }, [expenses]);
+  
+  // Calculate category totals
+  const categoryData = useMemo(() => {
+    const categoryTotals = {};
+    
+    expenses.forEach(exp => {
+      categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
+    });
+    
+    return Object.entries(categoryTotals)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a : any, b : any)  => b.value - a.value);
+  }, [expenses]);
+  
+  // Handle expense form submission
+  const handleAddExpense = (e) => {
+    e.preventDefault();
+    const amount = parseFloat(quickEntryAmount);
+    
     if (!quickEntryCategory || isNaN(amount) || amount <= 0 || !quickEntryDate) {
-      // Show error notification
-      showNotification('Error', 'Please fill all fields correctly!', NotificationType.ERROR)
-      return
+      showNotification(
+        "ERROR", 
+        "Please fill all fields correctly!",
+        NotificationType.ERROR
+      );
+      return;
     }
 
-    // Add to the regular expense tracking
+    // Add expense
     const newExpense = {
       date: quickEntryDate,
       category: quickEntryCategory,
       amount: amount
-    }
-    addExpense(newExpense)
+    };
+    addExpense(newExpense);
 
-    // If it's marked as recurring, add as a cash flow transaction with special description
+    // Add as recurring if selected
     if (isRecurring) {
       const newTransaction = {
         date: quickEntryDate,
-        type: 'expense' as 'expense' | 'income',
+        type: 'expense',
         category: quickEntryCategory,
-        // Mark as recurring so it will show up in upcoming bills
         description: `Recurring ${quickEntryCategory} payment`,
         amount: amount
-      }
-      addCashFlowTransaction(newTransaction)
-
-      // Show success notification for recurring expense
+      };
+      addCashFlowTransaction(newTransaction);
+      
       showNotification(
-        'Success',
-        `Added to your upcoming bills: ${quickEntryCategory}`,
+        "SUCCESS", 
+        `Added recurring ${quickEntryCategory} expense`,
         NotificationType.SUCCESS
-      )
+      );
     } else {
-      // Show success notification for one-time expense
       showNotification(
-        'Success',
-        `Added ${quickEntryCategory} expense of $${amount.toFixed(2)}`,
+        "SUCCESS", 
+        `Added ${quickEntryCategory} expense`,
         NotificationType.SUCCESS
-      )
+      );
     }
 
-    // Reset form
-    setQuickEntryAmount('')
-    setQuickEntryCategory('')
-  }
-
-  // Format date from YYYY-MM-DD to Month DD, YYYY
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric'
-    })
-  }
-
-  // Get recent expenses (latest 4)
-  const recentExpenses = useMemo(() => {
-    return [...expenses]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 4)
-  }, [expenses])
-
-  // Calculate category totals for pie chart
-  const categoryData = useMemo(() => {
-    const categoryTotals: { [key: string]: number } = {}
-
-    expenses.forEach((exp) => {
-      categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount
-    })
-
-    return Object.entries(categoryTotals).map(([name, value]) => ({ name, value }))
-  }, [expenses])
-
-  // Calculate budget overview
-  const budgetOverview = useMemo(() => {
-    const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0)
-    const estimatedIncome = 3500 // This would come from income in a real app
-    return {
-      income: estimatedIncome,
-      spent: totalSpent,
-      remaining: estimatedIncome - totalSpent
-    }
-  }, [expenses])
-
-  // Sample data for sections that would be implemented later
-  // Only keeping savings goals since we replaced upcoming bills with real data
-  const sampleData = {
-    savingsGoals: [
-      { name: 'Emergency Fund', target: 10000, current: 6500, color: '#FF6B6B' },
-      { name: 'Vacation', target: 3000, current: 1200, color: '#4ECDC4' },
-      { name: 'New Car', target: 15000, current: 4500, color: '#1A535C' }
-    ]
-  }
-
-  // Format currency helper
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount)
-  }
-
-  // Chart colors
-  const COLORS = ['#FF6B6B', '#4ECDC4', '#1A535C', '#FFE66D', '#FF9E80']
-
-  // Helper function to get icon based on category
-  const getCategoryIcon = (category: string): string => {
-    const icons: Record<string, string> = {
-      Groceries: 'shopping-cart',
-      Rent: 'home',
-      Insurance: 'shield',
-      'Dining Out': 'utensils',
-      Entertainment: 'film',
-      Transportation: 'car',
-      Clothes: 'tshirt',
-      Other: 'tag'
-    }
-    return icons[category] || 'circle'
-  }
-
-  // Handle layout changes
-  const handleLayoutChange = (currentLayout: any, allLayouts: any) => {
-    setLayouts(allLayouts)
-  }
-
-  // Reset layout to default
-  const resetLayout = () => {
-    localStorage.removeItem('dashboardLayouts')
-    window.location.reload()
-  }
-
-  // Toggle edit mode
-  const toggleEditMode = () => {
-    setIsEditMode(!isEditMode)
-  }
-
+    // Reset form and close modal
+    setQuickEntryAmount('');
+    setQuickEntryCategory('');
+    setShowExpenseModal(false);
+  };
+  
+  // Categories for expense form
+  const categories = [
+    'Rent', 'Groceries', 'Utilities', 'Insurance', 
+    'Dining Out', 'Entertainment', 'Transportation', 
+    'Clothes', 'Health', 'Education', 'Other'
+  ];
+  
   // Calculate how many days until a bill is due
-  const getDaysUntil = (dateString: string) => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const dueDate = new Date(dateString)
-    dueDate.setHours(0, 0, 0, 0)
-
-    const diffTime = dueDate.getTime() - today.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-    if (diffDays === 0) return 'Today'
-    if (diffDays === 1) return 'Tomorrow'
-    if (diffDays < 0) return 'Overdue'
-    return `In ${diffDays} days`
-  }
-
-  // LOGIN CHECK FOR INACTIVITY
-  useEffect(() => {
-    // Check last login date from localStorage
-    const lastLogin = localStorage.getItem('lastLoginDate')
-
-    if (lastLogin) {
-      const twoWeeksAgo = new Date()
-      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
-
-      if (new Date(lastLogin) < twoWeeksAgo) {
-        // Use new notification system with appropriate message and type
-        showNotification(
-          'Welcome Back',
-          "It's been 2 weeks since your last visit. Don't forget to track your expenses!",
-          NotificationType.WARNING
-        )
-      }
+  const getDaysUntil = (dateString) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(dateString);
+    dueDate.setHours(0, 0, 0, 0);
+    
+    const diffTime = dueDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Tomorrow';
+    if (diffDays < 0) return 'Overdue';
+    return `${diffDays} days`;
+  };
+  
+  // Get urgent bills
+  const urgentBills = useMemo(() => {
+    const today = new Date();
+    const nextWeek = new Date();
+    nextWeek.setDate(today.getDate() + 7);
+    
+    return upcomingBills
+      .filter(bill => {
+        const dueDate = new Date(bill.dueDate);
+        return dueDate <= nextWeek;
+      })
+      .slice(0, 3);
+  }, [upcomingBills]);
+  
+  // Get current month and year
+  const currentDate = new Date();
+  const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+  const currentMonth = monthNames[currentDate.getMonth()];
+  const currentYear = currentDate.getFullYear();
+  const currentDay = currentDate.getDate();
+  
+  // Spending chart data (simplified)
+  const generateSpendingData = () => {
+    const data: number[] = [];
+    for (let i = 0; i < 12; i++) {
+      const value = Math.floor(Math.random() * 80) + 20;
+      data.push(value);
     }
-
-    // Update last login date
-    localStorage.setItem('lastLoginDate', new Date().toISOString())
-  }, [])
-
+    return data;
+  };
+  
+  const spendingData = generateSpendingData();
+  const maxValue = Math.max(...spendingData);
+  
+  // Disable header animation after a delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnimateHeader(false);
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, []);
   return (
-    <div className={`app-container ${isDarkMode ? 'dark-mode' : ''}`} id="darky">
-      <header className="header">
-        <div className="header-top">
-          <h1 className="p-5">Dashboard</h1>
-          <div className="header-actions">
-            <button
-              className={`btn ${isEditMode ? 'btn-success' : 'btn-primary'}`}
-              onClick={toggleEditMode}
-              style={{ marginRight: '10px' }}
-            >
-              {isEditMode ? 'Save Layout' : 'Edit Layout'}
-            </button>
-            {isEditMode && (
-              <button
-                className="btn btn-warning"
-                onClick={resetLayout}
-                style={{ marginRight: '10px' }}
+    <div className="min-h-screen bg-black text-white font-mono overflow-hidden">
+    {/* Background effects */}
+    <div className="fixed inset-0 z-0">
+      <div className="absolute top-0 -right-32 w-96 h-96 rounded-full bg-red-600/20 mix-blend-screen blur-[100px] animate-pulse"></div>
+      <div className="absolute bottom-0 -left-32 w-96 h-96 rounded-full bg-red-800/10 mix-blend-screen blur-[100px] animate-pulse" style={{ animationDelay: "1s" }}></div>
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vh] bg-gradient-to-br from-black via-red-950/10 to-black rounded-full mix-blend-screen filter blur-[80px]"></div>
+      
+      {/* Grid overlay */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsIDAsIDAsIDAuMDUpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30"></div>
+    </div>
+
+    {/* Expense Form Modal */}
+    {showExpenseModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+        <div className="relative z-10 bg-black/70 backdrop-blur-md border border-red-500/80 rounded-lg w-full max-w-md overflow-hidden">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-red-600/20 to-transparent"></div>
+            <div className="relative p-5 flex justify-between items-center">
+              <h2 className="text-xl font-bold tracking-widest">// ADD EXPENSE</h2>
+              <button 
+                onClick={() => setShowExpenseModal(false)}
+                className="text-red-500 hover:text-red-400 focus:outline-none glitch-effect"
               >
-                Reset Layout
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
               </button>
-            )}
-            <Link to="/expenses" className="btn btn-secondary" viewTransition={true}>
-              View Expenses
-            </Link>
-          </div>
-        </div>
-
-        {/* Stats Cards Row - This stays at the top */}
-        <div className="stats-grid" id="stats">
-          <div className="stat-card">
-            <div className="stat-label">Monthly Income</div>
-            <div className="stat-value">{formatCurrency(budgetOverview.income)}</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-label">Spent This Month</div>
-            <div className="stat-value">{formatCurrency(budgetOverview.spent)}</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-label">Remaining</div>
-            <div className="stat-value">{formatCurrency(budgetOverview.remaining)}</div>
-          </div>
-        </div>
-      </header>
-
-      <div className="container">
-        {/* Period Selector */}
-        <section className="surrounding-tabs">
-          <nav className="tabs">
-            <button
-              className={`tab-button ${activePeriod === 'daily' ? 'active' : ''}`}
-              onClick={() => setActivePeriod('daily')}
-            >
-              Daily
-            </button>
-            <button
-              className={`tab-button ${activePeriod === 'weekly' ? 'active' : ''}`}
-              onClick={() => setActivePeriod('weekly')}
-            >
-              Weekly
-            </button>
-            <button
-              className={`tab-button ${activePeriod === 'monthly' ? 'active' : ''}`}
-              onClick={() => setActivePeriod('monthly')}
-            >
-              Monthly
-            </button>
-          </nav>
-        </section>
-
-        <main className="dashboard-content">
-          {/* Swappable Grid Layout */}
-          <ResponsiveGridLayout
-            className="layout"
-            layouts={layouts}
-            breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-            cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
-            rowHeight={80}
-            onLayoutChange={handleLayoutChange}
-            isDraggable={isEditMode}
-            isResizable={isEditMode}
-            useCSSTransforms={true}
-          >
-            {/* Recent Expenses Card */}
-            <div key="recent-expenses" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"> Drag</div>}
-              <div className="dashboard-card-header">
-                <h2 style={{ color: isDarkMode ? 'white' : 'black' }}>
-                  <Wallet className="dashboard-card-icon" /> Recent Expenses
-                </h2>
-                <Link to="/expenses" className="dashboard-card-link">
-                  View All
-                </Link>
-              </div>
-              <div className="expense-list-container" style={{ boxShadow: 'none' }}>
-                <ul id="expenseList">
-                  {recentExpenses.length > 0 ? (
-                    recentExpenses.map((expense, index) => (
-                      <li key={index}>
-                        <span>{formatDate(expense.date)}</span> - <span>{expense.category}</span> -
-                        <span>{formatCurrency(expense.amount)}</span>
-                      </li>
-                    ))
-                  ) : (
-                    <li className="empty-list-message">No recent expenses</li>
-                  )}
-                </ul>
-              </div>
             </div>
-
-            {/* Upcoming Bills Card - Now using real data */}
-            <div key="upcoming-bills" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"> Drag</div>}
-              <div className="dashboard-card-header">
-                <h2 style={{ color: isDarkMode ? 'white' : 'black' }}>
-                  <Calendar className="dashboard-card-icon" /> Upcoming Bills
-                </h2>
-                <Link to="/smart-assistant" className="dashboard-card-link">
-                  Manage
-                </Link>
-              </div>
-              <div className="bills-list">
-                {upcomingBills.length === 0 ? (
-                  <div className="bill-item flex items-center justify-center p-4 text-gray-500">
-                    <p>
-                      No upcoming bills. Add subscriptions or recurring expenses to see them here.
-                    </p>
-                  </div>
-                ) : (
-                  upcomingBills.map((bill) => (
-                    <div key={bill.id} className="bill-item">
-                      <div className="bill-info">
-                        <span
-                          className="bill-name"
-                          style={{ color: isDarkMode ? 'white' : 'black' }}
-                        >
-                          {bill.name}
-                        </span>
-                        <span className="bill-amount">{formatCurrency(bill.amount)}</span>
-                      </div>
-                      <div className="bill-due-date flex justify-between">
-                        <span>Due: {formatDate(bill.dueDate)}</span>
-                        <span
-                          className={`text-sm ${
-                            getDaysUntil(bill.dueDate) === 'Today' ||
-                            getDaysUntil(bill.dueDate) === 'Tomorrow'
-                              ? 'text-red-500'
-                              : getDaysUntil(bill.dueDate) === 'Overdue'
-                                ? 'text-red-600 font-bold'
-                                : ''
-                          }`}
-                        >
-                          {getDaysUntil(bill.dueDate)}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
+          </div>
+          
+          <form onSubmit={handleAddExpense} className="p-5 space-y-4">
+            <div>
+              <label className="block text-xs text-red-500 mb-1">DATE</label>
+              <input 
+                type="date" 
+                value={quickEntryDate} 
+                onChange={(e) => setQuickEntryDate(e.target.value)} 
+                className="w-full bg-black/50 border border-red-500/50 rounded-sm px-3 py-2 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none transition-colors"
+                required
+              />
             </div>
-            {/* Spending by Category Card - Fixed Legend */}
-            <div key="spending-category" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"> Drag</div>}
-              <div className="dashboard-card-header">
-                <h2 style={{ color: isDarkMode ? 'white' : 'black' }}>Spending by Category</h2>
-              </div>
-              <div
-                className="chart-container "
-                style={{
-                  height: 'auto',
-                  overflow: 'visible',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}
+            
+            <div>
+              <label className="block text-xs text-red-500 mb-1">CATEGORY</label>
+              <select 
+                value={quickEntryCategory} 
+                onChange={(e) => setQuickEntryCategory(e.target.value)} 
+                className="w-full bg-black/50 border border-red-500/50 rounded-sm px-3 py-2 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none transition-colors"
+                required
               >
-                {categoryData.length > 0 ? (
-                  <>
-                    {/* Reduced chart height to make room for legend */}
-                    <ResponsiveContainer width="100%" height={220}>
-                      <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                        <Pie
-                          data={getCombinedCategoryData(categoryData, 5)}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false} // Removed connector lines to clean up chart
-                          outerRadius={80}
-                          innerRadius={35}
-                          fill="#8884d8"
-                          dataKey="value"
-                          paddingAngle={2}
-                        >
-                          {getCombinedCategoryData(categoryData, 5).map((entry, index) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={COLORS[index % COLORS.length]}
-                              stroke="rgba(0,0,0,0.2)"
-                              strokeWidth={1}
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          formatter={(value) => formatCurrency(Number(value))}
-                          contentStyle={{
-                            backgroundColor: isDarkMode ? '#2A2A2A' : '#fff',
-                            border: 'none',
-                            borderRadius: '4px',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-
-                    {/* Fixed Legend with improved visibility */}
-                    <div className="mt-2 mb-4 px-4 w-full">
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexWrap: 'wrap',
-                          justifyContent: 'center',
-                          gap: '16px',
-                          marginTop: '8px'
-                        }}
-                      >
-                        {getCombinedCategoryData(categoryData, 5).map((entry, index) => (
-                          <div
-                            key={`legend-${index}`}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              marginBottom: '8px'
-                            }}
-                          >
-                            <div
-                              style={{
-                                width: '12px',
-                                height: '12px',
-                                borderRadius: '50%',
-                                backgroundColor: COLORS[index % COLORS.length],
-                                marginRight: '6px',
-                                border: '1px solid rgba(255,255,255,0.2)'
-                              }}
-                            />
-                            <span
-                              style={{
-                                fontSize: '14px',
-                                color: isDarkMode ? 'white' : 'black',
-                                fontWeight: '500'
-                              }}
-                            >
-                              {entry.name}:{' '}
-                              {Math.round(
-                                (entry.value /
-                                  getCombinedCategoryData(categoryData, 5).reduce(
-                                    (sum, item) => sum + item.value,
-                                    0
-                                  )) *
-                                  100
-                              )}
-                              %
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="empty-chart-message">No expense data to display</div>
-                )}
+                <option value="">SELECT CATEGORY</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>{category.toUpperCase()}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-xs text-red-500 mb-1">AMOUNT</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <span className="text-gray-500">$</span>
+                </div>
+                <input 
+                  type="number" 
+                  value={quickEntryAmount} 
+                  onChange={(e) => setQuickEntryAmount(e.target.value)} 
+                  placeholder="0.00" 
+                  step="0.01" 
+                  min="0.01" 
+                  className="w-full bg-black/50 border border-red-500/50 rounded-sm pl-8 pr-3 py-2 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none transition-colors"
+                  required
+                />
               </div>
             </div>
-            {/* Savings Goals Card */}
-            <div key="savings-goals" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"> Drag</div>}
-              <div className="dashboard-card-header">
-                <h2 style={{ color: isDarkMode ? 'white' : 'black' }}>
-                  <PiggyBank className="dashboard-card-icon" /> Savings Goals
-                </h2>
+            
+            <div className="flex items-center">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={isRecurring} 
+                  onChange={(e) => setIsRecurring(e.target.checked)} 
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-black/70 border border-red-500/50 rounded-sm peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-red-500 after:border-red-300 after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-red-900/30"></div>
+                <span className="ml-3 text-xs">RECURRING</span>
+              </label>
+            </div>
+            
+            <div className="pt-4">
+              <button 
+                type="submit" 
+                className="w-full bg-red-700 hover:bg-red-600 text-white py-2 px-4 rounded-sm relative overflow-hidden group"
+              >
+                <span className="absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-red-500/20 to-transparent transform -skew-x-12 group-hover:animate-shimmer"></span>
+                SAVE EXPENSE
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+    
+    <div className="relative z-10 max-w-screen-2xl mx-auto p-4">
+     
+      
+      {/* Main Dashboard Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Left sidebar - Financial Summary */}
+        <div className="lg:col-span-1">
+          {/* Income Card */}
+          <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg mb-6 group hover:border-red-500/60 transition-colors">
+            <div className="p-4 border-b border-red-900/20">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xs text-red-500 tracking-widest">INCOME</h2>
+                <div className="text-xs text-green-500 animate-pulse-slow">ACTIVE</div>
               </div>
-              <div className="savings-goals">
-                {sampleData.savingsGoals.map((goal, index) => {
-                  const progress = (goal.current / goal.target) * 100
-                  return (
-                    <div key={index} className="savings-goal">
-                      <div className="savings-goal-header">
-                        <span
-                          className="savings-goal-name"
-                          style={{ color: isDarkMode ? 'white' : 'black' }}
-                        >
-                          {goal.name}
-                        </span>
-                        <span className="savings-goal-amount">
-                          {formatCurrency(goal.current)} / {formatCurrency(goal.target)}
-                        </span>
+            </div>
+            <div className="p-4">
+              <div className="text-2xl font-bold mb-1 group-hover:text-red-500 transition-colors">{formatCurrency(budgetOverview.income)}</div>
+              <div className="text-xs text-gray-500">100% AVAILABLE</div>
+              
+              <div className="grid grid-cols-2 gap-4 mt-3">
+                <div>
+                  <div className="text-xs text-gray-500 mb-1">SPENT</div>
+                  <div className="font-bold text-red-500">{formatCurrency(budgetOverview.spent)}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500 mb-1">REMAINING</div>
+                  <div className="font-bold text-green-500">{formatCurrency(budgetOverview.remaining)}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Progress Card */}
+          <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg mb-6 overflow-hidden">
+            <div className="p-4 border-b border-red-900/20">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xs text-red-500 tracking-widest">PROGRESS</h2>
+                <div className="text-xs text-gray-500">{budgetOverview.percentage}%</div>
+              </div>
+            </div>
+            
+            <div className="h-2 w-full bg-black">
+              <div 
+                className="h-full bg-gradient-to-r from-red-500 to-red-700"
+                style={{ width: `${budgetOverview.percentage}%` }}
+              ></div>
+            </div>
+            
+            <div className="p-4">
+              <div className="grid grid-cols-3 gap-1">
+                {[25, 50, 75].map((mark) => (
+                  <div 
+                    key={mark} 
+                    className={`text-xs ${
+                      budgetOverview.percentage >= mark 
+                        ? 'text-red-500' 
+                        : 'text-gray-700'
+                    }`}
+                  >
+                    {mark}%
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          {/* Quick Stats */}
+          <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg">
+            <div className="p-4 border-b border-red-900/20">
+              <h2 className="text-xs text-red-500 tracking-widest">QUICK STATS</h2>
+            </div>
+            <div className="p-4 space-y-4">
+              <div>
+                <div className="text-xs text-gray-500 mb-1">BIGGEST EXPENSE</div>
+                <div className="text-lg font-bold">
+                  {categoryData.length > 0 ? categoryData[0].name : "N/A"}
+                </div>
+                <div className="text-sm text-red-500">
+                  {categoryData.length > 0 ? formatCurrency(categoryData[0].value) : "-"}
+                </div>
+              </div>
+              
+              <div>
+                <div className="text-xs text-gray-500 mb-1">THIS MONTH</div>
+                <div className="text-lg font-bold">
+                  {recentExpenses.length} Expenses
+                </div>
+                <div className="text-sm text-red-500">
+                  {formatCurrency(budgetOverview.spent)}
+                </div>
+              </div>
+              
+              {/* Status indicator */}
+              <div className="pt-2">
+                <div className="inline-flex items-center space-x-1 bg-black rounded-full px-2 py-0.5">
+                  <span className="flex h-2 w-2 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  </span>
+                  <span className="text-xs text-gray-500">MONITORING</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Main content - Expenses & Chart */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Recent Expenses */}
+          <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg">
+            <div className="p-4 border-b border-red-900/20">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xs text-red-500 tracking-widest">RECENT EXPENSES</h2>
+                <Link to="/expenses" className="text-xs text-gray-500 hover:text-white">VIEW ALL →</Link>
+              </div>
+            </div>
+            
+            <div className="divide-y divide-red-900/10">
+              {recentExpenses.length > 0 ? (
+                recentExpenses.map((expense, index) => (
+                  <div 
+                    key={index} 
+                    className="p-4 hover:bg-red-500/5 transition-colors"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-start space-x-3">
+                        <div className="h-6 w-1 bg-red-500/70"></div>
+                        <div>
+                          <div className="font-medium">{expense.category}</div>
+                          <div className="text-xs text-gray-500">{formatDate(expense.date)}</div>
+                        </div>
                       </div>
-                      <div className="savings-goal-progress-bg">
-                        <div
-                          className="savings-goal-progress-bar"
-                          style={{
-                            width: `${progress}%`,
-                            backgroundColor: goal.color
-                          }}
-                        />
+                      <div className="text-right">
+                        <div className="font-bold text-red-500">{formatCurrency(expense.amount)}</div>
+                        <div className="text-xs text-gray-500">
+                          {formatPercentage(expense.amount, budgetOverview.spent)} of spending
+                        </div>
                       </div>
                     </div>
-                  )
+                  </div>
+                ))
+              ) : (
+                <div className="p-8 text-center text-gray-500">
+                  NO EXPENSE DATA FOUND
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Spending Chart */}
+          <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg">
+            <div className="p-4 border-b border-red-900/20">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xs text-red-500 tracking-widest">SPENDING TREND</h2>
+                <div className="text-xs text-gray-500">LAST 12 DAYS</div>
+              </div>
+            </div>
+            
+            <div className="p-4">
+              <div className="h-40 flex items-end space-x-1">
+                {spendingData.map((value, index) => {
+                  const height = (value / maxValue) * 100;
+                  return (
+                    <div 
+                      key={index} 
+                      className="flex-1 flex flex-col items-center group"
+                      title={`$${value}`}
+                    >
+                      <div 
+                        className="w-full bg-red-800/50 group-hover:bg-red-500/70 relative transition-colors"
+                        style={{ height: `${height}%` }}
+                      >
+                        {/* Value tooltip on hover */}
+                        <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 bg-black border border-red-500/50 px-1.5 py-0.5 text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          ${value}
+                        </div>
+                        
+                        {/* Top glow effect */}
+                        <div className="absolute top-0 left-0 right-0 h-[1px] bg-red-400/50"></div>
+                      </div>
+                      <div className="text-xs text-gray-700 mt-1 group-hover:text-gray-500 transition-colors">
+                        {index + 1}
+                      </div>
+                    </div>
+                  );
                 })}
               </div>
             </div>
-
-            {/* Budget Allocation Card */}
-            <div key="budget-allocation" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"> Drag</div>}
-              <div className="dashboard-card-header">
-                <h2 style={{ color: isDarkMode ? 'white' : 'black' }}>
-                  <DollarSign className="dashboard-card-icon" /> Budget Allocation
-                </h2>
-                <Link to="/expenses" className="dashboard-card-link">
-                  Adjust Budget
-                </Link>
+          </div>
+          
+          {/* Category Distribution */}
+          <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg">
+            <div className="p-4 border-b border-red-900/20">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xs text-red-500 tracking-widest">CATEGORIES</h2>
+                <div className="text-xs text-gray-500">{categoryData.length} TOTAL</div>
               </div>
-              <div className="budget-allocation-container">
-                {categoryData.length > 0 ? (
-                  categoryData.map((category, index) => (
-                    <div key={index} className="budget-allocation-item">
-                      <div className="budget-allocation-header">
-                        <span
-                          className="category-icon"
-                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                        >
-                          <i className={`fas fa-${getCategoryIcon(category.name)}`}> </i>
-                        </span>
-                        <div className="category-details">
-                          <span
-                            className="category-name"
-                            style={{ color: isDarkMode ? 'white' : 'black' }}
-                          >
-                            {category.name}
-                          </span>
-                          <span
-                            className="category-amount"
-                            style={{ color: isDarkMode ? 'white' : 'black' }}
-                          >
-                            {formatCurrency(category.value)}
-                          </span>
+            </div>
+            
+            <div className="p-4">
+              {categoryData.length > 0 ? (
+                <div className="space-y-4">
+                  {categoryData.slice(0, 4).map((category : any, index) => {
+                    const percentage = Math.round((category.value / budgetOverview.spent) * 100);
+                    return (
+                      <div key={index}>
+                        <div className="flex justify-between mb-1">
+                          <div className="text-sm">{category.name}</div>
+                          <div className="text-sm">{formatCurrency(category.value)}</div>
                         </div>
-                        <span className="category-percentage">
-                          {Math.round((category.value / budgetOverview.income) * 100)}%
-                        </span>
+                        <div className="h-1.5 w-full bg-black/50 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full rounded-full bg-gradient-to-r from-red-600/70 to-red-500/70"
+                            style={{ width: `${percentage}%` }}
+                          ></div>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-0.5">{percentage}%</div>
                       </div>
-                      <div className="budget-progress-bg">
-                        <div
-                          className="budget-progress-bar"
-                          style={{
-                            width: `${Math.min(100, (category.value / (category.value * 1.2)) * 100)}%`,
-                            backgroundColor: COLORS[index % COLORS.length]
-                          }}
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-gray-500">
+                  NO CATEGORY DATA FOUND
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        {/* Right sidebar - Bills & Budget */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Upcoming Bills */}
+          <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg">
+            <div className="p-4 border-b border-red-900/20">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xs text-red-500 tracking-widest">UPCOMING BILLS</h2>
+                <Link to="/smart-assistant" className="text-xs text-gray-500 hover:text-white">MANAGE →</Link>
+              </div>
+            </div>
+            
+            <div className="divide-y divide-red-900/10">
+              {urgentBills.length > 0 ? (
+                urgentBills.map((bill, index) => (
+                  <div key={index} className="p-4 hover:bg-red-500/5 transition-colors">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-medium">{bill.name}</div>
+                        <div className="text-xs text-gray-500">Due {formatDate(bill.dueDate)}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-red-500">{formatCurrency(bill.amount)}</div>
+                        <div 
+                          className={`text-xs ${
+                            getDaysUntil(bill.dueDate) === 'Today' || getDaysUntil(bill.dueDate) === 'Tomorrow' || getDaysUntil(bill.dueDate) === 'Overdue'
+                              ? 'text-red-500 font-medium'
+                              : 'text-gray-500'
+                          }`}
+                        >
+                          {getDaysUntil(bill.dueDate)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-8 text-center text-gray-500">
+                  NO UPCOMING BILLS
+                </div>
+              )}
+            </div>
+            
+            {urgentBills.length > 0 && (
+              <div className="p-4 border-t border-red-900/10">
+                <button className="w-full bg-black/50 hover:bg-red-900/20 text-xs text-gray-300 py-2 border border-red-900/30 transition-colors">
+                  PAY ALL DUE BILLS
+                </button>
+              </div>
+            )}
+          </div>
+          
+          {/* Budget Allocations */}
+          <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg">
+            <div className="p-4 border-b border-red-900/20">
+              <h2 className="text-xs text-red-500 tracking-widest">BUDGET ALLOCATIONS</h2>
+            </div>
+            <div className="p-4">
+              <div className="space-y-3">
+                {['Housing', 'Food', 'Transportation', 'Utilities', 'Entertainment'].map((category, index) => {
+                  const percentage = [30, 20, 15, 10, 5][index];
+                  return (
+                    <div key={category} className="group">
+                      <div className="flex justify-between text-xs mb-1">
+                        <div>{category.toUpperCase()}</div>
+                        <div className="text-gray-500">{percentage}%</div>
+                      </div>
+                      <div className="h-1 w-full bg-black/50 overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-red-900/70 via-red-800/70 to-red-700/70 group-hover:from-red-600/70 group-hover:to-red-500/70 transition-colors"
+                          style={{ width: `${percentage * 3}%` }}
                         ></div>
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <div className="empty-allocation-message">No categories to display</div>
-                )}
+                  );
+                })}
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-red-900/10">
+                <button className="w-full bg-red-900/20 hover:bg-red-900/30 text-xs text-red-500 py-2 border border-red-900/30 transition-colors">
+                  ADJUST BUDGET
+                </button>
               </div>
             </div>
-
-            {/* Financial Insights Card */}
-            <div key="financial-insights" className="dashboard-card">
-              {isEditMode && <div className="drag-handle"> Drag</div>}
-              <div className="dashboard-card-header">
-                <h2 style={{ color: isDarkMode ? 'white' : 'black' }}>
-                  <Sparkles className="dashboard-card-icon" /> Financial Insights
-                </h2>
-              </div>
-              <div className="insights-container">
-                <div className="insight-item">
-                  <div className="insight-icon" style={{ backgroundColor: COLORS[0] }}>
-                    <i className="fas fa-arrow-trend-up"></i>
-                  </div>
-                  <div className="insight-content">
-                    <h3 style={{ color: isDarkMode ? 'white' : 'black' }}>Spending Trend</h3>
-                    <p>
-                      Your spending on Dining Out is 15% higher than last month. Consider setting a
-                      stricter budget.
-                    </p>
-                  </div>
+          </div>
+          
+          {/* System Status */}
+          <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg overflow-hidden">
+            <div className="relative p-4 border-b border-red-900/20">
+              <div className="absolute top-0 right-0 h-full w-16 bg-gradient-to-l from-red-500/5 to-transparent"></div>
+              <h2 className="text-xs text-red-500 tracking-widest">SYSTEM</h2>
+            </div>
+            <div className="p-4">
+              <div className="space-y-3 text-xs">
+                <div className="flex justify-between items-center">
+                  <div className="text-gray-500">STATUS</div>
+                  <div className="text-green-500">ONLINE</div>
                 </div>
-                <div className="insight-item">
-                  <div className="insight-icon" style={{ backgroundColor: COLORS[1] }}>
-                    <i className="fas fa-piggy-bank"></i>
-                  </div>
-                  <div className="insight-content">
-                    <h3 style={{ color: isDarkMode ? 'white' : 'black' }}>Savings Opportunity</h3>
-                    <p>
-                      You could save an extra $120/month by reducing your Entertainment expenses by
-                      20%.
-                    </p>
-                  </div>
+                <div className="flex justify-between items-center">
+                  <div className="text-gray-500">LAST UPDATE</div>
+                  <div className="text-white">1 MIN AGO</div>
                 </div>
-                <div className="insight-item">
-                  <div className="insight-icon" style={{ backgroundColor: COLORS[2] }}>
-                    <i className="fas fa-chart-line"></i>
-                  </div>
-                  <div className="insight-content">
-                    <h3 style={{ color: isDarkMode ? 'white' : 'black' }}>Income Allocation</h3>
-                    <p>
-                      You're currently saving 8% of your income. Financial experts recommend 15-20%.
-                    </p>
-                  </div>
+                <div className="flex justify-between items-center">
+                  <div className="text-gray-500">NEXT SCAN</div>
+                  <div className="text-white countdown" data-value="59">59</div>
                 </div>
               </div>
             </div>
-
-            {/* Quick Entry Card - Optimized layout with fixed button spacing */}
-            <div key="quick-entry" className="dashboard-card p-5">
-              {isEditMode && <div className="drag-handle">Drag</div>}
-              <div className="dashboard-card-header mb-3">
-                <h2
-                  className="flex items-center text-lg font-medium"
-                  style={{ color: isDarkMode ? 'white' : 'black' }}
-                >
-                  <Plus className="dashboard-card-icon mr-2" size={18} />
-                  Quick Expense Entry
-                </h2>
-              </div>
-
-              <form className="quick-entry-form" onSubmit={handleQuickAddExpense}>
-                <div className="grid grid-cols-3 gap-3 mb-3">
-                  <div className="quick-entry-field">
-                    <label className="block text-sm mb-1">Date</label>
-                    <input
-                      type="date"
-                      value={quickEntryDate}
-                      style={{ color: isDarkMode ? 'white' : 'black' }}
-                      onChange={(e) => setQuickEntryDate(e.target.value)}
-                      className="quick-entry-input w-full p-2 rounded border"
-                    />
-                  </div>
-
-                  <div className="quick-entry-field">
-                    <label className="block text-sm mb-1">Category</label>
-                    <select
-                      className="quick-entry-input w-full p-2 rounded border"
-                      value={quickEntryCategory}
-                      style={{ color: isDarkMode ? 'white' : 'black' }}
-                      onChange={(e) => setQuickEntryCategory(e.target.value)}
-                    >
-                      <option value="">Select Category</option>
-                      <option value="Rent">Rent</option>
-                      <option value="Mortgage">Mortgage</option>
-                      <option value="Utilities">Utilities</option>
-                      <option value="Internet">Internet</option>
-                      <option value="Insurance">Insurance</option>
-                      <option value="Phone">Phone</option>
-                      <option value="Groceries">Groceries</option>
-                      <option value="Dining Out">Dining Out</option>
-                      <option value="Entertainment">Entertainment</option>
-                      <option value="Clothes">Clothes</option>
-                      <option value="Transportation">Transportation</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-
-                  <div className="quick-entry-field">
-                    <label className="block text-sm mb-1">Amount</label>
-                    <input
-                      type="number"
-                      placeholder="0.00"
-                      className="quick-entry-input w-full p-2 rounded border"
-                      value={quickEntryAmount}
-                      step="0.01"
-                      min="0.01"
-                      onChange={(e) => setQuickEntryAmount(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                {/* Simplified recurring checkbox */}
-                <div className="flex items-center mb-3">
-                  <input
-                    type="checkbox"
-                    id="isRecurring"
-                    checked={isRecurring}
-                    onChange={(e) => setIsRecurring(e.target.checked)}
-                    className="mr-2 h-4 w-4"
-                  />
-                  <label
-                    htmlFor="isRecurring"
-                    className="text-sm flex items-center text-white"
-                    style={{ color: isDarkMode ? 'white' : 'black' }}
-                  >
-                    <Bell size={14} className="mr-1" />
-                    Recurring bill
-                  </label>
-                </div>
-
-                {/* Button with proper spacing - added padding and margin */}
-                <div className="flex justify-center items-center pb-4">
-                  <button
-                    type="submit"
-                    className="w-[600px] py-2 rounded bg-gradient-to-r from-red-700 to-red-500 text-white font-medium hover:opacity-90"
-                  >
-                    Add Expense
-                  </button>
-                </div>
-              </form>
+            
+            {/* Animated scanner effect */}
+            <div className="relative h-1 w-full bg-black overflow-hidden">
+              <div className="absolute top-0 left-0 h-full w-20 bg-gradient-to-r from-transparent via-red-500/70 to-transparent animate-scanner"></div>
             </div>
-          </ResponsiveGridLayout>
-        </main>
+          </div>
+        </div>
       </div>
-
-      <CashFlowForecast />
-
-      <div className="copyright">&copy; 2025 Budgetary Tracker. All rights reserved.</div>
+      
+      {/* Bottom status bar */}
+      <footer className="mt-8 border-t border-red-900/30 pt-3 flex justify-between items-center text-xs text-gray-600">
+        <div>BUDGETARY SYSTEM v1.0.4</div>
+        <div className="text-right">&copy; 2025 ALL RIGHTS RESERVED</div>
+      </footer>
     </div>
-  )
-}
+    
+    {/* Custom CSS for animations and effects */}
+    <style jsx>{`
+      /* Glitch animation */
+      @keyframes glitch {
+        0% {
+          transform: translate(0);
+        }
+        20% {
+          transform: translate(-2px, 2px);
+        }
+        40% {
+          transform: translate(-2px, -2px);
+        }
+        60% {
+          transform: translate(2px, 2px);
+        }
+        80% {
+          transform: translate(2px, -2px);
+        }
+        100% {
+          transform: translate(0);
+        }
+      }
+      
+      .animate-glitch {
+        animation: glitch 1s cubic-bezier(.25, .46, .45, .94) both infinite;
+      }
+      
+      @keyframes glitch-animation-1 {
+        0% {
+          opacity: 1;
+          transform: translate(0);
+        }
+        10% {
+          transform: translate(-2px, -2px);
+        }
+        20% {
+          transform: translate(2px, 2px);
+        }
+        30% {
+          transform: translate(-2px, 2px);
+        }
+        40% {
+          transform: translate(2px, -2px);
+        }
+        50% {
+          transform: translate(-1px, 2px);
+          opacity: 0.8;
+        }
+        60% {
+          transform: translate(1px, 1px);
+        }
+        70% {
+          transform: translate(-1px, -1px);
+          opacity: 0.6;
+        }
+        80% {
+          transform: translate(1px, -1px);
+        }
+        90% {
+          transform: translate(-1px, 1px);
+        }
+        100% {
+          opacity: 1;
+          transform: translate(0);
+        }
+      }
+      
+      .animate-glitch-2 {
+        animation: glitch-animation-1 3s infinite linear alternate-reverse;
+      }
+      
+      .animate-glitch-3 {
+        animation: glitch-animation-1 2.7s infinite linear alternate-reverse;
+      }
+      
+      /* Scanner animation */
+      @keyframes scanner {
+        0% {
+          left: -20%;
+        }
+        100% {
+          left: 120%;
+        }
+      }
+      
+      .animate-scanner {
+        animation: scanner 3s ease-in-out infinite;
+      }
+      
+      /* Slow pulse animation */
+      @keyframes pulse-slow {
+        0%, 100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.6;
+        }
+      }
+      
+      .animate-pulse-slow {
+        animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      
+      /* Shimmer animation */
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(100%);
+        }
+      }
+      
+      .animate-shimmer {
+        animation: shimmer 2s infinite;
+      }
+      
+      /* Countdown animation */
+      .countdown::after {
+        content: attr(data-value);
+        animation: countdown 60s linear infinite;
+      }
+      
+      @keyframes countdown {
+        0% {
+          content: "60";
+        }
+        1.66% {
+          content: "59";
+        }
+        3.33% {
+          content: "58";
+        }
+        /* ... and so on for each second ... */
+        98.33% {
+          content: "1";
+        }
+        100% {
+          content: "0";
+        }
+      }
+    `}</style>
+  </div>
+);
+};
