@@ -1,801 +1,295 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Trash2, 
-  Plus, 
-  AlertCircle, 
-  CheckCircle,
-  Calendar,
-  DollarSign,
-  RefreshCw,
-  Edit,
-  X,
-  ZapIcon,
-  Shield,
-  Package,
-  Monitor,
-  Music,
-  Film,
-  Gamepad,
-  Cloud,
-  Radio
-} from 'lucide-react';
-import { getSubscriptionIcon } from '@renderer/lib/subscription';
+import { createFileRoute } from '@tanstack/react-router'
 
-// Define interface for subscription
-interface Subscription {
-  id: string;
-  name: string;
-  amount: number;
-  frequency: 'monthly' | 'quarterly' | 'annual';
-  nextPayment: Date;
-  category: string;
-  dateAdded: Date;
-  startDate?: Date; // Optional start date
-}
+import { useDarkModeStore } from '@renderer/stores/themeStore'
+import { RefreshCw, Calendar, DollarSign, AlertTriangle, Zap, Plus, X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import SubscriptionManager from '@renderer/components/SubscriptionManager'
+import { useExpenseStore } from '@renderer/stores/expenseStore'
 
-interface CyberpunkSubscriptionManagerProps {
-  expenses: any[];
-  isDarkMode: boolean;
-  income: number;
-}
+const CyberpunkSmartAssistant = () => {
 
-const CyberpunkSubscriptionManager: React.FC<CyberpunkSubscriptionManagerProps> = ({ expenses, isDarkMode, income }) => {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [isLoadingSubscriptions, setIsLoadingSubscriptions] = useState(true);
-  const [newSubscription, setNewSubscription] = useState<Partial<Subscription>>({
+  const { expenses, income } = useExpenseStore()
+  const [animateHeader, setAnimateHeader] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [newSubscription, setNewSubscription] = useState({
     name: '',
     amount: 0,
     frequency: 'monthly',
     category: 'Entertainment'
-  });
-  const [showAddSubscription, setShowAddSubscription] = useState(false);
-  const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
-  const [editingSubscription, setEditingSubscription] = useState<Subscription | null>(null);
+  })
 
-  // Load subscriptions from localStorage
+  // Disable header animation after a delay
   useEffect(() => {
-    const loadSubscriptions = async () => {
-      // Simulate loading delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      try {
-        const savedSubscriptions = localStorage.getItem('userSubscriptions');
-        const parsedSubscriptions = savedSubscriptions ? JSON.parse(savedSubscriptions) : [];
-        
-        // Convert string dates back to Date objects
-        const processedSubscriptions = parsedSubscriptions.map((sub: any) => ({
-          ...sub,
-          nextPayment: new Date(sub.nextPayment),
-          dateAdded: new Date(sub.dateAdded),
-          startDate: sub.startDate ? new Date(sub.startDate) : undefined
-        }));
-        
-        setSubscriptions(processedSubscriptions);
-      } catch (error) {
-        console.error('Failed to load subscriptions:', error);
-        setSubscriptions([]);
-      }
-      
-      setIsLoadingSubscriptions(false);
-    };
+    const timer = setTimeout(() => {
+      setAnimateHeader(false)
+    }, 3000)
     
-    loadSubscriptions();
-  }, []);
-
-  // Save subscriptions to localStorage whenever they change
-  useEffect(() => {
-    if (!isLoadingSubscriptions) {
-      localStorage.setItem('userSubscriptions', JSON.stringify(subscriptions));
-    }
-  }, [subscriptions, isLoadingSubscriptions]);
+    return () => clearTimeout(timer)
+  }, [])
 
   // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
-    }).format(amount);
-  };
+    }).format(amount)
+  }
 
-  // Format date for input fields
-  const formatDateForInput = (date?: Date) => {
-    if (!date) return '';
-    return date.toISOString().split('T')[0];
-  };
-
-
-  useEffect(() => {
-    // Function to handle clicks outside subscription cards
-    const handleClickOutside = (event: MouseEvent) => {
-      // Check if click was outside subscription cards
-      const subscriptionCards = document.querySelectorAll('.cyberpunk-subscription-card');
-      let clickedOutside = true;
-      
-      subscriptionCards.forEach(card => {
-        if (card.contains(event.target as Node)) {
-          clickedOutside = false;
-        }
-      });
-      
-      // If clicked outside, reset selected subscription
-      if (clickedOutside && !editingSubscription) {
-        setSelectedSubscription(null);
-      }
-    };
-  
-    // Add event listener
-    document.addEventListener('mousedown', handleClickOutside);
-    
-    // Cleanup
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [editingSubscription]);
-
-
-  // Add subscription
-  const handleAddSubscription = () => {
-    if (!newSubscription.name || !newSubscription.amount) return;
-    
-    const today = new Date();
-    
-    // Calculate the next payment date based on frequency
-    let nextPaymentDate = new Date(today);
-    
-    // Add days based on frequency (this is a simple example approach)
-    if (newSubscription.frequency === 'monthly') {
-      nextPaymentDate.setMonth(today.getMonth() + 1);
-    } else if (newSubscription.frequency === 'quarterly') {
-      nextPaymentDate.setMonth(today.getMonth() + 3);
-    } else {
-      nextPaymentDate.setFullYear(today.getFullYear() + 1);
-    }
-    
-    const subscription: Subscription = {
-      id: Date.now().toString(),
-      name: newSubscription.name || '',
-      amount: newSubscription.amount || 0,
-      frequency: newSubscription.frequency || 'monthly',
-      nextPayment: nextPaymentDate,
-      category: newSubscription.category || 'Other',
-      dateAdded: new Date(),
-      startDate: newSubscription.startDate
-    };
-    
-    setSubscriptions(prev => [...prev, subscription]);
-    setNewSubscription({
-      name: '',
-      amount: 0,
-      frequency: 'monthly',
-      category: 'Entertainment',
-      startDate: undefined
-    });
-    setShowAddSubscription(false);
-  };
-
-  // Start editing a subscription
-  const handleStartEditing = (subscription: Subscription) => {
-    setEditingSubscription(subscription);
-  };
-
-  // Cancel editing
-  const handleCancelEditing = () => {
-    setEditingSubscription(null);
-  };
-
-  // Save edited subscription
-  const handleSaveEditing = () => {
-    if (!editingSubscription) return;
-    
-    setSubscriptions(prev => prev.map(sub => 
-      sub.id === editingSubscription.id ? editingSubscription : sub
-    ));
-    setSelectedSubscription(editingSubscription);
-    setEditingSubscription(null);
-  };
-
-  // Update editing subscription
-  const handleUpdateEditingField = (field: string, value: any) => {
-    if (!editingSubscription) return;
-    
-    setEditingSubscription({
-      ...editingSubscription,
-      [field]: value
-    });
-  };
-
-  // Delete subscription
-  const handleDeleteSubscription = (id: string) => {
-    setSubscriptions(prev => prev.filter(sub => sub.id !== id));
-    if (selectedSubscription?.id === id) {
-      setSelectedSubscription(null);
-    }
-    if (editingSubscription?.id === id) {
-      setEditingSubscription(null);
-    }
-  };
-
-  // Calculate total monthly subscription cost
-  const calculateMonthlySubscriptionCost = () => {
-    return subscriptions.reduce((total, sub) => {
-      if (sub.frequency === 'monthly') {
-        return total + sub.amount;
-      } else if (sub.frequency === 'quarterly') {
-        return total + (sub.amount / 3);
-      } else { // annual
-        return total + (sub.amount / 12);
-      }
-    }, 0);
-  };
-
-  // Calculate annual subscription cost
-  const calculateAnnualSubscriptionCost = () => {
-    return calculateMonthlySubscriptionCost() * 12;
-  };
-
-  // Get upcoming payment amount (next 7 days)
-  const getUpcomingPaymentAmount = () => {
-    const nextWeek = new Date();
-    nextWeek.setDate(nextWeek.getDate() + 7);
-    
-    return subscriptions
-      .filter(sub => sub.nextPayment <= nextWeek)
-      .reduce((total, sub) => total + sub.amount, 0);
-  };
-
-  // Get cyberpunk color based on subscription name
-  const getCyberpunkColor = (name: string) => {
-    // Map subscription names to cyberpunk colors
-    const colors: {[key: string]: {bg: string, highlight: string, border: string}} = {
-      Netflix: { bg: 'from-red-900/30 to-red-800/10', highlight: 'bg-red-500', border: 'border-red-500/50' },
-      Spotify: { bg: 'from-green-900/30 to-green-800/10', highlight: 'bg-green-500', border: 'border-green-500/50' },
-      'Disney+': { bg: 'from-blue-900/30 to-blue-800/10', highlight: 'bg-blue-500', border: 'border-blue-500/50' },
-      Hulu: { bg: 'from-green-900/30 to-green-800/10', highlight: 'bg-green-500', border: 'border-green-500/50' },
-      'Apple Music': { bg: 'from-pink-900/30 to-pink-800/10', highlight: 'bg-pink-500', border: 'border-pink-500/50' },
-      'Amazon Prime': { bg: 'from-blue-900/30 to-blue-800/10', highlight: 'bg-blue-500', border: 'border-blue-500/50' },
-      'YouTube Premium': { bg: 'from-red-900/30 to-red-800/10', highlight: 'bg-red-500', border: 'border-red-500/50' },
-      'Xbox Game Pass': { bg: 'from-green-900/30 to-green-800/10', highlight: 'bg-green-500', border: 'border-green-500/50' },
-      'PlayStation Plus': { bg: 'from-blue-900/30 to-blue-800/10', highlight: 'bg-blue-500', border: 'border-blue-500/50' },
-      'Discord Nitro': { bg: 'from-indigo-900/30 to-indigo-800/10', highlight: 'bg-indigo-500', border: 'border-indigo-500/50' },
-      default: { bg: 'from-red-900/30 to-red-800/10', highlight: 'bg-red-500', border: 'border-red-500/50' }
-    };
-    
-    return colors[name] || colors.default;
-  };
-
-  // Get cyberpunk icon for subscription
-  const getCyberpunkIcon = (name: string, category: string) => {
-    const icons: {[key: string]: React.ReactNode} = {
-      Netflix: <Film size={18} />,
-      Spotify: <Music size={18} />,
-      'Apple Music': <Music size={18} />,
-      'Disney+': <Film size={18} />,
-      Hulu: <Film size={18} />,
-      'Amazon Prime': <Package size={18} />,
-      'YouTube Premium': <Film size={18} />,
-      'Xbox Game Pass': <Gamepad size={18} />,
-      'PlayStation Plus': <Gamepad size={18} />,
-      'Discord Nitro': <Radio size={18} />,
-      'Adobe Creative Cloud': <Monitor size={18} />,
-      'Microsoft 365': <Monitor size={18} />,
-      'Dropbox': <Cloud size={18} />,
-      'Google Drive': <Cloud size={18} />,
-      'iCloud': <Cloud size={18} />,
-      'NordVPN': <Shield size={18} />,
-      'ExpressVPN': <Shield size={18} />
-    };
-    
-    // If no specific icon, use category-based fallback
-    if (!icons[name]) {
-      if (category === 'Entertainment' || category === 'Video') return <Film size={18} />;
-      if (category === 'Music') return <Music size={18} />;
-      if (category === 'Gaming') return <Gamepad size={18} />;
-      if (category === 'VPN') return <Shield size={18} />;
-      if (category === 'Cloud Storage') return <Cloud size={18} />;
-      if (category === 'Software') return <Monitor size={18} />;
-      
-      // Default icon
-      return <Package size={18} />;
-    }
-    
-    return icons[name];
-  };
+  // Get current month and year
+  const currentDate = new Date()
+  const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"]
+  const currentMonth = monthNames[currentDate.getMonth()]
+  const currentYear = currentDate.getFullYear()
+  const currentDay = currentDate.getDate()
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-6">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg shadow overflow-hidden group hover:border-red-500/60 transition-colors">
-          <div className="p-4 border-b border-red-900/20">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xs text-red-500 tracking-widest">TOTAL MONTHLY</h2>
-              <RefreshCw className="h-4 w-4 text-red-500 opacity-70" />
-            </div>
-          </div>
-          <div className="p-4">
-            <div className="text-2xl font-bold mb-1 group-hover:text-red-500 transition-colors">
-              {formatCurrency(calculateMonthlySubscriptionCost())}
-            </div>
-            <div className="text-xs text-gray-500">
-              ACROSS {subscriptions.length} ACTIVE SUBSCRIPTIONS
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen bg-black text-white font-mono overflow-hidden">
+      {/* Background effects */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute top-0 -right-32 w-96 h-96 rounded-full bg-red-600/20 mix-blend-screen blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-0 -left-32 w-96 h-96 rounded-full bg-red-800/10 mix-blend-screen blur-[100px] animate-pulse" style={{ animationDelay: "1s" }}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vh] bg-gradient-to-br from-black via-red-950/10 to-black rounded-full mix-blend-screen filter blur-[80px]"></div>
         
-        <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg shadow overflow-hidden group hover:border-red-500/60 transition-colors">
-          <div className="p-4 border-b border-red-900/20">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xs text-red-500 tracking-widest">NEXT 7 DAYS</h2>
-              <Calendar className="h-4 w-4 text-red-500 opacity-70" />
-            </div>
-          </div>
-          <div className="p-4">
-            <div className="text-2xl font-bold mb-1 group-hover:text-red-500 transition-colors">
-              {formatCurrency(getUpcomingPaymentAmount())}
-            </div>
-            <div className="text-xs text-gray-500">
-              DUE WITHIN THE NEXT WEEK
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg shadow overflow-hidden group hover:border-red-500/60 transition-colors">
-          <div className="p-4 border-b border-red-900/20">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xs text-red-500 tracking-widest">ANNUAL COST</h2>
-              <DollarSign className="h-4 w-4 text-red-500 opacity-70" />
-            </div>
-          </div>
-          <div className="p-4">
-            <div className="text-2xl font-bold mb-1 group-hover:text-red-500 transition-colors">
-              {formatCurrency(calculateAnnualSubscriptionCost())}
-            </div>
-            <div className="text-xs text-gray-500">
-              {income > 0 
-                ? `${(calculateAnnualSubscriptionCost() / income * 100).toFixed(1)}% OF ANNUAL INCOME` 
-                : "ADD INCOME TO SEE PERCENTAGE"}
-            </div>
-          </div>
-        </div>
+        {/* Grid overlay */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsIDAsIDAsIDAuMDUpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30"></div>
       </div>
-      
-      {/* Main Subscription Panel */}
-      <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg shadow mb-8">
-        <div className="p-4 border-b border-red-900/20 flex justify-between items-center">
-          <h2 className="text-xs text-red-500 tracking-widest">YOUR SUBSCRIPTIONS</h2>
-          <button
-            onClick={() => setShowAddSubscription(!showAddSubscription)}
-            className="p-1.5 rounded bg-black text-red-500 border border-red-500/30 hover:bg-red-500/10 transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
+
+      <div className="relative z-10 max-w-screen-2xl mx-auto p-4">
+        {/* Header with glitch animation */}
+        <header className={`mb-8 ${animateHeader ? 'animate-glitch' : ''}`}>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
+            <div className="relative">
+              <h1 className="text-4xl font-black text-red-500 tracking-tighter glitch-text">
+                SUBSCRIPTION MATRIX
+                <span className="absolute top-0 left-0 w-full h-full text-red-500/20 animate-glitch-2">SUBSCRIPTION MATRIX</span>
+                <span className="absolute top-0 left-0 w-full h-full text-red-500/20 animate-glitch-3">SUBSCRIPTION MATRIX</span>
+              </h1>
+              <div className="flex items-center space-x-2 mt-1">
+                <div className="h-[1px] w-2 bg-red-500"></div>
+                <div className="text-xs text-gray-500">{currentMonth} {currentDay}, {currentYear}</div>
+              </div>
+            </div>
+          </div>
+        </header>
+        
+        {/* Stat Cards - Top Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg group hover:border-red-500/60 transition-colors">
+            <div className="p-4 border-b border-red-900/20">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xs text-red-500 tracking-widest">MONTHLY OVERHEAD</h2>
+                <div className="text-xs text-green-500 animate-pulse-slow">ACTIVE</div>
+              </div>
+            </div>
+            <div className="p-4">
+              <div className="text-2xl font-bold mb-1 group-hover:text-red-500 transition-colors">{formatCurrency(75.96)}</div>
+              <div className="text-xs text-gray-500">RECURRING COST DETECTED</div>
+            </div>
+          </div>
+          
+          <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg group hover:border-red-500/60 transition-colors">
+            <div className="p-4 border-b border-red-900/20">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xs text-red-500 tracking-widest">IMMINENT PAYMENTS</h2>
+                <div className="text-xs text-red-500 animate-pulse-slow">PENDING</div>
+              </div>
+            </div>
+            <div className="p-4">
+              <div className="text-2xl font-bold mb-1 group-hover:text-red-500 transition-colors">{formatCurrency(9.99)}</div>
+              <div className="text-xs text-gray-500">DUE WITHIN 7 CYCLES</div>
+            </div>
+          </div>
+          
+          <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg group hover:border-red-500/60 transition-colors">
+            <div className="p-4 border-b border-red-900/20">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xs text-red-500 tracking-widest">ANNUAL PROJECTION</h2>
+                <div className="text-xs text-yellow-500 animate-pulse-slow">CALCULATING</div>
+              </div>
+            </div>
+            <div className="p-4">
+              <div className="text-2xl font-bold mb-1 group-hover:text-red-500 transition-colors">{formatCurrency(911.52)}</div>
+              <div className="text-xs text-gray-500">RESOURCE ALLOCATION</div>
+            </div>
+          </div>
         </div>
         
-        {/* Add Subscription Form */}
-        {showAddSubscription && (
-          <div className="p-4 border-b border-red-900/20 bg-black/50">
-            <h3 className="text-sm text-red-500 tracking-widest mb-4">ADD NEW SUBSCRIPTION</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-xs text-red-500 mb-1">SUBSCRIPTION NAME</label>
-                <input
-                  type="text"
-                  value={newSubscription.name || ''}
-                  onChange={(e) => setNewSubscription({...newSubscription, name: e.target.value})}
-                  className="w-full bg-black/50 border border-red-500/30 rounded p-2 text-white focus:border-red-500/70 focus:outline-none"
-                  placeholder="NETFLIX, SPOTIFY, ETC."
-                  list="subscription-suggestions"
-                />
-                <datalist id="subscription-suggestions">
-                  <option value="Netflix" />
-                  <option value="Spotify" />
-                  <option value="Disney+" />
-                  <option value="Hulu" />
-                  <option value="Amazon Prime" />
-                  <option value="Apple Music" />
-                  <option value="YouTube Premium" />
-                  <option value="Xbox Game Pass" />
-                  <option value="PlayStation Plus" />
-                  <option value="Discord Nitro" />
-                  <option value="Adobe Creative Cloud" />
-                  <option value="Microsoft 365" />
-                  <option value="Dropbox" />
-                  <option value="Google Drive" />
-                  <option value="iCloud" />
-                  <option value="NordVPN" />
-                  <option value="ExpressVPN" />
-                </datalist>
+        {/* Main Subscription Manager Component */}
+        <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg mb-6">
+          <div className="p-4 border-b border-red-900/20">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xs text-red-500 tracking-widest">DIGITAL SERVICES // ACTIVE MONITOR</h2>
+              <div className="flex items-center">
+                <span className="mr-2 text-xs text-gray-500">STATUS:</span>
+                <span className="flex h-2 w-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                </span>
               </div>
-              
-              <div>
-                <label className="block text-xs text-red-500 mb-1">AMOUNT</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <span className="text-gray-500">$</span>
-                  </div>
-                  <input
-                    type="number"
-                    value={newSubscription.amount || ''}
-                    onChange={(e) => setNewSubscription({...newSubscription, amount: parseFloat(e.target.value)})}
-                    className="w-full bg-black/50 border border-red-500/30 rounded p-2 pl-7 text-white focus:border-red-500/70 focus:outline-none"
-                    placeholder="9.99"
-                    step="0.01"
-                  />
+            </div>
+          </div>
+          
+          <div className="p-4">
+            {/* This is where we embed the regular SubscriptionManager component */}
+            <SubscriptionManager 
+              expenses={expenses} 
+              isDarkMode={true} 
+              income={income} 
+            />
+          </div>
+        </div>
+        
+        {/* Security Advisories Panel */}
+        <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg mb-6">
+          <div className="p-4 border-b border-red-900/20">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xs text-red-500 tracking-widest">SECURITY ADVISORIES</h2>
+            </div>
+          </div>
+          
+          <div className="p-4">
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="font-medium text-white">Subscription Overlap Detected</h3>
+                  <p className="text-sm text-gray-400">Multiple streaming services identified with similar content libraries. Potential for optimization.</p>
                 </div>
               </div>
               
-              <div>
-                <label className="block text-xs text-red-500 mb-1">BILLING FREQUENCY</label>
-                <select
-                  value={newSubscription.frequency || 'monthly'}
-                  onChange={(e) => setNewSubscription({...newSubscription, frequency: e.target.value as any})}
-                  className="w-full bg-black/50 border border-red-500/30 rounded p-2 text-white focus:border-red-500/70 focus:outline-none"
-                >
-                  <option value="monthly">MONTHLY</option>
-                  <option value="quarterly">QUARTERLY</option>
-                  <option value="annual">ANNUAL</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-xs text-red-500 mb-1">CATEGORY</label>
-                <select
-                  value={newSubscription.category || 'Entertainment'}
-                  onChange={(e) => setNewSubscription({...newSubscription, category: e.target.value})}
-                  className="w-full bg-black/50 border border-red-500/30 rounded p-2 text-white focus:border-red-500/70 focus:outline-none"
-                >
-                  <option value="Entertainment">ENTERTAINMENT</option>
-                  <option value="Music">MUSIC</option>
-                  <option value="Video">VIDEO</option>
-                  <option value="Gaming">GAMING</option>
-                  <option value="Software">SOFTWARE</option>
-                  <option value="Cloud Storage">CLOUD STORAGE</option>
-                  <option value="VPN">VPN</option>
-                  <option value="News">NEWS</option>
-                  <option value="Books">BOOKS</option>
-                  <option value="Fitness">FITNESS</option>
-                  <option value="Food">FOOD</option>
-                  <option value="Shopping">SHOPPING</option>
-                  <option value="Smart Home">SMART HOME</option>
-                  <option value="AI">AI</option>
-                  <option value="Services">SERVICES</option>
-                  <option value="Health">HEALTH</option>
-                  <option value="Other">OTHER</option>
-                </select>
-              </div>
-              
-              {/* Start Date Field */}
-              <div className="md:col-span-2">
-                <label className="block text-xs text-red-500 mb-1">SUBSCRIPTION START DATE (OPTIONAL)</label>
-                <input
-                  type="date"
-                  value={formatDateForInput(newSubscription.startDate)}
-                  onChange={(e) => {
-                    const date = e.target.value ? new Date(e.target.value) : undefined;
-                    setNewSubscription({...newSubscription, startDate: date});
-                  }}
-                  className="w-full bg-black/50 border border-red-500/30 rounded p-2 text-white focus:border-red-500/70 focus:outline-none"
-                />
-              </div>
-            </div>
-            
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowAddSubscription(false)}
-                className="px-4 py-2 border border-red-900/30 text-gray-300 hover:bg-red-900/20 transition-colors text-xs"
-              >
-                CANCEL
-              </button>
-              <button
-                onClick={handleAddSubscription}
-                className="px-4 py-2 bg-red-700 hover:bg-red-600 text-white text-xs relative overflow-hidden group"
-              >
-                <span className="absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-red-500/20 to-transparent transform -skew-x-12 group-hover:animate-shimmer"></span>
-                ADD SUBSCRIPTION
-              </button>
-            </div>
-          </div>
-        )}
-        
-        {/* Subscription List */}
-        {isLoadingSubscriptions ? (
-          <div className="p-8 text-center">
-            <div className="flex justify-center mb-4">
-              <div className="h-8 w-8 border-t-2 border-b-2 border-red-500 rounded-full animate-spin"></div>
-            </div>
-            <p className="text-sm text-gray-500">LOADING SUBSCRIPTIONS...</p>
-          </div>
-        ) : subscriptions.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-sm text-gray-500">NO ACTIVE SUBSCRIPTIONS FOUND. ADD ONE TO GET STARTED.</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-red-900/20">
-            {subscriptions.map((subscription) => {
-              // Get custom styling for this subscription
-              const colors = getCyberpunkColor(subscription.name);
-              
-              // Check if this subscription is being edited
-              const isEditing = editingSubscription?.id === subscription.id;
-              const isSelected = selectedSubscription?.id === subscription.id;
-              
-              // Is payment due soon
-              const isPaymentSoon = isDateSoon(subscription.nextPayment);
-              
-              return (
-                <div 
-                  key={subscription.id}
-                  className={`p-4 transition-colors cyberpunk-subscription-card relative ${
-                    isSelected ? 'bg-gradient-to-r from-black to-red-950/10' : 'hover:bg-black/50'
-                  }`}
-                  onClick={() => {
-                    if (!isEditing && selectedSubscription?.id !== subscription.id) {
-                      setSelectedSubscription(subscription);
-                    }
-                  }}
-                >
-                  {/* Left border indicator */}
-                  {isSelected && (
-                    <div className="absolute top-0 left-0 h-full w-1 bg-red-500"></div>
-                  )}
-                  
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start">
-                      <div 
-                        className={`p-2 rounded flex-shrink-0 mr-3 bg-gradient-to-br ${colors.bg} border ${colors.border}`}
-                      >
-                        {getCyberpunkIcon(subscription.name, subscription.category)}
-                      </div>
-                      <div>
-                        <div className="flex items-center mb-1">
-                          <h3 className="font-medium text-white">{subscription.name}</h3>
-                          {isPaymentSoon && (
-                            <span className="ml-2 inline-flex h-2 w-2 relative">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-xs px-2 py-0.5 rounded bg-black/50 border border-red-500/30 text-red-500">
-                            {subscription.category}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {subscription.frequency.toUpperCase()}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-white">{formatCurrency(subscription.amount)}</div>
-                      <div 
-                        className={`text-xs flex items-center justify-end mt-1 ${
-                          isPaymentSoon ? 'text-red-500' : 'text-gray-500'
-                        }`}
-                      >
-                        {isPaymentSoon && (
-                          <AlertCircle className="h-3 w-3 mr-1" />
-                        )}
-                        DUE {formatRelativeDate(subscription.nextPayment)}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Extended details when selected */}
-                  {isSelected && !isEditing && (
-                    <div className="mt-4 pt-4 border-t border-red-900/20">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div className="bg-black/50 p-3 rounded border border-red-900/30">
-                          <h4 className="text-xs text-gray-500 mb-1">ANNUAL COST</h4>
-                          <p className="font-medium text-white">
-                            {formatCurrency(
-                              subscription.frequency === 'monthly' 
-                                ? subscription.amount * 12 
-                                : subscription.frequency === 'quarterly'
-                                  ? subscription.amount * 4
-                                  : subscription.amount
-                            )}
-                          </p>
-                        </div>
-                        <div className="bg-black/50 p-3 rounded border border-red-900/30">
-                          <h4 className="text-xs text-gray-500 mb-1">STARTED ON</h4>
-                          <p className="font-medium text-white">
-                            {subscription.startDate 
-                              ? subscription.startDate.toLocaleDateString() 
-                              : "NOT SPECIFIED"}
-                          </p>
-                        </div>
-                        <div className="bg-black/50 p-3 rounded border border-red-900/30">
-                          <h4 className="text-xs text-gray-500 mb-1">ADDED TO TRACKER</h4>
-                          <p className="font-medium text-white">
-                            {subscription.dateAdded.toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex justify-end space-x-3">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleStartEditing(subscription);
-                          }}
-                          className="flex items-center text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                        >
-                          <Edit className="h-3.5 w-3.5 mr-1" />
-                          EDIT SUBSCRIPTION
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteSubscription(subscription.id);
-                          }}
-                          className="flex items-center text-xs text-red-500 hover:text-red-400 transition-colors"
-                        >
-                          <Trash2 className="h-3.5 w-3.5 mr-1" />
-                          CANCEL SUBSCRIPTION
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Edit Form */}
-                  {isEditing && (
-                    <div 
-                      className="mt-4 pt-4 border-t border-red-900/20"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <h3 className="text-sm text-red-500 tracking-widest mb-4">EDIT SUBSCRIPTION</h3>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <label className="block text-xs text-red-500 mb-1">SUBSCRIPTION NAME</label>
-                          <input
-                            type="text"
-                            value={editingSubscription.name}
-                            onChange={(e) => handleUpdateEditingField('name', e.target.value)}
-                            className="w-full bg-black/50 border border-red-500/30 rounded p-2 text-white focus:border-red-500/70 focus:outline-none"
-                            list="subscription-suggestions"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-xs text-red-500 mb-1">AMOUNT</label>
-                          <div className="relative">
-                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                              <span className="text-gray-500">$</span>
-                            </div>
-                            <input
-                              type="number"
-                              value={editingSubscription.amount}
-                              onChange={(e) => handleUpdateEditingField('amount', parseFloat(e.target.value))}
-                              className="w-full bg-black/50 border border-red-500/30 rounded p-2 pl-7 text-white focus:border-red-500/70 focus:outline-none"
-                              step="0.01"
-                            />
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-xs text-red-500 mb-1">BILLING FREQUENCY</label>
-                          <select
-                            value={editingSubscription.frequency}
-                            onChange={(e) => handleUpdateEditingField('frequency', e.target.value)}
-                            className="w-full bg-black/50 border border-red-500/30 rounded p-2 text-white focus:border-red-500/70 focus:outline-none"
-                          >
-                            <option value="monthly">MONTHLY</option>
-                            <option value="quarterly">QUARTERLY</option>
-                            <option value="annual">ANNUAL</option>
-                          </select>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-xs text-red-500 mb-1">CATEGORY</label>
-                          <select
-                            value={editingSubscription.category}
-                            onChange={(e) => handleUpdateEditingField('category', e.target.value)}
-                            className="w-full bg-black/50 border border-red-500/30 rounded p-2 text-white focus:border-red-500/70 focus:outline-none"
-                          >
-                            <option value="Entertainment">ENTERTAINMENT</option>
-                            <option value="Music">MUSIC</option>
-                            <option value="Video">VIDEO</option>
-                            <option value="Gaming">GAMING</option>
-                            <option value="Software">SOFTWARE</option>
-                            <option value="Cloud Storage">CLOUD STORAGE</option>
-                            <option value="VPN">VPN</option>
-                            <option value="News">NEWS</option>
-                            <option value="Books">BOOKS</option>
-                            <option value="Fitness">FITNESS</option>
-                            <option value="Food">FOOD</option>
-                            <option value="Shopping">SHOPPING</option>
-                            <option value="Smart Home">SMART HOME</option>
-                            <option value="AI">AI</option>
-                            <option value="Services">SERVICES</option>
-                            <option value="Health">HEALTH</option>
-                            <option value="Other">OTHER</option>
-                          </select>
-                        </div>
-                        
-                        {/* Edit Start Date */}
-                        <div className="md:col-span-2">
-                          <label className="block text-xs text-red-500 mb-1">SUBSCRIPTION START DATE (OPTIONAL)</label>
-                          <input
-                            type="date"
-                            value={formatDateForInput(editingSubscription.startDate)}
-                            onChange={(e) => {
-                              const date = e.target.value ? new Date(e.target.value) : undefined;
-                              handleUpdateEditingField('startDate', date);
-                            }}
-                            className="w-full bg-black/50 border border-red-500/30 rounded p-2 text-white focus:border-red-500/70 focus:outline-none"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-end space-x-3">
-                        <button
-                          onClick={handleCancelEditing}
-                          className="px-4 py-2 border border-red-900/30 text-gray-300 hover:bg-red-900/20 transition-colors text-xs flex items-center"
-                        >
-                          <X className="h-3.5 w-3.5 mr-1" />
-                          CANCEL
-                        </button>
-                        <button
-                          onClick={handleSaveEditing}
-                          className="px-4 py-2 bg-red-700 hover:bg-red-600 text-white text-xs flex items-center relative overflow-hidden group"
-                        >
-                          <CheckCircle className="h-3.5 w-3.5 mr-1" />
-                          SAVE CHANGES
-                          <span className="absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-red-500/20 to-transparent transform -skew-x-12 group-hover:animate-shimmer"></span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
+              <div className="flex items-start space-x-3">
+                <Zap className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="font-medium text-white">Free Trial Expiring</h3>
+                  <p className="text-sm text-gray-400">Cloud Storage trial period ends in 48 hours. Cancel or prepare for automatic billing.</p>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-      
-      {/* Tips and Optimization Card */}
-      <div className="bg-gradient-to-r from-black via-red-950/20 to-black backdrop-blur-sm border border-red-500/30 rounded-lg shadow p-6">
-        <div className="flex items-center mb-4">
-          <ZapIcon className="h-5 w-5 text-red-500 mr-2" />
-          <h3 className="text-sm text-red-500 tracking-widest">SUBSCRIPTION OPTIMIZATION</h3>
-        </div>
-        <p className="mb-4 text-gray-300 text-sm">Track and manage your subscriptions to avoid subscription creep and save money each month.</p>
-        <div className="space-y-3">
-          <div className="flex items-start">
-            <div className="flex-shrink-0 mt-0.5 mr-2">
-              <div className="p-1 rounded-full bg-black border border-red-500/50">
-                <CheckCircle className="h-3 w-3 text-red-500" />
+              </div>
+              
+              <div className="flex items-start space-x-3">
+                <Calendar className="h-5 w-5 text-blue-500 flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="font-medium text-white">Annual Renewal Window</h3>
+                  <p className="text-sm text-gray-400">VPN service renewal in 14 days. Consider switching to annual billing for 20% reduction in resource expenditure.</p>
+                </div>
               </div>
             </div>
-            <p className="text-sm text-gray-300">Consider bundling services from the same provider to save on individual subscriptions</p>
-          </div>
-          <div className="flex items-start">
-            <div className="flex-shrink-0 mt-0.5 mr-2">
-              <div className="p-1 rounded-full bg-black border border-red-500/50">
-                <CheckCircle className="h-3 w-3 text-red-500" />
-              </div>
-            </div>
-            <p className="text-sm text-gray-300">You can save by switching to annual billing for services you use regularly</p>
-          </div>
-          <div className="flex items-start">
-            <div className="flex-shrink-0 mt-0.5 mr-2">
-              <div className="p-1 rounded-full bg-black border border-red-500/50">
-                <CheckCircle className="h-3 w-3 text-red-500" />
-              </div>
-            </div>
-            <p className="text-sm text-gray-300">Family or group plans often provide better value than individual subscriptions</p>
           </div>
         </div>
         
-        {/* Scanner effect line */}
-        <div className="relative h-0.5 w-full bg-black overflow-hidden mt-6">
-          <div className="absolute top-0 left-0 h-full w-20 bg-gradient-to-r from-transparent via-red-500 to-transparent animate-scanner"></div>
+        {/* System Status */}
+        <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg overflow-hidden">
+          <div className="relative p-4 border-b border-red-900/20">
+            <div className="absolute top-0 right-0 h-full w-16 bg-gradient-to-l from-red-500/5 to-transparent"></div>
+            <h2 className="text-xs text-red-500 tracking-widest">SYSTEM STATUS</h2>
+          </div>
+          
+          <div className="p-4">
+            <div className="space-y-3 text-xs">
+              <div className="flex justify-between items-center">
+                <div className="text-gray-500">SUBSCRIPTION MONITOR</div>
+                <div className="text-green-500">ONLINE</div>
+              </div>
+              <div className="flex justify-between items-center">
+                <div className="text-gray-500">LAST UPDATE</div>
+                <div className="text-white">3 MIN AGO</div>
+              </div>
+              <div className="flex justify-between items-center">
+                <div className="text-gray-500">NEXT SCAN</div>
+                <div className="text-white countdown" data-value="59">37</div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Animated scanner effect */}
+          <div className="relative h-1 w-full bg-black overflow-hidden">
+            <div className="absolute top-0 left-0 h-full w-20 bg-gradient-to-r from-transparent via-red-500/70 to-transparent animate-scanner"></div>
+          </div>
         </div>
       </div>
       
-      {/* Custom Styles */}
+      {/* Bottom status bar */}
+      <footer className="mt-8 border-t border-red-900/30 pt-3 flex justify-between items-center text-xs text-gray-600 px-4">
+        <div>SUBSCRIPTION MATRIX v2.1.3</div>
+        <div className="text-right">&copy; 2025 ALL RIGHTS RESERVED</div>
+      </footer>
+      
+      {/* Custom CSS for animations and effects */}
       <style >{`
+        /* Glitch animation */
+        @keyframes glitch {
+          0% {
+            transform: translate(0);
+          }
+          20% {
+            transform: translate(-2px, 2px);
+          }
+          40% {
+            transform: translate(-2px, -2px);
+          }
+          60% {
+            transform: translate(2px, 2px);
+          }
+          80% {
+            transform: translate(2px, -2px);
+          }
+          100% {
+            transform: translate(0);
+          }
+        }
+        
+        .animate-glitch {
+          animation: glitch 1s cubic-bezier(.25, .46, .45, .94) both infinite;
+        }
+        
+        @keyframes glitch-animation-1 {
+          0% {
+            opacity: 1;
+            transform: translate(0);
+          }
+          10% {
+            transform: translate(-2px, -2px);
+          }
+          20% {
+            transform: translate(2px, 2px);
+          }
+          30% {
+            transform: translate(-2px, 2px);
+          }
+          40% {
+            transform: translate(2px, -2px);
+          }
+          50% {
+            transform: translate(-1px, 2px);
+            opacity: 0.8;
+          }
+          60% {
+            transform: translate(1px, 1px);
+          }
+          70% {
+            transform: translate(-1px, -1px);
+            opacity: 0.6;
+          }
+          80% {
+            transform: translate(1px, -1px);
+          }
+          90% {
+            transform: translate(-1px, 1px);
+          }
+          100% {
+            opacity: 1;
+            transform: translate(0);
+          }
+        }
+        
+        .animate-glitch-2 {
+          animation: glitch-animation-1 3s infinite linear alternate-reverse;
+        }
+        
+        .animate-glitch-3 {
+          animation: glitch-animation-1 2.7s infinite linear alternate-reverse;
+        }
+        
+        /* Scanner animation */
         @keyframes scanner {
           0% {
             left: -20%;
@@ -809,46 +303,20 @@ const CyberpunkSubscriptionManager: React.FC<CyberpunkSubscriptionManagerProps> 
           animation: scanner 3s ease-in-out infinite;
         }
         
-        @keyframes shimmer {
-          0% {
-            transform: translateX(-100%);
+        /* Slow pulse animation */
+        @keyframes pulse-slow {
+          0%, 100% {
+            opacity: 1;
           }
-          100% {
-            transform: translateX(100%);
+          50% {
+            opacity: 0.6;
           }
         }
         
-        .animate-shimmer {
-          animation: shimmer 2s infinite;
+        .animate-pulse-slow {
+          animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
       `}</style>
     </div>
-  );
-};
-
-// Helper functions
-const isDateSoon = (date: Date) => {
-  const now = new Date();
-  const threeDaysFromNow = new Date();
-  threeDaysFromNow.setDate(now.getDate() + 3);
-  
-  return date <= threeDaysFromNow;
-};
-
-const formatRelativeDate = (date: Date) => {
-  const now = new Date();
-  const diffTime = date.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
-  if (diffDays === 0) {
-    return 'TODAY';
-  } else if (diffDays === 1) {
-    return 'TOMORROW';
-  } else if (diffDays > 1 && diffDays <= 7) {
-    return `IN ${diffDays} DAYS`;
-  } else {
-    return date.toLocaleDateString().toUpperCase();
-  }
-};
-
-export default CyberpunkSubscriptionManager;
+  )
+}
