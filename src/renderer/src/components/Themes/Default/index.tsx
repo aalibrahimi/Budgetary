@@ -6,7 +6,7 @@ import '@fortawesome/fontawesome-free/css/all.css'
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { Calendar, DollarSign, PiggyBank, Wallet, Sparkles, Plus, Move, Bell } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
-import CashFlowForecast from '@renderer/components/CashFlowForecast'
+import CashFlowForecast from '@renderer/components/Themes/Default/CashFlowForecast'
 // Import the notification system instead of the button
 
 import { Responsive, WidthProvider } from 'react-grid-layout'
