@@ -487,7 +487,7 @@ const CyberpunkCashFlowForecast: React.FC = () => {
       )}
       
       {/* Add styles for scanner animation */}
-      <style jsx>{`
+      {/* <style >{`
         @keyframes scanner {
           0% {
             left: -20%;
@@ -513,7 +513,7 @@ const CyberpunkCashFlowForecast: React.FC = () => {
         .animate-shimmer {
           animation: shimmer 2s infinite;
         }
-      `}</style>
+      `}</style> */}
     </div>
   )
 }
