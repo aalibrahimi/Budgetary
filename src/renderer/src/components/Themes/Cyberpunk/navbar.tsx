@@ -124,7 +124,10 @@ export const CyberpunkNav = () => {
               </Link>
               {/* {item.active && ( */}
                 {/* Chat told me about 'peer' and holy shit it does work! */}
-                {/* 'group' is for parent-child, 'peer' is for when they're not parent-child related */}
+                {/* 'group' is for parent-child, 'peer' is for when they're not parent-child related.
+                    You put 'peer' on the element that's on the top and 'peer-' on the element(s) below it.
+                    The top element will be the trigger and below elements will react on it. (see what i did there? hehe)
+                */}
                 <span className="hidden peer-[.active]:block absolute bottom-0 left-0 w-full h-[1px] bg-red-500 "></span>
               {/* )} */}
             </li>
