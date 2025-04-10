@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import SubscriptionManager from '@renderer/components/SubscriptionManager'
 import { useExpenseStore } from '@renderer/stores/expenseStore'
 
-const CyberpunkSmartAssistant = () => {
+export const CyberpunkSmartAssistant = () => {
 
   const { expenses, income } = useExpenseStore()
   const [animateHeader, setAnimateHeader] = useState(true)
