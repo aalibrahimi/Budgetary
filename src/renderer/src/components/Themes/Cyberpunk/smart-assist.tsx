@@ -74,7 +74,8 @@ export const CyberpunkSmartAssistant = () => {
         </header>
         
         {/* Stat Cards - Top Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="flex justify-center items-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4  w-[1245px]">
           <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg group hover:border-red-500/60 transition-colors">
             <div className="p-4 border-b border-red-900/20">
               <div className="flex justify-between items-center">
@@ -114,12 +115,12 @@ export const CyberpunkSmartAssistant = () => {
             </div>
           </div>
         </div>
-        
+        </div>
         {/* Main Subscription Manager Component */}
-        <div className="bg-black backdrop-blur-sm border border-red-500/30 rounded-lg mb-6">
-          <div className="p-4 border-b border-red-900/20">
+       <div className="flex justify-center items-center">
+          <div className="p-4 border-b border-red-900/20 max-w-6xl ">
             <div className="flex justify-between items-center">
-              <h2 className="text-xs text-red-500 tracking-widest">DIGITAL SERVICES // ACTIVE MONITOR</h2>
+              <h2 className="text-xs text-red-500 tracking-widest mr-[900px]">DIGITAL SERVICES // ACTIVE MONITOR</h2>
               <div className="flex items-center">
                 <span className="mr-2 text-xs text-purple-500">STATUS:</span>
                 <span className="flex h-2 w-2 relative">
@@ -129,7 +130,7 @@ export const CyberpunkSmartAssistant = () => {
               </div>
             </div>
           </div>
-          
+          </div>
           <div className="p-4">
             {/* This is where we embed the regular SubscriptionManager component */}
             <CyberpunkSubscriptionManager 
@@ -138,15 +139,17 @@ export const CyberpunkSmartAssistant = () => {
               income={income} 
             />
           </div>
-        </div>
+        
         
         {/* Security Advisories Panel */}
-        <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg mb-6">
+        <div className="flex justify-center items-center">
+        <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg mb-6 w-[1240px] ">
           <div className="p-4 border-b border-red-900/20">
             <div className="flex justify-between items-center">
               <h2 className="text-xs text-red-500 tracking-widest">SECURITY ADVISORIES</h2>
             </div>
           </div>
+          
           
           <div className="p-4">
             <div className="space-y-4">
@@ -176,9 +179,10 @@ export const CyberpunkSmartAssistant = () => {
             </div>
           </div>
         </div>
-        
+        </div>
         {/* System Status */}
-        <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg overflow-hidden">
+        <div className=" flex justify-center items-center ">
+        <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg overflow-hidden w-[1245px]">
           <div className="relative p-4 border-b border-red-900/20">
             <div className="absolute top-0 right-0 h-full w-16 bg-gradient-to-l from-red-500/5 to-transparent"></div>
             <h2 className="text-xs text-red-500 tracking-widest">SYSTEM STATUS</h2>
@@ -205,6 +209,7 @@ export const CyberpunkSmartAssistant = () => {
           <div className="relative h-1 w-full bg-black overflow-hidden">
             <div className="absolute top-0 left-0 h-full w-20 bg-gradient-to-r from-transparent via-red-500/70 to-transparent animate-scanner"></div>
           </div>
+        </div>
         </div>
       </div>
       
