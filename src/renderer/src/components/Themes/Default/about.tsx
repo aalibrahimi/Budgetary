@@ -109,6 +109,7 @@ const personalityCategories = [
 
 export const FinancialWellness = () => {
   const { isDarkMode } = useDarkModeStore()
+  const { expenses, income } = useExpenseStore();
 
 
   // State for different features
