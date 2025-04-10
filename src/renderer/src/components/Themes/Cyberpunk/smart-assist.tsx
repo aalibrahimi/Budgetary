@@ -5,6 +5,7 @@ import { RefreshCw, Calendar, DollarSign, AlertTriangle, Zap, Plus, X } from 'lu
 import { useState, useEffect } from 'react'
 import SubscriptionManager from '@renderer/components/SubscriptionManager'
 import { useExpenseStore } from '@renderer/stores/expenseStore'
+import CyberpunkSubscriptionManager from '@renderer/components/CyberpunkSubManager'
 
 export const CyberpunkSmartAssistant = () => {
 
@@ -131,7 +132,7 @@ export const CyberpunkSmartAssistant = () => {
           
           <div className="p-4">
             {/* This is where we embed the regular SubscriptionManager component */}
-            <SubscriptionManager 
+            <CyberpunkSubscriptionManager 
               expenses={expenses} 
               isDarkMode={true} 
               income={income} 
