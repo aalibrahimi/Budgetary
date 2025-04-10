@@ -1,4 +1,4 @@
-import { Outlet } from '@tanstack/react-router'
+import { Link, Outlet } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useThemeStore } from '@renderer/stores/themeStore'
 import ThemeSwitch from '@renderer/components/themeSwitch'
@@ -104,11 +104,15 @@ export const CyberpunkNav = () => {
               className="px-4 py-1.5 relative"
               style={{ position: 'relative', zIndex: 60 }}
             >
-              <button
+              <Link
                 // onClick={() => forcedNavigation(item.to)}
-                className={`text-sm transition-colors ${
-                  item.active ? 'text-red-500' : 'text-gray-500 hover:text-gray-300'
-                }`}
+                // className={`text-sm transition-colors ${
+                //   item.active ? 'text-red-500' : 'text-gray-500 hover:text-gray-300'
+                // }`}
+                to={item.to}
+                className='text-sm transition-colors
+                  text-gray-500 hover:text-gray-300 peer [&.active]:text-red-500
+                '
                 style={{
                   position: 'relative',
                   zIndex: 60,
@@ -117,10 +121,15 @@ export const CyberpunkNav = () => {
                 }}
               >
                 {item.label}
-              </button>
-              {item.active && (
-                <span className=" absolute bottom-0 left-0 w-full h-[1px] bg-red-500 "></span>
-              )}
+              </Link>
+              {/* {item.active && ( */}
+                {/* Chat told me about 'peer' and holy shit it does work! */}
+                {/* 'group' is for parent-child, 'peer' is for when they're not parent-child related.
+                    You put 'peer' on the element that's on the top and 'peer-' on the element(s) below it.
+                    The top element will be the trigger and below elements will react on it. (see what i did there? hehe)
+                */}
+                <span className="hidden peer-[.active]:block absolute bottom-0 left-0 w-full h-[1px] bg-red-500 "></span>
+              {/* )} */}
             </li>
           ))}
         </ul>

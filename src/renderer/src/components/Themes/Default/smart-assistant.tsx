@@ -1,9 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useExpenseStore } from '../stores/expenseStore'
-import SubscriptionManager from '../components/SubscriptionManager'
+import SubscriptionManager from '@renderer/components/SubscriptionManager'
+import { useExpenseStore } from '@renderer/stores/expenseStore'
 import { useDarkModeStore } from '@renderer/stores/themeStore'
 
-const SmartAssistant = () => {
+export const DefaultSmartAssistant = () => {
   const { isDarkMode } = useDarkModeStore()
   const { expenses, income } = useExpenseStore()
 
@@ -77,7 +76,3 @@ const SmartAssistant = () => {
     </div>
   )
 }
-
-export const Route = createFileRoute('/smart-assistant')({
-  component: SmartAssistant,
-})
