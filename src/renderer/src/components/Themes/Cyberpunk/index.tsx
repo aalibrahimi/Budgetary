@@ -249,13 +249,36 @@ export const CyberpunkIndex = () => {
   return (
     <div className="min-h-screen bg-black text-white font-mono overflow-hidden">
       {/* Background effects */}
-      <div className="fixed inset-0 z-0">
+
+      {/* <div className="relative z-10 max-w-screen-2xl mx-auto p-4"> 
+    
+    <header className={`mb-8 ${animateHeader }`}>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
+            <div className="relative">
+              <h1 className="text-4xl font-black text-red-500 tracking-tighter glitch-text">
+DASHBOARD
+                <span className="absolute top-0 left-0 w-full h-full text-red-500/20 animate-glitch-2">DASHBOARD</span>
+                <span className="absolute top-0 left-0 w-full h-full text-red-500/20 animate-glitch-3">DASHBOARD</span>
+              </h1>
+              <div className="flex items-center space-x-2 mt-1">
+                <div className="h-[1px] w-2 bg-red-500"></div>
+                <div className="text-xs text-gray-500">{currentMonth} {currentDay}, {currentYear}</div>
+              </div>
+            </div>
+          </div>
+        </header>
+        </div> */}
+        {/* mb */}
+        <div className="mb-[60px]"></div>
+      
+      <div className="fixed inset-0 z-0 ">
         <div className="absolute top-0 -right-32 w-96 h-96 rounded-full bg-red-600/20 mix-blend-screen blur-[100px] animate-pulse"></div>
         <div
           className="absolute bottom-0 -left-32 w-96 h-96 rounded-full bg-red-800/10 mix-blend-screen blur-[100px] animate-pulse"
           style={{ animationDelay: '1s' }}
         ></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vh] bg-gradient-to-br from-black via-red-950/10 to-black rounded-full mix-blend-screen filter blur-[80px]"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vh] bg-gradient-to-br from-black via-red-950/10 to-black rounded-full mix-blend-screen filter blur-[80px]">
+        </div>
 
         {/* Grid overlay */}
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsIDAsIDAsIDAuMDUpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30"></div>

@@ -43,7 +43,7 @@ export const CyberpunkSmartAssistant = () => {
   const currentDay = currentDate.getDate()
 
   return (
-    <div className="min-h-screen bg-black text-white font-mono overflow-hidden">
+    <div className="min-h-screen bg-black text-white font-mono overflow-hidden ">
       {/* Background effects */}
       <div className="fixed inset-0 z-0">
         <div className="absolute top-0 -right-32 w-96 h-96 rounded-full bg-red-600/20 mix-blend-screen blur-[100px] animate-pulse"></div>
@@ -56,7 +56,7 @@ export const CyberpunkSmartAssistant = () => {
 
       <div className="relative z-10 max-w-screen-2xl mx-auto p-4">
         {/* Header with glitch animation */}
-        <header className={`mb-8 ${animateHeader ? 'animate-glitch' : ''}`}>
+        <header className={`mb-8 ${animateHeader }`}>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
             <div className="relative">
               <h1 className="text-4xl font-black text-red-500 tracking-tighter glitch-text">
@@ -115,12 +115,12 @@ export const CyberpunkSmartAssistant = () => {
         </div>
         
         {/* Main Subscription Manager Component */}
-        <div className="bg-black/30 backdrop-blur-sm border border-red-500/30 rounded-lg mb-6">
+        <div className="bg-black backdrop-blur-sm border border-red-500/30 rounded-lg mb-6">
           <div className="p-4 border-b border-red-900/20">
             <div className="flex justify-between items-center">
               <h2 className="text-xs text-red-500 tracking-widest">DIGITAL SERVICES // ACTIVE MONITOR</h2>
               <div className="flex items-center">
-                <span className="mr-2 text-xs text-gray-500">STATUS:</span>
+                <span className="mr-2 text-xs text-purple-500">STATUS:</span>
                 <span className="flex h-2 w-2 relative">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
@@ -215,79 +215,7 @@ export const CyberpunkSmartAssistant = () => {
       
       {/* Custom CSS for animations and effects */}
       <style >{`
-        /* Glitch animation */
-        @keyframes glitch {
-          0% {
-            transform: translate(0);
-          }
-          20% {
-            transform: translate(-2px, 2px);
-          }
-          40% {
-            transform: translate(-2px, -2px);
-          }
-          60% {
-            transform: translate(2px, 2px);
-          }
-          80% {
-            transform: translate(2px, -2px);
-          }
-          100% {
-            transform: translate(0);
-          }
-        }
-        
-        .animate-glitch {
-          animation: glitch 1s cubic-bezier(.25, .46, .45, .94) both infinite;
-        }
-        
-        @keyframes glitch-animation-1 {
-          0% {
-            opacity: 1;
-            transform: translate(0);
-          }
-          10% {
-            transform: translate(-2px, -2px);
-          }
-          20% {
-            transform: translate(2px, 2px);
-          }
-          30% {
-            transform: translate(-2px, 2px);
-          }
-          40% {
-            transform: translate(2px, -2px);
-          }
-          50% {
-            transform: translate(-1px, 2px);
-            opacity: 0.8;
-          }
-          60% {
-            transform: translate(1px, 1px);
-          }
-          70% {
-            transform: translate(-1px, -1px);
-            opacity: 0.6;
-          }
-          80% {
-            transform: translate(1px, -1px);
-          }
-          90% {
-            transform: translate(-1px, 1px);
-          }
-          100% {
-            opacity: 1;
-            transform: translate(0);
-          }
-        }
-        
-        .animate-glitch-2 {
-          animation: glitch-animation-1 3s infinite linear alternate-reverse;
-        }
-        
-        .animate-glitch-3 {
-          animation: glitch-animation-1 2.7s infinite linear alternate-reverse;
-        }
+
         
         /* Scanner animation */
         @keyframes scanner {
