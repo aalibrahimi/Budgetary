@@ -13,12 +13,15 @@ export const useDarkModeStore = create<darkModeState>()((set) => ({
   }
 }))
 
-
+export const enum ThemeOptions {
+  Default = "default",
+  CyberPunk = "cyberpunk"
+}
 interface ThemeState {
-  activeTheme: string;
+  activeTheme: string
   setActiveTheme: (activeTheme: string) => void
 }
 export const useThemeStore = create<ThemeState>()((set) => ({
-  activeTheme: "default",
+  activeTheme: ThemeOptions.Default,
   setActiveTheme: (activeTheme: string) => set({ activeTheme })
 }))

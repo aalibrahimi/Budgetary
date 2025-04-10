@@ -13,15 +13,23 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as SmartAssistantImport } from './routes/smart-assistant'
 
 // Create Virtual Routes
 
+const SmartAssistantLazyImport = createFileRoute('/smart-assistant')()
 const ExpensesLazyImport = createFileRoute('/expenses')()
 const AboutLazyImport = createFileRoute('/about')()
 const IndexLazyImport = createFileRoute('/')()
 
 // Create/Update Routes
+
+const SmartAssistantLazyRoute = SmartAssistantLazyImport.update({
+  id: '/smart-assistant',
+  path: '/smart-assistant',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/smart-assistant.lazy').then((d) => d.Route),
+)
 
 const ExpensesLazyRoute = ExpensesLazyImport.update({
   id: '/expenses',
@@ -34,12 +42,6 @@ const AboutLazyRoute = AboutLazyImport.update({
   path: '/about',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/about.lazy').then((d) => d.Route))
-
-const SmartAssistantRoute = SmartAssistantImport.update({
-  id: '/smart-assistant',
-  path: '/smart-assistant',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const IndexLazyRoute = IndexLazyImport.update({
   id: '/',
@@ -58,13 +60,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexLazyImport
       parentRoute: typeof rootRoute
     }
-    '/smart-assistant': {
-      id: '/smart-assistant'
-      path: '/smart-assistant'
-      fullPath: '/smart-assistant'
-      preLoaderRoute: typeof SmartAssistantImport
-      parentRoute: typeof rootRoute
-    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -79,6 +74,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExpensesLazyImport
       parentRoute: typeof rootRoute
     }
+    '/smart-assistant': {
+      id: '/smart-assistant'
+      path: '/smart-assistant'
+      fullPath: '/smart-assistant'
+      preLoaderRoute: typeof SmartAssistantLazyImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -86,47 +88,47 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
-  '/smart-assistant': typeof SmartAssistantRoute
   '/about': typeof AboutLazyRoute
   '/expenses': typeof ExpensesLazyRoute
+  '/smart-assistant': typeof SmartAssistantLazyRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
-  '/smart-assistant': typeof SmartAssistantRoute
   '/about': typeof AboutLazyRoute
   '/expenses': typeof ExpensesLazyRoute
+  '/smart-assistant': typeof SmartAssistantLazyRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
-  '/smart-assistant': typeof SmartAssistantRoute
   '/about': typeof AboutLazyRoute
   '/expenses': typeof ExpensesLazyRoute
+  '/smart-assistant': typeof SmartAssistantLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/smart-assistant' | '/about' | '/expenses'
+  fullPaths: '/' | '/about' | '/expenses' | '/smart-assistant'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/smart-assistant' | '/about' | '/expenses'
-  id: '__root__' | '/' | '/smart-assistant' | '/about' | '/expenses'
+  to: '/' | '/about' | '/expenses' | '/smart-assistant'
+  id: '__root__' | '/' | '/about' | '/expenses' | '/smart-assistant'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
-  SmartAssistantRoute: typeof SmartAssistantRoute
   AboutLazyRoute: typeof AboutLazyRoute
   ExpensesLazyRoute: typeof ExpensesLazyRoute
+  SmartAssistantLazyRoute: typeof SmartAssistantLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
-  SmartAssistantRoute: SmartAssistantRoute,
   AboutLazyRoute: AboutLazyRoute,
   ExpensesLazyRoute: ExpensesLazyRoute,
+  SmartAssistantLazyRoute: SmartAssistantLazyRoute,
 }
 
 export const routeTree = rootRoute
@@ -140,22 +142,22 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/smart-assistant",
         "/about",
-        "/expenses"
+        "/expenses",
+        "/smart-assistant"
       ]
     },
     "/": {
       "filePath": "index.lazy.tsx"
-    },
-    "/smart-assistant": {
-      "filePath": "smart-assistant.tsx"
     },
     "/about": {
       "filePath": "about.lazy.tsx"
     },
     "/expenses": {
       "filePath": "expenses.lazy.tsx"
+    },
+    "/smart-assistant": {
+      "filePath": "smart-assistant.lazy.tsx"
     }
   }
 }

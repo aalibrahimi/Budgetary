@@ -1,17 +1,17 @@
 // import { useForm } from '@tanstack/react-form'
 import { createLazyFileRoute, Link } from '@tanstack/react-router'
-import '../assets/expenses.css'
-import '../assets/statsCard.css'
+import '../../../assets/expenses.css'
+import '../../../assets/statsCard.css'
 import React, { useEffect, useState } from 'react'
 import DatePicker from '@renderer/components/DatePicker'
 // import { useState } from 'react'
 import Graphs from '@renderer/components/graphs'
 
-import { useExpenseStore } from '../stores/expenseStore'
 import NotifyButton from '@renderer/components/notifications/notificationButton'
 import { useDarkModeStore } from '@renderer/stores/themeStore'
+import { useExpenseStore } from '@renderer/stores/expenseStore'
 
-const Expenses = () => {
+export const DefaultExpenses = () => {
 // Inside the Expenses component function, update the notification handling
 const [notificationVisible, setNotificationVisible] = useState(false)
 const [notificationMessage, setNotificationMessage] = useState({ category: '', msg: '' })
@@ -344,7 +344,3 @@ const [notificationMessage, setNotificationMessage] = useState({ category: '', m
     </>
   )
 }
-
-export const Route = createLazyFileRoute('/expenses')({
-  component: Expenses
-})

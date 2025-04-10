@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { AlertTriangle, Plus, X } from 'lucide-react'
-import '../assets/CashFlowwForecast.css'
+import '../../../assets/CashFlowwForecast.css'
 import { useExpenseStore } from '@renderer/stores/expenseStore'
 
 const CashFlowForecast: React.FC = () => {

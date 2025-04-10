@@ -7,6 +7,7 @@ import { useExpenseStore } from '@renderer/stores/expenseStore';
 import DatePicker from '@renderer/components/DatePicker';
 
 const CyberpunkExpensesPage: React.FC = () => {
+  // Need to add "deleteExpense" & "updateExpense" to store
   const { expenses, deleteExpense, addExpense, updateExpense } = useExpenseStore();
   
   // State
