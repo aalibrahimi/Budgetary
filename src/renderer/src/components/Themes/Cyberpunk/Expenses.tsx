@@ -180,7 +180,7 @@ const CyberpunkExpensesPage: React.FC = () => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
-      month: '2-digit', 
+      month: 'long', 
       day: '2-digit', 
       year: 'numeric' 
     });
